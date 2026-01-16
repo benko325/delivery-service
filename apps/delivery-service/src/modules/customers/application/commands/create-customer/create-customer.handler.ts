@@ -1,0 +1,34 @@
+import { CommandHandler, ICommandHandler, EventPublisher } from '@nestjs/cqrs';
+import { Inject } from '@nestjs/common';
+import { CreateCustomerCommand } from './create-customer.command';
+import { ICustomerAggregateRepository } from '../../../core/repositories/customer.repository.interface';
+import { CustomerAggregate } from '../../../core/aggregates/customer.aggregate';
+
+@CommandHandler(CreateCustomerCommand)
+export class CreateCustomerCommandHandler implements ICommandHandler<CreateCustomerCommand> {
+    constructor(
+        @Inject('ICustomerAggregateRepository')
+        private readonly customerAggregateRepository: ICustomerAggregateRepository,
+        private readonly publisher: EventPublisher,
+    ) {}
+
+    async execute(command: CreateCustomerCommand): Promise<{ id: string }> {
+        const customerAggregate = this.publisher.mergeObjectContext(new CustomerAggregate());
+
+        customerAggregate.create(command.id, command.email, command.name, command.phone);
+
+        await this.customerAggregateRepository.save({
+            id: customerAggregate.id,
+            email: customerAggregate.email,
+            name: customerAggregate.name,
+            phone: customerAggregate.phone,
+            address: customerAggregate.address,
+            createdAt: customerAggregate.createdAt,
+            updatedAt: customerAggregate.updatedAt,
+        });
+
+        customerAggregate.commit();
+
+        return { id: customerAggregate.id };
+    }
+}
