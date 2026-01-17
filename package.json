@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Delivery Service System - Modular Monolith with Clean Architecture, CQRS, and Event-Driven patterns",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@10.7.1",
   "scripts": {
     "build": "turbo run build",
