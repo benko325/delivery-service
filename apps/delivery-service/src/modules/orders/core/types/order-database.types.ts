@@ -2,6 +2,7 @@ import { Generated } from "kysely";
 
 export type OrderStatus =
   | "pending" // Order created, waiting for restaurant confirmation
+  | "payment_succeeded" // Payment was successful
   | "confirmed" // Restaurant confirmed the order
   | "preparing" // Restaurant is preparing the order
   | "ready_for_pickup" // Order ready, waiting for driver to accept
