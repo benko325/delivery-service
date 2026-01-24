@@ -1,4 +1,4 @@
-import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
+import { CommandHandler, EventBus, ICommandHandler } from "@nestjs/cqrs";
 import {
   BadRequestException,
   Inject,
@@ -8,7 +8,6 @@ import {
 } from "@nestjs/common";
 import { PayForOrderCommand } from "./pay-for-order.command";
 import { IOrderRepository } from "../../../core/repositories/order.repository.interface";
-import { RabbitMQPublisher } from "../../../../shared-kernel";
 import { PaymentRequestedEvent } from "../../../core/events/payment-requested.event";
 import { IPaymentGatewayService } from "../../common/payment.gateway.service.interface";
 import { PaymentSucceededEvent } from "../../../core/events/payment-succeeded.event";
@@ -22,7 +21,7 @@ export class PayForOrderCommandHandler implements ICommandHandler<PayForOrderCom
     private readonly orderRepository: IOrderRepository,
     @Inject("IPaymentGatewayService")
     private readonly paymentGatewayService: IPaymentGatewayService,
-    private readonly rabbitMQPublisher: RabbitMQPublisher,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(command: PayForOrderCommand): Promise<{
@@ -58,7 +57,7 @@ export class PayForOrderCommandHandler implements ICommandHandler<PayForOrderCom
       new Date(),
     );
 
-    await this.rabbitMQPublisher.publish(paymentRequestedEvent);
+    this.eventBus.publish(paymentRequestedEvent);
 
     this.logger.log(
       `Published PaymentRequestedEvent for order ${command.orderId}`,
@@ -84,7 +83,7 @@ export class PayForOrderCommandHandler implements ICommandHandler<PayForOrderCom
         new Date(),
       );
 
-      await this.rabbitMQPublisher.publish(orderPaidForEvent);
+      this.eventBus.publish(orderPaidForEvent);
 
       this.logger.log(
         `Published PaymentSucceededEvent for order ${command.orderId}`,
