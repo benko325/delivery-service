@@ -15,13 +15,22 @@ import { CreateOrderCommandHandler } from "./application/commands/create-order/c
 import { AcceptOrderCommandHandler } from "./application/commands/accept-order/accept-order.handler";
 import { UpdateOrderStatusCommandHandler } from "./application/commands/update-order-status/update-order-status.handler";
 import { CancelOrderCommandHandler } from "./application/commands/cancel-order/cancel-order.handler";
+import { PayForOrderCommandHandler } from "./application/commands/pay-for-order/pay-for-order.handler";
 
 // Application - Queries
 import { GetOrderByIdQueryHandler } from "./application/queries/get-order-by-id/get-order-by-id.handler";
 import { GetOrdersByCustomerQueryHandler } from "./application/queries/get-orders-by-customer/get-orders-by-customer.handler";
 import { GetAvailableOrdersQueryHandler } from "./application/queries/get-available-orders/get-available-orders.handler";
 import { GetOrdersByDriverQueryHandler } from "./application/queries/get-orders-by-driver/get-orders-by-driver.handler";
+
+// Application - Events
 import { CartOrderedEventHandler } from "./application/events/cart-ordered.handler";
+
+// Infrastructure - Anti-Corruption Layer
+import { CartOrderedEventMapper } from "./infrastructure/anti-corruption-layer/cart-ordered.mapper";
+
+// Infrastructure - Services
+import { PaymentGatewayService } from "./infrastructure/services/payment-gateway.service";
 
 // Infrastructure
 import { OrderRepository } from "./infrastructure/database/repositories/order.repository";
@@ -29,11 +38,16 @@ import { OrderAggregateRepository } from "./infrastructure/database/repositories
 import { RabbitMQPublisher, RabbitMQSubscriber } from "../shared-kernel";
 import { CartOrderedMappedEvent } from "./infrastructure/anti-corruption-layer/cart-ordered.mapper";
 
+// Events
+import { PaymentRequestedEvent } from "./core/events/payment-requested.event";
+import { PaymentSucceededEvent } from "./core/events/payment-succeeded.event";
+
 const commandHandlers = [
   CreateOrderCommandHandler,
   AcceptOrderCommandHandler,
   UpdateOrderStatusCommandHandler,
   CancelOrderCommandHandler,
+  PayForOrderCommandHandler,
 ];
 
 const queryHandlers = [
@@ -45,7 +59,15 @@ const queryHandlers = [
 
 const eventHandlers = [CartOrderedEventHandler];
 
-const events = [CartOrderedMappedEvent];
+const events = [
+  CartOrderedMappedEvent,
+  PaymentRequestedEvent,
+  PaymentSucceededEvent,
+];
+
+const antiCorruptionLayer = [CartOrderedEventMapper];
+
+const infrastructureServices = [PaymentGatewayService];
 
 @Module({
   imports: [
@@ -66,6 +88,8 @@ const events = [CartOrderedMappedEvent];
     ...commandHandlers,
     ...queryHandlers,
     ...eventHandlers,
+    ...antiCorruptionLayer,
+    ...infrastructureServices,
     {
       provide: "IOrderRepository",
       useClass: OrderRepository,
