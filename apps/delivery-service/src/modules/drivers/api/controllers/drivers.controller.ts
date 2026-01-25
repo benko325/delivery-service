@@ -7,10 +7,10 @@ import {
   Body,
   Param,
   UseGuards,
-  HttpCode,
-  HttpStatus,
   NotFoundException,
+  Req,
 } from "@nestjs/common";
+import { Request } from "express";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { DeactivateDriverCommand } from "../../application/commands/deactivate-driver/deactivate-driver.command";
 import {
@@ -82,17 +82,15 @@ export class DriversController {
   }
 
   @Post()
-  @Roles("admin")
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: "Create a new driver (admin only)" })
+  @ApiOperation({ summary: "Create a new driver" })
   @ApiResponse({ status: 201, description: "Driver created" })
   async create(
-    @User() user: RequestUser,
+    @Req() req: Request & { user: RequestUser },
     @Body(ZodValidationPipe) dto: CreateDriverDto,
   ) {
     return this.commandBus.execute(
       new CreateDriverCommand(
-        user.userId,
+        req.user.userId,
         dto.name,
         dto.email,
         dto.phone,
