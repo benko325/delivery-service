@@ -11,9 +11,6 @@ export interface DriverLocation {
 export interface DriversTable {
   id: Generated<string>;
   userId: string;
-  name: string;
-  email: string;
-  phone: string;
   vehicleType: string;
   licensePlate: string;
   status: DriverStatus;

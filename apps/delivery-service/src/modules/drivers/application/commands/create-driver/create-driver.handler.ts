@@ -21,9 +21,6 @@ export class CreateDriverCommandHandler
 
     driverAggregate.create(
       command.userId,
-      command.name,
-      command.email,
-      command.phone,
       command.vehicleType,
       command.licensePlate,
     );

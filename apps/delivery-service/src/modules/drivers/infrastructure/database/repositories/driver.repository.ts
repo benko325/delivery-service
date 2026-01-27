@@ -35,7 +35,6 @@ export class DriverRepository implements IDriverRepository {
     const drivers = await this.db
       .selectFrom("drivers.drivers")
       .selectAll()
-      .orderBy("name", "asc")
       .execute();
 
     return drivers.map((d) => this.mapToDriver(d));
@@ -58,9 +57,6 @@ export class DriverRepository implements IDriverRepository {
     return {
       id: data.id as string,
       userId: data.userId as string,
-      name: data.name as string,
-      email: data.email as string,
-      phone: data.phone as string,
       vehicleType: data.vehicleType as string,
       licensePlate: data.licensePlate as string,
       status: data.status as Driver["status"],

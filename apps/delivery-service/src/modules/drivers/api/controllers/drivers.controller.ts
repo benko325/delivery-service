@@ -91,9 +91,6 @@ export class DriversController {
     return this.commandBus.execute(
       new CreateDriverCommand(
         req.user.userId,
-        dto.name,
-        dto.email,
-        dto.phone,
         dto.vehicleType,
         dto.licensePlate,
       ),

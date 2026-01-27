@@ -18,9 +18,6 @@ export class DriverAggregateRepository implements IDriverAggregateRepository {
   async save(driver: {
     id: string;
     userId: string;
-    name: string;
-    email: string;
-    phone: string;
     vehicleType: string;
     licensePlate: string;
     status: DriverStatus;
@@ -36,9 +33,6 @@ export class DriverAggregateRepository implements IDriverAggregateRepository {
       .values({
         id: driver.id,
         userId: driver.userId,
-        name: driver.name,
-        email: driver.email.toLowerCase(),
-        phone: driver.phone,
         vehicleType: driver.vehicleType,
         licensePlate: driver.licensePlate.toUpperCase(),
         status: driver.status,
@@ -57,8 +51,6 @@ export class DriverAggregateRepository implements IDriverAggregateRepository {
   async update(
     id: string,
     data: Partial<{
-      name: string;
-      phone: string;
       vehicleType: string;
       licensePlate: string;
       status: DriverStatus;
@@ -71,8 +63,6 @@ export class DriverAggregateRepository implements IDriverAggregateRepository {
   ): Promise<void> {
     const updateData: Record<string, unknown> = {};
 
-    if (data.name !== undefined) updateData.name = data.name;
-    if (data.phone !== undefined) updateData.phone = data.phone;
     if (data.vehicleType !== undefined)
       updateData.vehicleType = data.vehicleType;
     if (data.licensePlate !== undefined)
@@ -111,9 +101,6 @@ export class DriverAggregateRepository implements IDriverAggregateRepository {
     return {
       id: data.id as string,
       userId: data.userId as string,
-      name: data.name as string,
-      email: data.email as string,
-      phone: data.phone as string,
       vehicleType: data.vehicleType as string,
       licensePlate: data.licensePlate as string,
       status: data.status as Driver["status"],

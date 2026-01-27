@@ -77,19 +77,9 @@ export class DriverAggregate extends AggregateRoot {
     return this._updatedAt;
   }
 
-  create(
-    userId: string,
-    name: string,
-    email: string,
-    phone: string,
-    vehicleType: string,
-    licensePlate: string,
-  ): void {
+  create(userId: string, vehicleType: string, licensePlate: string): void {
     this._id = crypto.randomUUID();
     this._userId = userId;
-    this._name = name;
-    this._email = email.toLowerCase();
-    this._phone = phone;
     this._vehicleType = vehicleType;
     this._licensePlate = licensePlate.toUpperCase();
     this._status = "offline";
@@ -99,15 +89,7 @@ export class DriverAggregate extends AggregateRoot {
     this._createdAt = new Date();
     this._updatedAt = new Date();
 
-    this.apply(
-      new DriverCreatedEvent(
-        this._id,
-        this._userId,
-        this._name,
-        this._email,
-        this._createdAt,
-      ),
-    );
+    this.apply(new DriverCreatedEvent(this._id, this._userId, this._createdAt));
   }
 
   update(
@@ -167,9 +149,6 @@ export class DriverAggregate extends AggregateRoot {
   loadState(data: {
     id: string;
     userId: string;
-    name: string;
-    email: string;
-    phone: string;
     vehicleType: string;
     licensePlate: string;
     status: DriverStatus;
@@ -182,9 +161,6 @@ export class DriverAggregate extends AggregateRoot {
   }): void {
     this._id = data.id;
     this._userId = data.userId;
-    this._name = data.name;
-    this._email = data.email;
-    this._phone = data.phone;
     this._vehicleType = data.vehicleType;
     this._licensePlate = data.licensePlate;
     this._status = data.status;

@@ -17,9 +17,6 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       col.primaryKey().defaultTo(sql`gen_random_uuid()`),
     )
     .addColumn("user_id", "uuid", (col) => col.notNull().unique())
-    .addColumn("name", "varchar(255)", (col) => col.notNull())
-    .addColumn("email", "varchar(255)", (col) => col.notNull().unique())
-    .addColumn("phone", "varchar(50)", (col) => col.notNull())
     .addColumn("vehicle_type", "varchar(100)", (col) => col.notNull())
     .addColumn("license_plate", "varchar(20)", (col) => col.notNull())
     .addColumn("status", sql`drivers.driver_status`, (col) =>
