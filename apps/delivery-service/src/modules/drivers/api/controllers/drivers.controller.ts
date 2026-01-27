@@ -108,8 +108,6 @@ export class DriversController {
     return this.commandBus.execute(
       new UpdateDriverCommand(
         user.userId,
-        dto.name,
-        dto.phone,
         dto.vehicleType,
         dto.licensePlate,
         true,

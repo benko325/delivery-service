@@ -28,9 +28,6 @@ export class CreateDriverCommandHandler
     await this.driverAggregateRepository.save({
       id: driverAggregate.id,
       userId: driverAggregate.userId,
-      name: driverAggregate.name,
-      email: driverAggregate.email,
-      phone: driverAggregate.phone,
       vehicleType: driverAggregate.vehicleType,
       licensePlate: driverAggregate.licensePlate,
       status: driverAggregate.status,

@@ -12,9 +12,6 @@ export interface IDriverAggregateRepository {
   save(driver: {
     id: string;
     userId: string;
-    name: string;
-    email: string;
-    phone: string;
     vehicleType: string;
     licensePlate: string;
     status: DriverStatus;

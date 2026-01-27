@@ -8,9 +8,6 @@ import { DriverLocationUpdatedEvent } from "../events/driver-location-updated.ev
 export class DriverAggregate extends AggregateRoot {
   private _id: string = "";
   private _userId: string = "";
-  private _name: string = "";
-  private _email: string = "";
-  private _phone: string = "";
   private _vehicleType: string = "";
   private _licensePlate: string = "";
   private _status: DriverStatus = "offline";
@@ -27,18 +24,6 @@ export class DriverAggregate extends AggregateRoot {
 
   get userId(): string {
     return this._userId;
-  }
-
-  get name(): string {
-    return this._name;
-  }
-
-  get email(): string {
-    return this._email;
-  }
-
-  get phone(): string {
-    return this._phone;
   }
 
   get vehicleType(): string {
@@ -92,14 +77,7 @@ export class DriverAggregate extends AggregateRoot {
     this.apply(new DriverCreatedEvent(this._id, this._userId, this._createdAt));
   }
 
-  update(
-    name: string,
-    phone: string,
-    vehicleType: string,
-    licensePlate: string,
-  ): void {
-    this._name = name;
-    this._phone = phone;
+  update(vehicleType: string, licensePlate: string): void {
     this._vehicleType = vehicleType;
     this._licensePlate = licensePlate.toUpperCase();
     this._updatedAt = new Date();
