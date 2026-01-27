@@ -146,17 +146,6 @@ export class DriversController {
     );
   }
 
-  @Patch(":id/deactivate")
-  @Roles("admin")
-  @ApiOperation({ summary: "Deactivate a driver (admin only)" })
-  @ApiResponse({ status: 200, description: "Driver deactivated" })
-  async deactivateDriver(@Param("id") id: string, @User() user: RequestUser) {
-    // pass admin user id and role so handler can audit/authorize
-    return this.commandBus.execute(
-      new DeactivateDriverCommand(id, user.userId, "admin"),
-    );
-  }
-
   @Patch("me/deactivate")
   @Roles("driver")
   @ApiOperation({ summary: "Deactivate current driver account" })
@@ -171,6 +160,17 @@ export class DriversController {
     }
     return this.commandBus.execute(
       new DeactivateDriverCommand(driver.id, user.userId, "driver"),
+    );
+  }
+
+  @Patch(":id/deactivate")
+  @Roles("admin")
+  @ApiOperation({ summary: "Deactivate a driver (admin only)" })
+  @ApiResponse({ status: 200, description: "Driver deactivated" })
+  async deactivateDriver(@Param("id") id: string, @User() user: RequestUser) {
+    // pass admin user id and role so handler can audit/authorize
+    return this.commandBus.execute(
+      new DeactivateDriverCommand(id, user.userId, "admin"),
     );
   }
 }
