@@ -9,26 +9,39 @@ import { NotificationConfigService } from "./infrastructure/config/notification-
 
 // Application - Commands
 import { SendRestaurantNotificationCommandHandler } from "./application/commands/send-restaurant-notification/send-restaurant-notification.handler";
+import { SendCustomerNotificationCommandHandler } from "./application/commands/send-customer-notification/send-customer-notification.handler";
 
 // Application - Events
 import { PaymentSucceededEventHandler } from "./application/events/payment-succeeded.handler";
+import { OrderStatusChangedEventHandler } from "./application/events/order-status-changed.handler";
 
 // Infrastructure - Anti-Corruption Layer
 import { PaymentSucceededEventMapper } from "./infrastructure/anti-corruption-layer/payment-succeeded.mapper";
+import { OrderStatusChangedEventMapper } from "./infrastructure/anti-corruption-layer/order-status-changed.mapper";
 import { PaymentSucceededMappedEvent } from "./infrastructure/anti-corruption-layer/payment-succeeded.mapper";
+import { OrderStatusChangedMappedEvent } from "./infrastructure/anti-corruption-layer/order-status-changed.mapper";
 
 // Infrastructure - Services
 import { OrderDataService } from "./infrastructure/services/order-data.service";
 
 import { RabbitMQPublisher, RabbitMQSubscriber } from "../shared-kernel";
 
-const commandHandlers = [SendRestaurantNotificationCommandHandler];
+const commandHandlers = [
+  SendRestaurantNotificationCommandHandler,
+  SendCustomerNotificationCommandHandler,
+];
 
-const eventHandlers = [PaymentSucceededEventHandler];
+const eventHandlers = [
+  PaymentSucceededEventHandler,
+  OrderStatusChangedEventHandler,
+];
 
-const events = [PaymentSucceededMappedEvent];
+const events = [PaymentSucceededMappedEvent, OrderStatusChangedMappedEvent];
 
-const antiCorruptionLayer = [PaymentSucceededEventMapper];
+const antiCorruptionLayer = [
+  PaymentSucceededEventMapper,
+  OrderStatusChangedEventMapper,
+];
 
 const infrastructureServices = [OrderDataService];
 
