@@ -19,6 +19,7 @@ import { RefreshTokenCommandHandler } from "./application/commands/refresh-token
 
 // Handlers
 import { DriverCreatedHandler } from "./core/events/handlers/driver-created.handler";
+import { DriverCreatedEventMapper } from "./infrastructure/anti-corruption-layer/driver-created.mapper";
 
 // Infrastructure
 import { JwtStrategy } from "./infrastructure/strategies/jwt.strategy";
@@ -66,6 +67,7 @@ const events = [UserRegisteredEvent, DriverCreatedEvent];
   providers: [
     ...commandHandlers,
     DriverCreatedHandler,
+    DriverCreatedEventMapper,
     JwtStrategy,
     AuthRepository,
     {
