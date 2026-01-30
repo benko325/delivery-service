@@ -4,7 +4,7 @@ services:
     image: postgres:17
     restart: always
     ports:
-      - "5433:5432"  # Using 5433 to avoid conflict with local PostgreSQL
+      - "5433:5432"
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
@@ -17,6 +17,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - delivery-network
 
   rabbitmq:
     container_name: delivery-service-rabbitmq
@@ -35,7 +37,56 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
+    networks:
+      - delivery-network
+
+  delivery-service:
+    container_name: delivery-service-api
+    build:
+      context: .
+      dockerfile: apps/delivery-service/Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      # Application
+      NODE_ENV: production
+      PORT: 3000
+      HOST: 0.0.0.0
+      # PostgreSQL
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: delivery_service
+      # JWT
+      JWT_SECRET: your-super-secret-jwt-key-min-32-characters-long
+      JWT_EXPIRES_IN: 1h
+      JWT_REFRESH_EXPIRES_IN: 7d
+      # RabbitMQ
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASSWORD: admin
+      RABBITMQ_URI: amqp://admin:admin@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+    networks:
+      - delivery-network
 
 volumes:
   postgres_data:
   rabbitmq_data:
+
+networks:
+  delivery-network:
+    driver: bridge
