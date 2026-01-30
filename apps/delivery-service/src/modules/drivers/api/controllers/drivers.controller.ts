@@ -49,7 +49,7 @@ export class DriversController {
 
   @Get()
   @Roles("admin")
-  @ApiOperation({ summary: "Get all drivers (admin only)" })
+  @ApiOperation({ summary: "Get all drivers [Admin]" })
   @ApiResponse({ status: 200, description: "List of all drivers" })
   async findAll() {
     return this.queryBus.execute(new GetAllDriversQuery());
@@ -57,7 +57,7 @@ export class DriversController {
 
   @Get("available")
   @Roles("admin", "restaurant_owner")
-  @ApiOperation({ summary: "Get available drivers" })
+  @ApiOperation({ summary: "Get available drivers [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 200, description: "List of available drivers" })
   async findAvailable() {
     return this.queryBus.execute(new GetAvailableDriversQuery());
@@ -65,7 +65,7 @@ export class DriversController {
 
   @Get("me")
   @Roles("driver")
-  @ApiOperation({ summary: "Get current driver profile" })
+  @ApiOperation({ summary: "Get current driver profile [Driver]" })
   @ApiResponse({ status: 200, description: "Driver profile" })
   async getMyProfile(@User() user: RequestUser) {
     return this.queryBus.execute(new GetDriverByIdQuery(user.userId, true));
@@ -73,7 +73,7 @@ export class DriversController {
 
   @Get(":id")
   @Roles("admin")
-  @ApiOperation({ summary: "Get driver by ID (admin only)" })
+  @ApiOperation({ summary: "Get driver by ID [Admin]" })
   @ApiResponse({ status: 200, description: "Driver details" })
   async findById(@Param("id") id: string) {
     return this.queryBus.execute(new GetDriverByIdQuery(id, false));
@@ -82,7 +82,7 @@ export class DriversController {
   @Post()
   @Roles("admin")
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: "Create a new driver (admin only)" })
+  @ApiOperation({ summary: "Create a new driver [Admin]" })
   @ApiResponse({ status: 201, description: "Driver created" })
   async create(
     @User() user: RequestUser,
@@ -102,7 +102,7 @@ export class DriversController {
 
   @Put("me")
   @Roles("driver")
-  @ApiOperation({ summary: "Update current driver profile" })
+  @ApiOperation({ summary: "Update current driver profile [Driver]" })
   @ApiResponse({ status: 200, description: "Profile updated" })
   async updateMyProfile(
     @User() user: RequestUser,
@@ -122,7 +122,7 @@ export class DriversController {
 
   @Patch("me/location")
   @Roles("driver")
-  @ApiOperation({ summary: "Update driver location" })
+  @ApiOperation({ summary: "Update driver location [Driver]" })
   @ApiResponse({ status: 200, description: "Location updated" })
   async updateLocation(
     @User() user: RequestUser,
@@ -140,7 +140,7 @@ export class DriversController {
 
   @Patch("me/availability")
   @Roles("driver")
-  @ApiOperation({ summary: "Set driver availability status" })
+  @ApiOperation({ summary: "Set driver availability status [Driver]" })
   @ApiResponse({ status: 200, description: "Availability updated" })
   async setAvailability(
     @User() user: RequestUser,

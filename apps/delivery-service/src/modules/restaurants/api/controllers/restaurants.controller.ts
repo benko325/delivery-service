@@ -46,7 +46,7 @@ export class RestaurantsController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: "Get all active restaurants (public)" })
+  @ApiOperation({ summary: "Get all active restaurants [Public]" })
   @ApiResponse({ status: 200, description: "List of active restaurants" })
   async findAll() {
     return this.queryBus.execute(new GetAllRestaurantsQuery(true));
@@ -57,7 +57,7 @@ export class RestaurantsController {
   @Roles("admin")
   @ApiBearerAuth()
   @ApiOperation({
-    summary: "Get all restaurants including inactive (admin only)",
+    summary: "Get all restaurants including inactive [Admin]",
   })
   @ApiResponse({ status: 200, description: "List of all restaurants" })
   async findAllIncludingInactive() {
@@ -65,7 +65,7 @@ export class RestaurantsController {
   }
 
   @Get(":id")
-  @ApiOperation({ summary: "Get restaurant by ID (public)" })
+  @ApiOperation({ summary: "Get restaurant by ID [Public]" })
   @ApiResponse({ status: 200, description: "Restaurant details" })
   @ApiResponse({ status: 404, description: "Restaurant not found" })
   async findById(@Param("id") id: string) {
@@ -77,7 +77,7 @@ export class RestaurantsController {
   @Roles("admin", "restaurant_owner")
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: "Create a new restaurant" })
+  @ApiOperation({ summary: "Create a new restaurant [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 201, description: "Restaurant created" })
   async create(
     @User() user: RequestUser,
@@ -100,7 +100,7 @@ export class RestaurantsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("admin", "restaurant_owner")
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Update restaurant" })
+  @ApiOperation({ summary: "Update restaurant [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 200, description: "Restaurant updated" })
   async update(
     @Param("id") id: string,
@@ -124,7 +124,7 @@ export class RestaurantsController {
   @Roles("admin", "restaurant_owner")
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Activate restaurant" })
+  @ApiOperation({ summary: "Activate restaurant [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 200, description: "Restaurant activated" })
   @ApiResponse({ status: 404, description: "Restaurant not found" })
   async activate(@Param("id") id: string) {
@@ -136,7 +136,7 @@ export class RestaurantsController {
   @Roles("admin", "restaurant_owner")
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Deactivate restaurant" })
+  @ApiOperation({ summary: "Deactivate restaurant [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 200, description: "Restaurant deactivated" })
   @ApiResponse({ status: 404, description: "Restaurant not found" })
   async deactivate(@Param("id") id: string) {
@@ -148,7 +148,7 @@ export class RestaurantsController {
   @Roles("admin", "restaurant_owner")
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Confirm an order (restaurant)" })
+  @ApiOperation({ summary: "Confirm an order [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 200, description: "Order confirmed" })
   @ApiResponse({ status: 404, description: "Restaurant not found" })
   @ApiResponse({ status: 400, description: "Restaurant is not active" })
@@ -171,7 +171,7 @@ export class RestaurantsController {
   @Roles("admin", "restaurant_owner")
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Reject an order (restaurant)" })
+  @ApiOperation({ summary: "Reject an order [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 200, description: "Order rejected" })
   @ApiResponse({ status: 404, description: "Restaurant not found" })
   async rejectOrder(

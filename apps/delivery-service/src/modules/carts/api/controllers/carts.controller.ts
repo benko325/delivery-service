@@ -47,7 +47,7 @@ export class CartsController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: "Get current customer cart" })
+  @ApiOperation({ summary: "Get current customer cart [Customer]" })
   @ApiResponse({ status: 200, description: "Cart details" })
   async getMyCart(@User() user: RequestUser) {
     return this.queryBus.execute(new GetCartByCustomerIdQuery(user.userId));
@@ -55,7 +55,7 @@ export class CartsController {
 
   @Post("items")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Add item to cart" })
+  @ApiOperation({ summary: "Add item to cart [Customer]" })
   @ApiResponse({ status: 200, description: "Item added to cart" })
   async addItem(
     @User() user: RequestUser,
@@ -75,7 +75,7 @@ export class CartsController {
   }
 
   @Patch("items")
-  @ApiOperation({ summary: "Update item quantity in cart" })
+  @ApiOperation({ summary: "Update item quantity in cart [Customer]" })
   @ApiResponse({ status: 200, description: "Item quantity updated" })
   async updateItemQuantity(
     @User() user: RequestUser,
@@ -88,7 +88,7 @@ export class CartsController {
 
   @Delete("items")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Remove item from cart" })
+  @ApiOperation({ summary: "Remove item from cart [Customer]" })
   @ApiResponse({ status: 200, description: "Item removed from cart" })
   async removeItem(
     @User() user: RequestUser,
@@ -101,7 +101,7 @@ export class CartsController {
 
   @Delete()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Clear cart" })
+  @ApiOperation({ summary: "Clear cart [Customer]" })
   @ApiResponse({ status: 200, description: "Cart cleared" })
   async clearCart(@User() user: RequestUser) {
     return this.commandBus.execute(new ClearCartCommand(user.userId));
@@ -109,7 +109,7 @@ export class CartsController {
 
   @Post("checkout")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Checkout cart and create order" })
+  @ApiOperation({ summary: "Checkout cart and create order [Customer]" })
   @ApiResponse({ status: 200, description: "Order created from cart" })
   @ApiResponse({ status: 400, description: "Cart is empty" })
   @ApiResponse({ status: 404, description: "Cart not found" })

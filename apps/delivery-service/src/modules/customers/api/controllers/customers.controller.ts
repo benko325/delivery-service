@@ -46,7 +46,7 @@ export class CustomersController {
 
   @Get()
   @Roles("admin")
-  @ApiOperation({ summary: "Get all customers (admin only)" })
+  @ApiOperation({ summary: "Get all customers [Admin]" })
   @ApiResponse({ status: 200, description: "List of all customers" })
   async findAll() {
     return this.queryBus.execute(new GetAllCustomersQuery());
@@ -54,7 +54,7 @@ export class CustomersController {
 
   @Get("me")
   @Roles("customer")
-  @ApiOperation({ summary: "Get current customer profile" })
+  @ApiOperation({ summary: "Get current customer profile [Customer]" })
   @ApiResponse({ status: 200, description: "Customer profile" })
   async getMyProfile(@User() user: RequestUser) {
     return this.queryBus.execute(new GetCustomerByIdQuery(user.userId));
@@ -62,7 +62,7 @@ export class CustomersController {
 
   @Get(":id")
   @Roles("admin")
-  @ApiOperation({ summary: "Get customer by ID (admin only)" })
+  @ApiOperation({ summary: "Get customer by ID [Admin]" })
   @ApiResponse({ status: 200, description: "Customer details" })
   @ApiResponse({ status: 404, description: "Customer not found" })
   async findById(@Param("id") id: string) {
@@ -72,7 +72,7 @@ export class CustomersController {
   @Post()
   @Roles("admin")
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: "Create a new customer (admin only)" })
+  @ApiOperation({ summary: "Create a new customer [Admin]" })
   @ApiResponse({ status: 201, description: "Customer created" })
   async create(@Body(ZodValidationPipe) dto: CreateCustomerDto) {
     return this.commandBus.execute(
@@ -82,7 +82,7 @@ export class CustomersController {
 
   @Put("me")
   @Roles("customer")
-  @ApiOperation({ summary: "Update current customer profile" })
+  @ApiOperation({ summary: "Update current customer profile [Customer]" })
   @ApiResponse({ status: 200, description: "Profile updated" })
   async updateMyProfile(
     @User() user: RequestUser,
@@ -95,7 +95,7 @@ export class CustomersController {
 
   @Patch("me/address")
   @Roles("customer")
-  @ApiOperation({ summary: "Update current customer delivery address" })
+  @ApiOperation({ summary: "Update current customer delivery address [Customer]" })
   @ApiResponse({ status: 200, description: "Address updated" })
   async updateMyAddress(
     @User() user: RequestUser,
@@ -108,7 +108,7 @@ export class CustomersController {
 
   @Put(":id")
   @Roles("admin")
-  @ApiOperation({ summary: "Update customer by ID (admin only)" })
+  @ApiOperation({ summary: "Update customer by ID [Admin]" })
   @ApiResponse({ status: 200, description: "Customer updated" })
   async update(
     @Param("id") id: string,

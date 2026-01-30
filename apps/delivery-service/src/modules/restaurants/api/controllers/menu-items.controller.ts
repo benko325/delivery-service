@@ -36,7 +36,7 @@ export class MenuItemsController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: "Get menu items for a restaurant (public)" })
+  @ApiOperation({ summary: "Get menu items for a restaurant [Public]" })
   @ApiResponse({ status: 200, description: "List of menu items" })
   async findByRestaurant(@Param("restaurantId") restaurantId: string) {
     return this.queryBus.execute(
@@ -49,7 +49,7 @@ export class MenuItemsController {
   @Roles("admin", "restaurant_owner")
   @ApiBearerAuth()
   @ApiOperation({
-    summary: "Get all menu items including unavailable (owner/admin)",
+    summary: "Get all menu items including unavailable [Admin, Restaurant Owner]",
   })
   @ApiResponse({ status: 200, description: "List of all menu items" })
   async findAllByRestaurant(@Param("restaurantId") restaurantId: string) {
@@ -63,7 +63,7 @@ export class MenuItemsController {
   @Roles("admin", "restaurant_owner")
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: "Create a new menu item" })
+  @ApiOperation({ summary: "Create a new menu item [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 201, description: "Menu item created" })
   async create(
     @Param("restaurantId") restaurantId: string,
@@ -87,7 +87,7 @@ export class MenuItemsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("admin", "restaurant_owner")
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Update menu item" })
+  @ApiOperation({ summary: "Update menu item [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 200, description: "Menu item updated" })
   async update(
     @Param("id") id: string,
@@ -113,7 +113,7 @@ export class MenuItemsController {
   @Roles("admin", "restaurant_owner")
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: "Delete menu item" })
+  @ApiOperation({ summary: "Delete menu item [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 204, description: "Menu item deleted" })
   async delete(@Param("id") id: string) {
     return this.commandBus.execute(new DeleteMenuItemCommand(id));

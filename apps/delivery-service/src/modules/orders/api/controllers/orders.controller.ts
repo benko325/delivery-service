@@ -51,7 +51,7 @@ export class OrdersController {
   @Post()
   @Roles("customer")
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: "Create a new order (customer)" })
+  @ApiOperation({ summary: "Create a new order [Customer]" })
   @ApiResponse({ status: 201, description: "Order created" })
   async createOrder(
     @User() user: RequestUser,
@@ -76,7 +76,7 @@ export class OrdersController {
 
   @Get("my-orders")
   @Roles("customer")
-  @ApiOperation({ summary: "Get customer orders" })
+  @ApiOperation({ summary: "Get customer orders [Customer]" })
   @ApiResponse({ status: 200, description: "List of customer orders" })
   async getMyOrders(@User() user: RequestUser) {
     return this.queryBus.execute(new GetOrdersByCustomerQuery(user.userId));
@@ -85,7 +85,7 @@ export class OrdersController {
   // Driver endpoints
   @Get("available")
   @Roles("driver")
-  @ApiOperation({ summary: "Get available orders for drivers" })
+  @ApiOperation({ summary: "Get available orders for drivers [Driver]" })
   @ApiResponse({ status: 200, description: "List of available orders" })
   async getAvailableOrders() {
     return this.queryBus.execute(new GetAvailableOrdersQuery());
@@ -93,7 +93,7 @@ export class OrdersController {
 
   @Get("my-deliveries")
   @Roles("driver")
-  @ApiOperation({ summary: "Get driver deliveries" })
+  @ApiOperation({ summary: "Get driver deliveries [Driver]" })
   @ApiResponse({ status: 200, description: "List of driver deliveries" })
   async getMyDeliveries(@User() user: RequestUser) {
     return this.queryBus.execute(new GetOrdersByDriverQuery(user.userId));
@@ -102,7 +102,7 @@ export class OrdersController {
   @Post(":id/accept")
   @Roles("driver")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Accept an order (driver)" })
+  @ApiOperation({ summary: "Accept an order [Driver]" })
   @ApiResponse({ status: 200, description: "Order accepted" })
   async acceptOrder(
     @User() user: RequestUser,
@@ -117,7 +117,7 @@ export class OrdersController {
   // Restaurant and admin endpoints
   @Patch(":id/status")
   @Roles("admin", "restaurant_owner", "driver")
-  @ApiOperation({ summary: "Update order status" })
+  @ApiOperation({ summary: "Update order status [Admin, Restaurant Owner, Driver]" })
   @ApiResponse({ status: 200, description: "Order status updated" })
   async updateOrderStatus(
     @Param("id") orderId: string,
@@ -131,7 +131,7 @@ export class OrdersController {
   @Post(":id/cancel")
   @Roles("customer", "admin", "restaurant_owner")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Cancel an order" })
+  @ApiOperation({ summary: "Cancel an order [Customer, Admin, Restaurant Owner]" })
   @ApiResponse({ status: 200, description: "Order cancelled" })
   async cancelOrder(
     @Param("id") orderId: string,
@@ -143,7 +143,7 @@ export class OrdersController {
   // General endpoints
   @Get(":id")
   @Roles("customer", "driver", "admin", "restaurant_owner")
-  @ApiOperation({ summary: "Get order by ID" })
+  @ApiOperation({ summary: "Get order by ID [Customer, Driver, Admin, Restaurant Owner]" })
   @ApiResponse({ status: 200, description: "Order details" })
   async getOrderById(@Param("id") orderId: string) {
     return this.queryBus.execute(new GetOrderByIdQuery(orderId));

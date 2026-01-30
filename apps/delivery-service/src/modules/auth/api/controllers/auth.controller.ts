@@ -30,7 +30,7 @@ export class AuthController {
 
   @Post("register")
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: "Register a new user" })
+  @ApiOperation({ summary: "Register a new user [Public]" })
   @ApiResponse({ status: 201, description: "User registered successfully" })
   @ApiResponse({ status: 400, description: "Validation error" })
   @ApiResponse({ status: 409, description: "Email already exists" })
@@ -42,7 +42,7 @@ export class AuthController {
 
   @Post("login")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Login user" })
+  @ApiOperation({ summary: "Login user [Public]" })
   @ApiResponse({ status: 200, description: "Login successful" })
   @ApiResponse({ status: 401, description: "Invalid credentials" })
   async login(@Body(ZodValidationPipe) dto: LoginDto) {
@@ -51,7 +51,7 @@ export class AuthController {
 
   @Post("refresh")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Refresh access token" })
+  @ApiOperation({ summary: "Refresh access token [Public]" })
   @ApiResponse({ status: 200, description: "Token refreshed successfully" })
   @ApiResponse({ status: 401, description: "Invalid refresh token" })
   async refreshToken(@Body(ZodValidationPipe) dto: RefreshTokenDto) {
@@ -61,7 +61,7 @@ export class AuthController {
   @Get("me")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Get current user info" })
+  @ApiOperation({ summary: "Get current user info [Any Role]" })
   @ApiResponse({ status: 200, description: "Current user info" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
   async me(@User() user: RequestUser) {
