@@ -41,6 +41,7 @@ import { CartOrderedMappedEvent } from "./infrastructure/anti-corruption-layer/c
 
 // Events
 import { PaymentSucceededEvent } from "./core/events/payment-succeeded.event";
+import { OrderStatusChangedEvent } from "./core/events/order-status-changed.event";
 
 const commandHandlers = [
   CreateOrderCommandHandler,
@@ -59,7 +60,11 @@ const queryHandlers = [
 
 const eventHandlers = [CartOrderedEventHandler, PaymentSucceededEventHandler];
 
-const events = [CartOrderedMappedEvent, PaymentSucceededEvent];
+const events = [
+  CartOrderedMappedEvent,
+  PaymentSucceededEvent,
+  OrderStatusChangedEvent,
+];
 
 const antiCorruptionLayer = [CartOrderedEventMapper];
 
