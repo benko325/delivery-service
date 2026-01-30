@@ -1,55 +1,58 @@
-import { NestFactory } from '@nestjs/core';
-import { Logger } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { AppModule } from './app.module';
-import { AppConfigService } from './infrastructure/config/app-config.service';
+import { NestFactory } from "@nestjs/core";
+import { Logger } from "@nestjs/common";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { AppModule } from "./app.module";
+import { AppConfigService } from "./infrastructure/config/app-config.service";
+import { patchNestJsSwagger } from "nestjs-zod";
 
 async function bootstrap() {
-    const logger = new Logger('Bootstrap');
+  const logger = new Logger("Bootstrap");
 
-    const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule);
 
-    // Get config service
-    const configService = app.get(AppConfigService);
+  // Get config service
+  const configService = app.get(AppConfigService);
 
-    // Enable CORS
-    app.enableCors({
-        origin: true,
-        credentials: true,
-    });
+  patchNestJsSwagger();
 
-    // Global prefix
-    app.setGlobalPrefix('api');
+  // Enable CORS
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
 
-    // Swagger documentation
-    const swaggerConfig = new DocumentBuilder()
-        .setTitle('Delivery Service API')
-        .setDescription(
-            'A modular monolith delivery service system with Clean Architecture, CQRS, and Event-Driven patterns',
-        )
-        .setVersion('1.0')
-        .addBearerAuth()
-        .addTag('Health', 'Health check endpoints')
-        .addTag('Auth', 'Authentication endpoints')
-        .addTag('Customers', 'Customer management')
-        .addTag('Restaurants', 'Restaurant and menu management')
-        .addTag('Menu Items', 'Menu item management')
-        .addTag('Drivers', 'Driver management')
-        .addTag('Carts', 'Shopping cart operations')
-        .addTag('Orders', 'Order management and delivery')
-        .build();
+  // Global prefix
+  app.setGlobalPrefix("api");
 
-    const document = SwaggerModule.createDocument(app, swaggerConfig);
-    SwaggerModule.setup('api/docs', app, document);
+  // Swagger documentation
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle("Delivery Service API")
+    .setDescription(
+      "A modular monolith delivery service system with Clean Architecture, CQRS, and Event-Driven patterns",
+    )
+    .setVersion("1.0")
+    .addBearerAuth()
+    .addTag("Health", "Health check endpoints")
+    .addTag("Auth", "Authentication endpoints")
+    .addTag("Customers", "Customer management")
+    .addTag("Restaurants", "Restaurant and menu management")
+    .addTag("Menu Items", "Menu item management")
+    .addTag("Drivers", "Driver management")
+    .addTag("Carts", "Shopping cart operations")
+    .addTag("Orders", "Order management and delivery")
+    .build();
 
-    // Start server
-    const port = configService.port;
-    const host = configService.host;
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup("api/docs", app, document);
 
-    await app.listen(port, host);
+  // Start server
+  const port = configService.port;
+  const host = configService.host;
 
-    logger.log(`Application is running on: http://${host}:${port}`);
-    logger.log(`Swagger documentation: http://${host}:${port}/api/docs`);
+  await app.listen(port, host);
+
+  logger.log(`Application is running on: http://${host}:${port}`);
+  logger.log(`Swagger documentation: http://${host}:${port}/api/docs`);
 }
 
 bootstrap();
