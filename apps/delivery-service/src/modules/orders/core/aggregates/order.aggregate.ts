@@ -122,7 +122,6 @@ export class OrderAggregate extends AggregateRoot {
 
     const previousStatus = this._status;
     this._driverId = driverId;
-    this._status = "driver_assigned";
     this._estimatedDeliveryTime = estimatedDeliveryTime;
     this._updatedAt = new Date();
 
@@ -145,9 +144,7 @@ export class OrderAggregate extends AggregateRoot {
       payment_succeeded: ["confirmed", "cancelled"],
       confirmed: ["preparing", "cancelled"],
       preparing: ["ready_for_pickup", "cancelled"],
-      ready_for_pickup: ["driver_assigned", "cancelled"],
-      driver_assigned: ["picked_up", "cancelled"],
-      picked_up: ["in_transit"],
+      ready_for_pickup: ["in_transit", "cancelled"],
       in_transit: ["delivered"],
       delivered: [],
       cancelled: [],
@@ -184,7 +181,6 @@ export class OrderAggregate extends AggregateRoot {
       "confirmed",
       "preparing",
       "ready_for_pickup",
-      "driver_assigned",
     ];
 
     if (!cancellableStatuses.includes(this._status)) {
