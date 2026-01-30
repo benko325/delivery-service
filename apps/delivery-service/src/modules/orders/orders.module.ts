@@ -97,6 +97,10 @@ const infrastructureServices = [PaymentGatewayService];
     RabbitMQPublisher,
     RabbitMQSubscriber,
     {
+      provide: "IPaymentGatewayService",
+      useClass: PaymentGatewayService,
+    },
+    {
       provide: "EVENTS",
       useValue: events,
     },
