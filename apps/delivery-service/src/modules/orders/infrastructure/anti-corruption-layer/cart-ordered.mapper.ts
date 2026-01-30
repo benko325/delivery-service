@@ -24,6 +24,7 @@ export class CartOrderedEventHandler implements IEventHandler<CartOrderedEvent> 
       name: cartItem.name,
       price: cartItem.price,
       quantity: cartItem.quantity,
+      currency: cartItem.currency,
     }));
 
     const deliveryAddress: DeliveryAddress = {
@@ -44,6 +45,7 @@ export class CartOrderedEventHandler implements IEventHandler<CartOrderedEvent> 
         deliveryAddress,
         event.totalAmount,
         event.deliveryFee,
+        event.currency,
       ),
     );
 

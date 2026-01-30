@@ -70,6 +70,7 @@ export class OrdersController {
         dto.deliveryAddress,
         totalAmount,
         dto.deliveryFee,
+        dto.currency,
       ),
     );
   }
@@ -117,7 +118,9 @@ export class OrdersController {
   // Restaurant and admin endpoints
   @Patch(":id/status")
   @Roles("admin", "restaurant_owner", "driver")
-  @ApiOperation({ summary: "Update order status [Admin, Restaurant Owner, Driver]" })
+  @ApiOperation({
+    summary: "Update order status [Admin, Restaurant Owner, Driver]",
+  })
   @ApiResponse({ status: 200, description: "Order status updated" })
   async updateOrderStatus(
     @Param("id") orderId: string,
@@ -131,7 +134,9 @@ export class OrdersController {
   @Post(":id/cancel")
   @Roles("customer", "admin", "restaurant_owner")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Cancel an order [Customer, Admin, Restaurant Owner]" })
+  @ApiOperation({
+    summary: "Cancel an order [Customer, Admin, Restaurant Owner]",
+  })
   @ApiResponse({ status: 200, description: "Order cancelled" })
   async cancelOrder(
     @Param("id") orderId: string,
@@ -143,7 +148,9 @@ export class OrdersController {
   // General endpoints
   @Get(":id")
   @Roles("customer", "driver", "admin", "restaurant_owner")
-  @ApiOperation({ summary: "Get order by ID [Customer, Driver, Admin, Restaurant Owner]" })
+  @ApiOperation({
+    summary: "Get order by ID [Customer, Driver, Admin, Restaurant Owner]",
+  })
   @ApiResponse({ status: 200, description: "Order details" })
   async getOrderById(@Param("id") orderId: string) {
     return this.queryBus.execute(new GetOrderByIdQuery(orderId));

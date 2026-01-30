@@ -28,6 +28,10 @@ const orderItemSchema = z.object({
   name: z.string().min(1),
   price: z.number().positive(),
   quantity: z.number().int().positive(),
+  currency: z
+    .string()
+    .length(3, "Currency must be 3 characters")
+    .default("USD"),
 });
 
 export const createOrderSchema = z.object({
@@ -35,6 +39,10 @@ export const createOrderSchema = z.object({
   items: z.array(orderItemSchema).min(1, "At least one item is required"),
   deliveryAddress: deliveryAddressSchema,
   deliveryFee: z.number().min(0).default(0),
+  currency: z
+    .string()
+    .length(3, "Currency must be 3 characters")
+    .default("USD"),
 });
 
 export const acceptOrderSchema = z.object({
