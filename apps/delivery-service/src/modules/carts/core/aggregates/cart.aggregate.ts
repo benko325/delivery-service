@@ -97,13 +97,13 @@ export class CartAggregate extends AggregateRoot {
     this._updatedAt = new Date();
 
     this.apply(
-      new CartItemAddedEvent(
-        this._id,
-        this._customerId,
+      new CartItemAddedEvent({
+        cartId: this._id,
+        customerId: this._customerId,
         menuItemId,
         quantity,
-        this._updatedAt,
-      ),
+        addedAt: this._updatedAt,
+      }),
     );
   }
 
@@ -142,7 +142,11 @@ export class CartAggregate extends AggregateRoot {
     this._updatedAt = new Date();
 
     this.apply(
-      new CartClearedEvent(this._id, this._customerId, this._updatedAt),
+      new CartClearedEvent({
+        cartId: this._id,
+        customerId: this._customerId,
+        clearedAt: this._updatedAt,
+      }),
     );
   }
 
