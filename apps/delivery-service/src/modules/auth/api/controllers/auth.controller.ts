@@ -1,7 +1,9 @@
 import {
   Controller,
   Post,
+  Patch,
   Body,
+  Param,
   HttpCode,
   HttpStatus,
   UseGuards,
@@ -15,11 +17,19 @@ import {
   ApiBearerAuth,
 } from "@nestjs/swagger";
 import { ZodValidationPipe } from "nestjs-zod";
-import { RegisterDto, LoginDto, RefreshTokenDto } from "../dtos/auth.dto";
+import {
+  RegisterDto,
+  LoginDto,
+  RefreshTokenDto,
+  UpdateUserRoleDto,
+} from "../dtos/auth.dto";
 import { RegisterCommand } from "../../application/commands/register/register.command";
 import { LoginCommand } from "../../application/commands/login/login.command";
 import { RefreshTokenCommand } from "../../application/commands/refresh-token/refresh-token.command";
+import { UpdateUserRoleCommand } from "../../application/commands/update-user-role/update-user-role.command";
 import { JwtAuthGuard } from "../../../shared-kernel/api/guards/jwt.guard";
+import { RolesGuard } from "../../../shared-kernel/api/guards/roles.guard";
+import { Roles } from "../../../shared-kernel/api/decorators/roles.decorator";
 import { User } from "../../../shared-kernel/api/decorators/user.decorator";
 import { RequestUser } from "../../../shared-kernel/core/types/user-types";
 
@@ -70,5 +80,20 @@ export class AuthController {
       email: user.email,
       roles: user.roles,
     };
+  }
+
+  @Patch("users/:userId/role")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("admin")
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Update user role [Admin]" })
+  @ApiResponse({ status: 200, description: "Role updated successfully" })
+  @ApiResponse({ status: 404, description: "User not found" })
+  @ApiResponse({ status: 403, description: "Forbidden - Admin only" })
+  async updateUserRole(
+    @Param("userId") userId: string,
+    @Body(ZodValidationPipe) dto: UpdateUserRoleDto,
+  ) {
+    return this.commandBus.execute(new UpdateUserRoleCommand(userId, dto.role));
   }
 }
