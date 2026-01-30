@@ -82,7 +82,7 @@ export class CartOrderedEventMapper implements IEventHandler<CartOrderedEventMoc
       event.currency,
     );
 
-    this.eventBus.publish(mappedEvent);
+    this.eventBus.subject$.next(mappedEvent);
 
     this.logger.log(`Mapped event published for customer ${event.customerId}`);
   }
