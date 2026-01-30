@@ -8,7 +8,6 @@ import {
 } from "@nestjs/common";
 import { PayForOrderCommand } from "./pay-for-order.command";
 import { IOrderRepository } from "../../../core/repositories/order.repository.interface";
-import { PaymentRequestedEvent } from "../../../core/events/payment-requested.event";
 import { IPaymentGatewayService } from "../../common/payment.gateway.service.interface";
 import { PaymentSucceededEvent } from "../../../core/events/payment-succeeded.event";
 
@@ -48,20 +47,6 @@ export class PayForOrderCommandHandler implements ICommandHandler<PayForOrderCom
         `Order with ID ${command.orderId} is in status ${order.status}, cannot request payment`,
       );
     }
-
-    const paymentRequestedEvent = new PaymentRequestedEvent(
-      order.id,
-      order.customerId,
-      order.totalAmount + order.deliveryFee,
-      order.currency,
-      new Date(),
-    );
-
-    this.eventBus.publish(paymentRequestedEvent);
-
-    this.logger.log(
-      `Published PaymentRequestedEvent for order ${command.orderId}`,
-    );
 
     const result = await this.paymentGatewayService.requestPayment(
       order.id,

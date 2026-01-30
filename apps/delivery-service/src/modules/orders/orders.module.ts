@@ -40,7 +40,6 @@ import { RabbitMQPublisher, RabbitMQSubscriber } from "../shared-kernel";
 import { CartOrderedMappedEvent } from "./infrastructure/anti-corruption-layer/cart-ordered.mapper";
 
 // Events
-import { PaymentRequestedEvent } from "./core/events/payment-requested.event";
 import { PaymentSucceededEvent } from "./core/events/payment-succeeded.event";
 
 const commandHandlers = [
@@ -60,11 +59,7 @@ const queryHandlers = [
 
 const eventHandlers = [CartOrderedEventHandler, PaymentSucceededEventHandler];
 
-const events = [
-  CartOrderedMappedEvent,
-  PaymentRequestedEvent,
-  PaymentSucceededEvent,
-];
+const events = [CartOrderedMappedEvent, PaymentSucceededEvent];
 
 const antiCorruptionLayer = [CartOrderedEventMapper];
 
