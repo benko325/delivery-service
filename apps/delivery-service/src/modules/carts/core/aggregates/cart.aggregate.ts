@@ -12,7 +12,7 @@ export class CartAggregate extends AggregateRoot {
   private _restaurantId: string | null = null;
   private _items: CartItem[] = [];
   private _totalAmount: number = 0;
-  private _currency: string = "USD";
+  private _currency: string = "EUR";
   private _createdAt: Date = new Date();
   private _updatedAt: Date = new Date();
 

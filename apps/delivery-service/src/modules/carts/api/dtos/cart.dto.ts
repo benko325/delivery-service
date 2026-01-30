@@ -9,7 +9,7 @@ export const addItemToCartSchema = z.object({
   currency: z
     .string()
     .length(3, "Currency must be 3 characters")
-    .default("USD"),
+    .default("EUR"),
   quantity: z.number().int().positive("Quantity must be positive").default(1),
 });
 

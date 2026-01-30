@@ -126,7 +126,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
                 ${item.name},
                 ${item.description},
                 ${item.price},
-                'USD',
+                'EUR',
                 ${item.category}::restaurants.menu_item_category,
                 true,
                 ${item.preparationTime},

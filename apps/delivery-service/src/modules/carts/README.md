@@ -159,7 +159,7 @@ POST /cart/items
   "restaurantId": "uuid",
   "name": "Margherita Pizza",
   "price": 12.99,
-  "currency": "USD",
+  "currency": "EUR",
   "quantity": 2
 }
 ```

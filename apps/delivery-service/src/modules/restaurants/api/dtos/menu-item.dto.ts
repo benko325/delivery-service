@@ -16,7 +16,7 @@ export const createMenuItemSchema = z.object({
   currency: z
     .string()
     .length(3, "Currency must be 3 characters")
-    .default("USD"),
+    .default("EUR"),
   category: menuItemCategorySchema,
   imageUrl: z.string().url("Invalid URL").nullable().optional(),
   preparationTime: z.number().int().positive().default(15),

@@ -9,7 +9,7 @@ export class MenuItemAggregate extends AggregateRoot {
   private _name: string = "";
   private _description: string = "";
   private _price: number = 0;
-  private _currency: string = "USD";
+  private _currency: string = "EUR";
   private _category: MenuItemCategory = "main_course";
   private _imageUrl: string | null = null;
   private _isAvailable: boolean = true;

@@ -31,7 +31,7 @@ const orderItemSchema = z.object({
   currency: z
     .string()
     .length(3, "Currency must be 3 characters")
-    .default("USD"),
+    .default("EUR"),
 });
 
 export const createOrderSchema = z.object({
@@ -42,7 +42,7 @@ export const createOrderSchema = z.object({
   currency: z
     .string()
     .length(3, "Currency must be 3 characters")
-    .default("USD"),
+    .default("EUR"),
 });
 
 export const acceptOrderSchema = z.object({
