@@ -3,9 +3,7 @@ import { IEvent, IMessageSource } from "@nestjs/cqrs";
 import { AmqpConnection } from "@golevelup/nestjs-rabbitmq";
 import { Subject } from "rxjs";
 
-export type EventConstructor<T extends IEvent> = new (
-  payload: Record<string, unknown>,
-) => T;
+export type EventConstructor<T extends IEvent> = new (payload: unknown) => T;
 
 @Injectable()
 export class RabbitMQSubscriber implements IMessageSource {
@@ -28,7 +26,7 @@ export class RabbitMQSubscriber implements IMessageSource {
                 this.logger.warn(`Received empty message for ${Event.name}`);
                 return;
               }
-              const parsedJson = JSON.parse(message) as Record<string, unknown>;
+              const parsedJson = JSON.parse(message);
               const receivedEvent = new Event(parsedJson);
               this.bridge.next(receivedEvent);
               this.logger.debug(`Received event: ${Event.name}`);
