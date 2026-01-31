@@ -103,13 +103,13 @@ export class OrderAggregate extends AggregateRoot {
     this._updatedAt = new Date();
 
     this.apply(
-      new OrderCreatedEvent(
-        this._id,
-        this._customerId,
-        this._restaurantId,
-        this._totalAmount,
-        this._createdAt,
-      ),
+      new OrderCreatedEvent({
+        orderId: this._id,
+        customerId: this._customerId,
+        restaurantId: this._restaurantId,
+        totalAmount: this._totalAmount,
+        createdAt: this._createdAt,
+      }),
     );
   }
 
@@ -126,15 +126,19 @@ export class OrderAggregate extends AggregateRoot {
     this._updatedAt = new Date();
 
     this.apply(
-      new OrderAcceptedByDriverEvent(this._id, driverId, this._updatedAt),
+      new OrderAcceptedByDriverEvent({
+        orderId: this._id,
+        driverId: driverId,
+        acceptedAt: this._updatedAt,
+      }),
     );
     this.apply(
-      new OrderStatusChangedEvent(
-        this._id,
-        previousStatus,
-        this._status,
-        this._updatedAt,
-      ),
+      new OrderStatusChangedEvent({
+        orderId: this._id,
+        previousStatus: previousStatus,
+        newStatus: this._status,
+        changedAt: this._updatedAt,
+      }),
     );
   }
 
@@ -165,12 +169,12 @@ export class OrderAggregate extends AggregateRoot {
     }
 
     this.apply(
-      new OrderStatusChangedEvent(
-        this._id,
-        previousStatus,
-        newStatus,
-        this._updatedAt,
-      ),
+      new OrderStatusChangedEvent({
+        orderId: this._id,
+        previousStatus: previousStatus,
+        newStatus: newStatus,
+        changedAt: this._updatedAt,
+      }),
     );
   }
 
@@ -194,12 +198,12 @@ export class OrderAggregate extends AggregateRoot {
     this._updatedAt = new Date();
 
     this.apply(
-      new OrderStatusChangedEvent(
-        this._id,
-        previousStatus,
-        "cancelled",
-        this._updatedAt,
-      ),
+      new OrderStatusChangedEvent({
+        orderId: this._id,
+        previousStatus: previousStatus,
+        newStatus: "cancelled",
+        changedAt: this._updatedAt,
+      }),
     );
   }
 

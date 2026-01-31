@@ -5,7 +5,9 @@ import { IOrderDataService } from "../../common/order-data.service.interface";
 import { OrderStatusMapped } from "../../../infrastructure/anti-corruption-layer/order-status-changed.mapper";
 
 @CommandHandler(SendCustomerNotificationCommand)
-export class SendCustomerNotificationCommandHandler implements ICommandHandler<SendCustomerNotificationCommand> {
+export class SendCustomerNotificationCommandHandler
+  implements ICommandHandler<SendCustomerNotificationCommand>
+{
   private readonly logger = new Logger(
     SendCustomerNotificationCommandHandler.name,
   );
@@ -16,8 +18,6 @@ export class SendCustomerNotificationCommandHandler implements ICommandHandler<S
     confirmed: "Your order has been confirmed by the restaurant.",
     preparing: "Your order is being prepared.",
     ready_for_pickup: "Your order is ready for pickup!",
-    driver_assigned: "A driver has been assigned to deliver your order.",
-    picked_up: "Your order has been picked up and is on the way!",
     in_transit: "Your order is on its way to you.",
     delivered: "Your order has been delivered. Enjoy!",
     cancelled: "Your order has been cancelled.",

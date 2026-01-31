@@ -4,7 +4,9 @@ import { CartOrderedMappedEvent } from "../../infrastructure/anti-corruption-lay
 import { CreateOrderCommand } from "../commands/create-order/create-order.command";
 
 @EventsHandler(CartOrderedMappedEvent)
-export class CartOrderedEventHandler implements IEventHandler<CartOrderedMappedEvent> {
+export class CartOrderedEventHandler
+  implements IEventHandler<CartOrderedMappedEvent>
+{
   private readonly logger = new Logger(CartOrderedEventHandler.name);
 
   constructor(private readonly commandBus: CommandBus) {}
@@ -23,6 +25,7 @@ export class CartOrderedEventHandler implements IEventHandler<CartOrderedMappedE
           event.deliveryAddress,
           event.totalAmount,
           event.deliveryFee,
+          event.currency,
         ),
       );
 
