@@ -33,6 +33,7 @@ Each ADR follows this structure:
 | [ADR-010](./ADR-010-postgresql-schema-isolation.md) | PostgreSQL Schema-per-Module | Accepted | 2025-01-16 |
 | [ADR-011](./ADR-011-event-constructor-pattern.md) | Object Constructor Pattern for Events | Accepted | 2025-01-30 |
 | [ADR-012](./ADR-012-eur-default-currency.md) | EUR as Default Currency | Accepted | 2025-01-30 |
+| [ADR-013](./ADR-013-monitoring-observability.md) | Monitoring and Observability | Accepted | 2025-01-31 |
 
 ## Decision Log Summary
 
@@ -42,5 +43,7 @@ Architecture: Modular Monolith with Event-Driven Communication
 Pattern: CQRS + DDD (Domain-Driven Design)
 Database: PostgreSQL 17 with Kysely ORM
 Messaging: RabbitMQ
+Logging: Pino (structured JSON)
+Metrics: Prometheus + Grafana
 Framework: NestJS 11
 ```

@@ -22,6 +22,9 @@ A food delivery service system built with NestJS using modern architecture patte
 | **Authentication** | Passport.js + JWT | Stateless token-based auth |
 | **Validation** | Zod + nestjs-zod | Runtime schema validation with TypeScript inference |
 | **Password Hashing** | Node.js crypto (scrypt) | Secure password storage |
+| **Logging** | Pino (nestjs-pino) | Structured JSON logging with correlation IDs |
+| **Metrics** | Prometheus | Time-series metrics collection |
+| **Dashboards** | Grafana | Metrics visualization and alerting |
 | **Build Tool** | Turbo | Monorepo build orchestration |
 | **Package Manager** | pnpm | Fast, disk-efficient package manager |
 | **API Docs** | Swagger/OpenAPI | Auto-generated API documentation |
@@ -32,21 +35,26 @@ A food delivery service system built with NestJS using modern architecture patte
 solution-project/
 ├── apps/
 │   └── delivery-service/           # Main NestJS application
-│       └── src/
-│           ├── infrastructure/     # App-level infrastructure
-│           ├── modules/
-│           │   ├── shared-kernel/  # Cross-cutting concerns
-│           │   ├── auth/           # Authentication module
-│           │   ├── customers/      # Customer management
-│           │   ├── restaurants/    # Restaurant & menu management
-│           │   ├── drivers/        # Driver management
-│           │   ├── carts/          # Shopping cart
-│           │   ├── orders/         # Order management
-│           │   └── health/         # Health check
-│           ├── migrations/         # Database migrations runner
-│           ├── app.module.ts
-│           └── main.ts
-├── docker-compose.yml              # PostgreSQL + RabbitMQ
+│       ├── src/
+│       │   ├── infrastructure/     # App-level infrastructure
+│       │   ├── modules/
+│       │   │   ├── shared-kernel/  # Cross-cutting concerns (metrics, logging)
+│       │   │   ├── auth/           # Authentication module
+│       │   │   ├── customers/      # Customer management
+│       │   │   ├── restaurants/    # Restaurant & menu management
+│       │   │   ├── drivers/        # Driver management
+│       │   │   ├── carts/          # Shopping cart
+│       │   │   ├── orders/         # Order management
+│       │   │   └── health/         # Health check
+│       │   ├── migrations/         # Database migrations runner
+│       │   ├── app.module.ts
+│       │   └── main.ts
+│       ├── prometheus.yml          # Prometheus scrape config
+│       └── grafana/                # Grafana provisioning
+│           └── provisioning/
+│               ├── datasources/    # Prometheus datasource
+│               └── dashboards/     # Pre-built dashboards
+├── docker-compose.yml              # PostgreSQL + RabbitMQ + Prometheus + Grafana
 ├── init-db.sql                     # Schema initialization
 └── README.md
 ```
@@ -548,6 +556,55 @@ export class CreateOrderDto extends createZodDto(createOrderSchema) {}
   - pending → confirmed → preparing → ready_for_pickup → driver_assigned → picked_up → in_transit → delivered
 - Driver acceptance (drivers choose orders)
 - Order cancellation
+
+---
+
+## Monitoring & Observability
+
+The application includes comprehensive monitoring with Pino for structured logging and Prometheus/Grafana for metrics visualization.
+
+### Logging (Pino)
+
+- **Structured JSON logs** in production, pretty-printed in development
+- **Correlation IDs** via `x-request-id` header for request tracing
+- **Automatic redaction** of sensitive data (passwords, tokens, cookies)
+- **Log levels** configurable via `LOG_LEVEL` environment variable
+
+### Metrics (Prometheus)
+
+Metrics are exposed at `/metrics` endpoint. Available metrics include:
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `http_request_duration_seconds` | Histogram | API latency by method, route, status |
+| `orders_created_total` | Counter | Total orders created |
+| `orders_completed_total` | Counter | Successful deliveries |
+| `revenue_total` | Counter | Total revenue by currency |
+| `login_attempts_total` | Counter | Authentication attempts |
+| `errors_total` | Counter | Errors by type and status code |
+| `active_drivers` | Gauge | Currently available drivers |
+
+### Grafana Dashboards
+
+Pre-configured dashboards available at http://localhost:3001 (default credentials: admin/admin):
+
+- HTTP Request Rate and Latency (p50, p95, p99)
+- Orders and Revenue Over Time
+- Error Rate by Type
+- Driver Availability
+- Restaurant Performance
+
+### Accessing Monitoring Tools
+
+```bash
+# Start all services including monitoring
+docker-compose up -d
+
+# Access points:
+# - Prometheus: http://localhost:9095
+# - Grafana: http://localhost:3001
+# - Metrics endpoint: http://localhost:3000/metrics
+```
 
 ---
 
