@@ -47,7 +47,7 @@ export function getAuthToken(role = 'customer') {
     password: user.password,
   });
 
-  const response = http.post(`${BASE_URL}/auth/login`, payload, {
+  const response = http.post(`${BASE_URL}/api/auth/login`, payload, {
     headers: { 'Content-Type': 'application/json' },
   });
 
@@ -91,4 +91,4 @@ export function clearTokenCache() {
   Object.keys(tokenCache).forEach(key => delete tokenCache[key]);
 }
 
-export const BASE_API_URL = BASE_URL;
+export const BASE_API_URL = `${BASE_URL}/api`;
