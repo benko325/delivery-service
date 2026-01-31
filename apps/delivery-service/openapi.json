@@ -1,0 +1,3327 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Service is healthy"
+          }
+        },
+        "summary": "Health check endpoint",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "409": {
+            "description": "Email already exists"
+          }
+        },
+        "summary": "Register a new user [Public]",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        },
+        "summary": "Login user [Public]",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refreshToken",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token refreshed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid refresh token"
+          }
+        },
+        "summary": "Refresh access token [Public]",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current user info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInfoResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current user info [Any Role]",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/users/{userId}/role": {
+      "patch": {
+        "operationId": "AuthController_updateUserRole",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role updated successfully"
+          },
+          "403": {
+            "description": "Forbidden - Admin only"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update user role [Admin]",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/customers": {
+      "get": {
+        "operationId": "CustomersController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all customers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all customers (admin only)",
+        "tags": [
+          "Customers"
+        ]
+      },
+      "post": {
+        "operationId": "CustomersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Customer created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new customer (admin only)",
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/api/customers/me": {
+      "get": {
+        "operationId": "CustomersController_getMyProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Customer profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current customer profile",
+        "tags": [
+          "Customers"
+        ]
+      },
+      "put": {
+        "operationId": "CustomersController_updateMyProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update current customer profile",
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/api/customers/{id}": {
+      "get": {
+        "operationId": "CustomersController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Customer not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get customer by ID (admin only)",
+        "tags": [
+          "Customers"
+        ]
+      },
+      "put": {
+        "operationId": "CustomersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Customer updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update customer by ID (admin only)",
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/api/customers/me/addresses": {
+      "post": {
+        "operationId": "CustomersController_addAddress",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddAddressDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Address added"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add new address to customer profile",
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/api/customers/me/addresses/{addressId}": {
+      "delete": {
+        "operationId": "CustomersController_removeAddress",
+        "parameters": [
+          {
+            "name": "addressId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Address removed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove address from customer profile",
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/api/customers/me/favorites/{restaurantId}": {
+      "post": {
+        "operationId": "CustomersController_addFavorite",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Added to favorites"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add restaurant to favorites",
+        "tags": [
+          "Customers"
+        ]
+      },
+      "delete": {
+        "operationId": "CustomersController_removeFavorite",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed from favorites"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove restaurant from favorites",
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/api/customers/me/favorites": {
+      "get": {
+        "operationId": "CustomersController_getFavorites",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of favorite restaurants"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all favorite restaurants",
+        "tags": [
+          "Customers"
+        ]
+      }
+    },
+    "/api/restaurants": {
+      "get": {
+        "operationId": "RestaurantsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of active restaurants",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RestaurantResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get all active restaurants [Public]",
+        "tags": [
+          "Restaurants"
+        ]
+      },
+      "post": {
+        "operationId": "RestaurantsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRestaurantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Restaurant created"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new restaurant [Admin, Restaurant Owner]",
+        "tags": [
+          "Restaurants"
+        ]
+      }
+    },
+    "/api/restaurants/all": {
+      "get": {
+        "operationId": "RestaurantsController_findAllIncludingInactive",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all restaurants",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RestaurantResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all restaurants including inactive [Admin]",
+        "tags": [
+          "Restaurants"
+        ]
+      }
+    },
+    "/api/restaurants/{id}": {
+      "get": {
+        "operationId": "RestaurantsController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Restaurant details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestaurantResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Restaurant not found"
+          }
+        },
+        "summary": "Get restaurant by ID [Public]",
+        "tags": [
+          "Restaurants"
+        ]
+      },
+      "put": {
+        "operationId": "RestaurantsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRestaurantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Restaurant updated"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update restaurant [Admin, Restaurant Owner]",
+        "tags": [
+          "Restaurants"
+        ]
+      }
+    },
+    "/api/restaurants/{id}/activate": {
+      "post": {
+        "operationId": "RestaurantsController_activate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Restaurant activated"
+          },
+          "404": {
+            "description": "Restaurant not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Activate restaurant [Admin, Restaurant Owner]",
+        "tags": [
+          "Restaurants"
+        ]
+      }
+    },
+    "/api/restaurants/{id}/deactivate": {
+      "post": {
+        "operationId": "RestaurantsController_deactivate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Restaurant deactivated"
+          },
+          "404": {
+            "description": "Restaurant not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deactivate restaurant [Admin, Restaurant Owner]",
+        "tags": [
+          "Restaurants"
+        ]
+      }
+    },
+    "/api/restaurants/{restaurantId}/orders/{orderId}/confirm": {
+      "post": {
+        "operationId": "RestaurantsController_confirmOrder",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order confirmed"
+          },
+          "400": {
+            "description": "Restaurant is not active"
+          },
+          "404": {
+            "description": "Restaurant not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Confirm an order [Admin, Restaurant Owner]",
+        "tags": [
+          "Restaurants"
+        ]
+      }
+    },
+    "/api/restaurants/{restaurantId}/orders/{orderId}/reject": {
+      "post": {
+        "operationId": "RestaurantsController_rejectOrder",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order rejected"
+          },
+          "404": {
+            "description": "Restaurant not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reject an order [Admin, Restaurant Owner]",
+        "tags": [
+          "Restaurants"
+        ]
+      }
+    },
+    "/api/restaurants/{restaurantId}/menu": {
+      "get": {
+        "operationId": "MenuItemsController_findByRestaurant",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of menu items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MenuItemResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get menu items for a restaurant [Public]",
+        "tags": [
+          "Menu Items"
+        ]
+      },
+      "post": {
+        "operationId": "MenuItemsController_create",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMenuItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Menu item created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MenuItemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new menu item [Admin, Restaurant Owner]",
+        "tags": [
+          "Menu Items"
+        ]
+      }
+    },
+    "/api/restaurants/{restaurantId}/menu/all": {
+      "get": {
+        "operationId": "MenuItemsController_findAllByRestaurant",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of all menu items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MenuItemResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all menu items including unavailable [Admin, Restaurant Owner]",
+        "tags": [
+          "Menu Items"
+        ]
+      }
+    },
+    "/api/restaurants/{restaurantId}/menu/{id}": {
+      "put": {
+        "operationId": "MenuItemsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMenuItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Menu item updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MenuItemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update menu item [Admin, Restaurant Owner]",
+        "tags": [
+          "Menu Items"
+        ]
+      },
+      "delete": {
+        "operationId": "MenuItemsController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Menu item deleted"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete menu item [Admin, Restaurant Owner]",
+        "tags": [
+          "Menu Items"
+        ]
+      }
+    },
+    "/api/drivers": {
+      "get": {
+        "operationId": "DriversController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all drivers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DriverResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get all drivers (admin only)",
+        "tags": [
+          "Drivers"
+        ]
+      },
+      "post": {
+        "operationId": "DriversController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDriverDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Driver created"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new driver",
+        "tags": [
+          "Drivers"
+        ]
+      }
+    },
+    "/api/drivers/available": {
+      "get": {
+        "operationId": "DriversController_findAvailable",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of available drivers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DriverResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get available drivers",
+        "tags": [
+          "Drivers"
+        ]
+      }
+    },
+    "/api/drivers/me": {
+      "get": {
+        "operationId": "DriversController_getMyProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Driver profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriverResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current driver profile",
+        "tags": [
+          "Drivers"
+        ]
+      },
+      "put": {
+        "operationId": "DriversController_updateMyProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDriverDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update current driver profile",
+        "tags": [
+          "Drivers"
+        ]
+      }
+    },
+    "/api/drivers/{id}": {
+      "get": {
+        "operationId": "DriversController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Driver details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriverResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get driver by ID (admin only)",
+        "tags": [
+          "Drivers"
+        ]
+      }
+    },
+    "/api/drivers/me/location": {
+      "patch": {
+        "operationId": "DriversController_updateLocation",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLocationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Location updated"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update driver location",
+        "tags": [
+          "Drivers"
+        ]
+      }
+    },
+    "/api/drivers/me/availability": {
+      "patch": {
+        "operationId": "DriversController_setAvailability",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetAvailabilityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Availability updated"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Set driver availability status",
+        "tags": [
+          "Drivers"
+        ]
+      }
+    },
+    "/api/drivers/me/deactivate": {
+      "patch": {
+        "operationId": "DriversController_deactivateMyAccount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Driver deactivated"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deactivate current driver account",
+        "tags": [
+          "Drivers"
+        ]
+      }
+    },
+    "/api/drivers/{id}/deactivate": {
+      "patch": {
+        "operationId": "DriversController_deactivateDriver",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Driver deactivated"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deactivate a driver (admin only)",
+        "tags": [
+          "Drivers"
+        ]
+      }
+    },
+    "/api/cart": {
+      "get": {
+        "operationId": "CartsController_getMyCart",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Cart details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current customer cart [Customer]",
+        "tags": [
+          "Carts"
+        ]
+      },
+      "delete": {
+        "operationId": "CartsController_clearCart",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Cart cleared"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Clear cart [Customer]",
+        "tags": [
+          "Carts"
+        ]
+      }
+    },
+    "/api/cart/items": {
+      "post": {
+        "operationId": "CartsController_addItem",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddItemToCartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item added to cart"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add item to cart [Customer]",
+        "tags": [
+          "Carts"
+        ]
+      },
+      "patch": {
+        "operationId": "CartsController_updateItemQuantity",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateItemQuantityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item quantity updated"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update item quantity in cart [Customer]",
+        "tags": [
+          "Carts"
+        ]
+      },
+      "delete": {
+        "operationId": "CartsController_removeItem",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveItemFromCartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item removed from cart"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove item from cart [Customer]",
+        "tags": [
+          "Carts"
+        ]
+      }
+    },
+    "/api/cart/checkout": {
+      "post": {
+        "operationId": "CartsController_checkout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutCartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order created from cart"
+          },
+          "400": {
+            "description": "Cart is empty"
+          },
+          "404": {
+            "description": "Cart not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Checkout cart and create order [Customer]",
+        "tags": [
+          "Carts"
+        ]
+      }
+    },
+    "/api/orders": {
+      "post": {
+        "operationId": "OrdersController_createOrder",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order created"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new order (customer)",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/orders/my-orders": {
+      "get": {
+        "operationId": "OrdersController_getMyOrders",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of customer orders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get customer orders",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/orders/{id}/pay": {
+      "post": {
+        "operationId": "OrdersController_payForOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment request initiated"
+          },
+          "400": {
+            "description": "Payment request failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pay for an order (customer)",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/orders/available": {
+      "get": {
+        "operationId": "OrdersController_getAvailableOrders",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of available orders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get available orders for drivers",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/orders/my-deliveries": {
+      "get": {
+        "operationId": "OrdersController_getMyDeliveries",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of driver deliveries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get driver deliveries",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/orders/{id}/accept": {
+      "post": {
+        "operationId": "OrdersController_acceptOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order accepted"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Accept an order (driver)",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/orders/{id}/status": {
+      "patch": {
+        "operationId": "OrdersController_updateOrderStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrderStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order status updated"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update order status",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/orders/{id}/cancel": {
+      "post": {
+        "operationId": "OrdersController_cancelOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order cancelled"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancel an order",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/orders/{id}": {
+      "get": {
+        "operationId": "OrdersController_getOrderById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get order by ID",
+        "tags": [
+          "Orders"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Delivery Service API",
+    "description": "A modular monolith delivery service system with Clean Architecture, CQRS, and Event-Driven patterns",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Health check endpoints"
+    },
+    {
+      "name": "Auth",
+      "description": "Authentication endpoints"
+    },
+    {
+      "name": "Customers",
+      "description": "Customer management"
+    },
+    {
+      "name": "Restaurants",
+      "description": "Restaurant and menu management"
+    },
+    {
+      "name": "Menu Items",
+      "description": "Menu item management"
+    },
+    {
+      "name": "Drivers",
+      "description": "Driver management"
+    },
+    {
+      "name": "Carts",
+      "description": "Shopping cart operations"
+    },
+    {
+      "name": "Orders",
+      "description": "Order management and delivery"
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 9
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "name",
+          "phone"
+        ]
+      },
+      "AuthResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "refreshToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "UserInfoResponseDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          },
+          "roles": {
+            "example": [
+              "customer"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "userId",
+          "email",
+          "roles"
+        ]
+      },
+      "UpdateUserRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "customer",
+              "driver",
+              "admin",
+              "restaurant_owner"
+            ]
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "CustomerAddressDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "label": {
+            "type": "string",
+            "example": "Home"
+          },
+          "street": {
+            "type": "string",
+            "example": "123 Main Street"
+          },
+          "city": {
+            "type": "string",
+            "example": "New York"
+          },
+          "postalCode": {
+            "type": "string",
+            "example": "10001"
+          },
+          "country": {
+            "type": "string",
+            "example": "USA"
+          },
+          "latitude": {
+            "type": "number",
+            "example": 40.7128
+          },
+          "longitude": {
+            "type": "number",
+            "example": -74.006
+          }
+        },
+        "required": [
+          "id",
+          "street",
+          "city",
+          "postalCode",
+          "country"
+        ]
+      },
+      "CustomerResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "email": {
+            "type": "string",
+            "example": "customer@example.com"
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+1-555-0101"
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomerAddressDto"
+            }
+          },
+          "favoriteRestaurantIds": {
+            "example": [
+              "123e4567-e89b-12d3-a456-426614174001",
+              "123e4567-e89b-12d3-a456-426614174002"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "phone",
+          "addresses",
+          "favoriteRestaurantIds",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateCustomerDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 9
+          }
+        },
+        "required": [
+          "email",
+          "name",
+          "phone"
+        ]
+      },
+      "UpdateCustomerDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 9
+          }
+        },
+        "required": [
+          "name",
+          "phone"
+        ]
+      },
+      "AddAddressDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "label": {
+                "type": "string"
+              },
+              "street": {
+                "type": "string",
+                "minLength": 1
+              },
+              "city": {
+                "type": "string",
+                "minLength": 1
+              },
+              "postalCode": {
+                "type": "string",
+                "minLength": 1
+              },
+              "country": {
+                "type": "string",
+                "minLength": 1
+              },
+              "latitude": {
+                "type": "number"
+              },
+              "longitude": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "street",
+              "city",
+              "postalCode",
+              "country"
+            ]
+          }
+        },
+        "required": [
+          "address"
+        ]
+      },
+      "RestaurantAddressDto": {
+        "type": "object",
+        "properties": {
+          "street": {
+            "type": "string",
+            "example": "123 Main Street"
+          },
+          "city": {
+            "type": "string",
+            "example": "New York"
+          },
+          "state": {
+            "type": "string",
+            "example": "NY"
+          },
+          "postalCode": {
+            "type": "string",
+            "example": "10001"
+          },
+          "country": {
+            "type": "string",
+            "example": "USA"
+          },
+          "latitude": {
+            "type": "number",
+            "example": 40.7128
+          },
+          "longitude": {
+            "type": "number",
+            "example": -74.006
+          }
+        },
+        "required": [
+          "street",
+          "city",
+          "postalCode",
+          "country"
+        ]
+      },
+      "RestaurantResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "ownerId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174001"
+          },
+          "name": {
+            "type": "string",
+            "example": "Pizza Paradise"
+          },
+          "description": {
+            "type": "string",
+            "example": "Authentic Italian pizza with fresh ingredients"
+          },
+          "address": {
+            "$ref": "#/components/schemas/RestaurantAddressDto"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+1-555-0101"
+          },
+          "email": {
+            "type": "string",
+            "example": "contact@pizzaparadise.com"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          },
+          "openingHours": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "example": "09:00"
+                },
+                "close": {
+                  "type": "string",
+                  "example": "22:00"
+                }
+              }
+            },
+            "example": {
+              "monday": {
+                "open": "09:00",
+                "close": "22:00"
+              },
+              "tuesday": {
+                "open": "09:00",
+                "close": "22:00"
+              }
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "ownerId",
+          "name",
+          "description",
+          "address",
+          "phone",
+          "email",
+          "isActive",
+          "openingHours",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateRestaurantDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10
+          },
+          "address": {
+            "type": "object",
+            "properties": {
+              "street": {
+                "type": "string",
+                "minLength": 1
+              },
+              "city": {
+                "type": "string",
+                "minLength": 1
+              },
+              "postalCode": {
+                "type": "string",
+                "minLength": 1
+              },
+              "country": {
+                "type": "string",
+                "minLength": 1
+              },
+              "latitude": {
+                "type": "number"
+              },
+              "longitude": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "street",
+              "city",
+              "postalCode",
+              "country"
+            ]
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 9
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "openingHours": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$"
+                },
+                "close": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$"
+                }
+              },
+              "required": [
+                "open",
+                "close"
+              ]
+            },
+            "default": {}
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "address",
+          "phone",
+          "email"
+        ]
+      },
+      "UpdateRestaurantDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10
+          },
+          "address": {
+            "type": "object",
+            "properties": {
+              "street": {
+                "type": "string",
+                "minLength": 1
+              },
+              "city": {
+                "type": "string",
+                "minLength": 1
+              },
+              "postalCode": {
+                "type": "string",
+                "minLength": 1
+              },
+              "country": {
+                "type": "string",
+                "minLength": 1
+              },
+              "latitude": {
+                "type": "number"
+              },
+              "longitude": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "street",
+              "city",
+              "postalCode",
+              "country"
+            ]
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 9
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "openingHours": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$"
+                },
+                "close": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$"
+                }
+              },
+              "required": [
+                "open",
+                "close"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "address",
+          "phone",
+          "email",
+          "openingHours"
+        ]
+      },
+      "ConfirmOrderDto": {
+        "type": "object",
+        "properties": {
+          "estimatedPreparationMinutes": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "default": 30
+          }
+        }
+      },
+      "RejectOrderDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 5
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "MenuItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "restaurantId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174001"
+          },
+          "name": {
+            "type": "string",
+            "example": "Margherita Pizza"
+          },
+          "description": {
+            "type": "string",
+            "example": "Classic pizza with tomato, mozzarella, and basil"
+          },
+          "price": {
+            "type": "number",
+            "example": 12.99
+          },
+          "currency": {
+            "type": "string",
+            "example": "EUR"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "appetizer",
+              "main_course",
+              "dessert",
+              "beverage",
+              "side"
+            ],
+            "example": "main_course"
+          },
+          "imageUrl": {
+            "type": "object",
+            "example": "https://example.com/images/pizza.jpg"
+          },
+          "preparationTime": {
+            "type": "number",
+            "example": 15
+          },
+          "isAvailable": {
+            "type": "boolean",
+            "example": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "restaurantId",
+          "name",
+          "description",
+          "price",
+          "currency",
+          "category",
+          "preparationTime",
+          "isAvailable",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateMenuItemDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2
+          },
+          "description": {
+            "type": "string",
+            "minLength": 5
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "currency": {
+            "type": "string",
+            "default": "EUR"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "appetizer",
+              "main_course",
+              "dessert",
+              "beverage",
+              "side"
+            ]
+          },
+          "imageUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "preparationTime": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "default": 15
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "price",
+          "category"
+        ]
+      },
+      "UpdateMenuItemDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2
+          },
+          "description": {
+            "type": "string",
+            "minLength": 5
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "currency": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "appetizer",
+              "main_course",
+              "dessert",
+              "beverage",
+              "side"
+            ]
+          },
+          "imageUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "preparationTime": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "isAvailable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "price",
+          "currency",
+          "category",
+          "preparationTime",
+          "isAvailable"
+        ]
+      },
+      "DriverLocationDto": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "example": 40.7128
+          },
+          "longitude": {
+            "type": "number",
+            "example": -74.006
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "updatedAt"
+        ]
+      },
+      "DriverResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "userId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174001"
+          },
+          "vehicleType": {
+            "type": "string",
+            "example": "Sedan"
+          },
+          "licensePlate": {
+            "type": "string",
+            "example": "ABC-1234"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "available",
+              "busy",
+              "offline"
+            ],
+            "example": "available"
+          },
+          "currentLocation": {
+            "$ref": "#/components/schemas/DriverLocationDto"
+          },
+          "rating": {
+            "type": "number",
+            "example": 4.8
+          },
+          "totalDeliveries": {
+            "type": "number",
+            "example": 150
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "vehicleType",
+          "licensePlate",
+          "status",
+          "rating",
+          "totalDeliveries",
+          "isActive",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateDriverDto": {
+        "type": "object",
+        "properties": {
+          "vehicleType": {
+            "type": "string",
+            "minLength": 2
+          },
+          "licensePlate": {
+            "type": "string",
+            "minLength": 2
+          }
+        },
+        "required": [
+          "vehicleType",
+          "licensePlate"
+        ]
+      },
+      "UpdateDriverDto": {
+        "type": "object",
+        "properties": {
+          "vehicleType": {
+            "type": "string",
+            "minLength": 2
+          },
+          "licensePlate": {
+            "type": "string",
+            "minLength": 2
+          }
+        },
+        "required": [
+          "vehicleType",
+          "licensePlate"
+        ]
+      },
+      "UpdateLocationDto": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "exclusiveMinimum": false,
+            "maximum": 90,
+            "exclusiveMaximum": false
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "exclusiveMinimum": false,
+            "maximum": 180,
+            "exclusiveMaximum": false
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ]
+      },
+      "SetAvailabilityDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "available",
+              "busy",
+              "offline"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CartItemDto": {
+        "type": "object",
+        "properties": {
+          "menuItemId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "restaurantId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174001"
+          },
+          "name": {
+            "type": "string",
+            "example": "Margherita Pizza"
+          },
+          "price": {
+            "type": "number",
+            "example": 12.99
+          },
+          "currency": {
+            "type": "string",
+            "example": "EUR"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 2
+          }
+        },
+        "required": [
+          "menuItemId",
+          "restaurantId",
+          "name",
+          "price",
+          "currency",
+          "quantity"
+        ]
+      },
+      "CartResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "customerId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174001"
+          },
+          "restaurantId": {
+            "type": "object",
+            "example": "123e4567-e89b-12d3-a456-426614174002"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItemDto"
+            }
+          },
+          "totalAmount": {
+            "type": "number",
+            "example": 25.98
+          },
+          "currency": {
+            "type": "string",
+            "example": "EUR"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "customerId",
+          "items",
+          "totalAmount",
+          "currency",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AddItemToCartDto": {
+        "type": "object",
+        "properties": {
+          "menuItemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "restaurantId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "currency": {
+            "type": "string",
+            "default": "EUR"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "default": 1
+          }
+        },
+        "required": [
+          "menuItemId",
+          "restaurantId",
+          "name",
+          "price"
+        ]
+      },
+      "UpdateItemQuantityDto": {
+        "type": "object",
+        "properties": {
+          "menuItemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": false
+          }
+        },
+        "required": [
+          "menuItemId",
+          "quantity"
+        ]
+      },
+      "RemoveItemFromCartDto": {
+        "type": "object",
+        "properties": {
+          "menuItemId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "menuItemId"
+        ]
+      },
+      "CheckoutCartDto": {
+        "type": "object",
+        "properties": {
+          "deliveryAddress": {
+            "type": "object",
+            "properties": {
+              "street": {
+                "type": "string",
+                "minLength": 1
+              },
+              "city": {
+                "type": "string",
+                "minLength": 1
+              },
+              "postalCode": {
+                "type": "string",
+                "minLength": 1
+              },
+              "country": {
+                "type": "string",
+                "minLength": 1
+              },
+              "latitude": {
+                "type": "number"
+              },
+              "longitude": {
+                "type": "number"
+              },
+              "instructions": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "street",
+              "city",
+              "postalCode",
+              "country"
+            ]
+          },
+          "deliveryFee": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": false,
+            "default": 0
+          }
+        },
+        "required": [
+          "deliveryAddress"
+        ]
+      },
+      "CreateOrderDto": {
+        "type": "object",
+        "properties": {
+          "restaurantId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "menuItemId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "price": {
+                  "type": "number",
+                  "minimum": 0,
+                  "exclusiveMinimum": true
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true
+                },
+                "currency": {
+                  "type": "string",
+                  "default": "EUR"
+                }
+              },
+              "required": [
+                "menuItemId",
+                "name",
+                "price",
+                "quantity"
+              ]
+            }
+          },
+          "deliveryAddress": {
+            "type": "object",
+            "properties": {
+              "street": {
+                "type": "string",
+                "minLength": 1
+              },
+              "city": {
+                "type": "string",
+                "minLength": 1
+              },
+              "postalCode": {
+                "type": "string",
+                "minLength": 1
+              },
+              "country": {
+                "type": "string",
+                "minLength": 1
+              },
+              "latitude": {
+                "type": "number"
+              },
+              "longitude": {
+                "type": "number"
+              },
+              "instructions": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "street",
+              "city",
+              "postalCode",
+              "country"
+            ]
+          },
+          "deliveryFee": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": false,
+            "default": 0
+          },
+          "currency": {
+            "type": "string",
+            "default": "EUR"
+          }
+        },
+        "required": [
+          "restaurantId",
+          "items",
+          "deliveryAddress"
+        ]
+      },
+      "OrderItemDto": {
+        "type": "object",
+        "properties": {
+          "menuItemId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "name": {
+            "type": "string",
+            "example": "Margherita Pizza"
+          },
+          "price": {
+            "type": "number",
+            "example": 12.99
+          },
+          "currency": {
+            "type": "string",
+            "example": "EUR"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 2
+          }
+        },
+        "required": [
+          "menuItemId",
+          "name",
+          "price",
+          "currency",
+          "quantity"
+        ]
+      },
+      "DeliveryAddressDto": {
+        "type": "object",
+        "properties": {
+          "street": {
+            "type": "string",
+            "example": "123 Main Street"
+          },
+          "city": {
+            "type": "string",
+            "example": "New York"
+          },
+          "postalCode": {
+            "type": "string",
+            "example": "10001"
+          },
+          "country": {
+            "type": "string",
+            "example": "USA"
+          }
+        },
+        "required": [
+          "street",
+          "city",
+          "postalCode",
+          "country"
+        ]
+      },
+      "OrderResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "customerId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174001"
+          },
+          "restaurantId": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174002"
+          },
+          "driverId": {
+            "type": "object",
+            "example": "123e4567-e89b-12d3-a456-426614174003"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemDto"
+            }
+          },
+          "deliveryAddress": {
+            "$ref": "#/components/schemas/DeliveryAddressDto"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "payment_succeeded",
+              "confirmed",
+              "preparing",
+              "ready_for_pickup",
+              "in_transit",
+              "delivered",
+              "cancelled"
+            ],
+            "example": "pending"
+          },
+          "totalAmount": {
+            "type": "number",
+            "example": 25.98
+          },
+          "deliveryFee": {
+            "type": "number",
+            "example": 5
+          },
+          "currency": {
+            "type": "string",
+            "example": "EUR"
+          },
+          "estimatedDeliveryTime": {
+            "type": "object",
+            "example": "2024-01-01T01:00:00.000Z"
+          },
+          "actualDeliveryTime": {
+            "type": "object",
+            "example": "2024-01-01T01:15:00.000Z"
+          },
+          "cancelledAt": {
+            "type": "object",
+            "example": "2024-01-01T00:30:00.000Z"
+          },
+          "cancellationReason": {
+            "type": "object",
+            "example": "Customer requested cancellation"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "customerId",
+          "restaurantId",
+          "items",
+          "deliveryAddress",
+          "status",
+          "totalAmount",
+          "deliveryFee",
+          "currency",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AcceptOrderDto": {
+        "type": "object",
+        "properties": {
+          "estimatedMinutes": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "default": 30
+          }
+        }
+      },
+      "UpdateOrderStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "payment_succeeded",
+              "confirmed",
+              "preparing",
+              "ready_for_pickup",
+              "in_transit",
+              "delivered",
+              "cancelled"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CancelOrderDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 5
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      }
+    }
+  }
+}

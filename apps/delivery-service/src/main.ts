@@ -6,6 +6,7 @@ import { patchNestJsSwagger } from "nestjs-zod";
 import { Logger } from "nestjs-pino";
 import { MetricsService } from "./modules/shared-kernel/infrastructure/metrics";
 import { MetricsExceptionFilter } from "./modules/shared-kernel/api/filters/metrics-exception.filter";
+import { saveOpenApiSpec } from "./infrastructure/saveOpenApiSpec";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -50,13 +51,15 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup("api/docs", app, document);
 
+  const logger = app.get(Logger);
+  saveOpenApiSpec(document, logger);
+
   // Start server
   const port = configService.port;
   const host = configService.host;
 
   await app.listen(port, host);
 
-  const logger = app.get(Logger);
   logger.log(`Application is running on: http://${host}:${port}`);
   logger.log(`Swagger documentation: http://${host}:${port}/api/docs`);
 }

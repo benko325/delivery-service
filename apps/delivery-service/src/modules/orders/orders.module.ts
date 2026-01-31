@@ -27,6 +27,7 @@ import { GetOrdersByRestaurantQueryHandler } from "./application/queries/get-ord
 // Application - Events
 import { CartOrderedEventHandler } from "./application/events/cart-ordered.handler";
 import { PaymentSucceededEventHandler } from "./application/events/payment-succeeded.handler";
+import { OrderCreatedEventHandler } from "./application/events/order-created.handler";
 
 // Infrastructure - Anti-Corruption Layer
 import { CartOrderedEventMapper } from "./infrastructure/anti-corruption-layer/cart-ordered.mapper";
@@ -64,7 +65,11 @@ const queryHandlers = [
   GetOrdersByRestaurantQueryHandler,
 ];
 
-const eventHandlers = [CartOrderedEventHandler, PaymentSucceededEventHandler];
+const eventHandlers = [
+  CartOrderedEventHandler,
+  PaymentSucceededEventHandler,
+  OrderCreatedEventHandler,
+];
 
 const events = [
   CartOrderedMappedEvent,

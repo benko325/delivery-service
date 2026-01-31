@@ -22,6 +22,8 @@ import {
   LoginDto,
   RefreshTokenDto,
   UpdateUserRoleDto,
+  AuthResponseDto,
+  UserInfoResponseDto,
 } from "../dtos/auth.dto";
 import { RegisterCommand } from "../../application/commands/register/register.command";
 import { LoginCommand } from "../../application/commands/login/login.command";
@@ -41,7 +43,11 @@ export class AuthController {
   @Post("register")
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: "Register a new user [Public]" })
-  @ApiResponse({ status: 201, description: "User registered successfully" })
+  @ApiResponse({
+    status: 201,
+    description: "User registered successfully",
+    type: AuthResponseDto,
+  })
   @ApiResponse({ status: 400, description: "Validation error" })
   @ApiResponse({ status: 409, description: "Email already exists" })
   async register(@Body(ZodValidationPipe) dto: RegisterDto) {
@@ -53,7 +59,11 @@ export class AuthController {
   @Post("login")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Login user [Public]" })
-  @ApiResponse({ status: 200, description: "Login successful" })
+  @ApiResponse({
+    status: 200,
+    description: "Login successful",
+    type: AuthResponseDto,
+  })
   @ApiResponse({ status: 401, description: "Invalid credentials" })
   async login(@Body(ZodValidationPipe) dto: LoginDto) {
     return this.commandBus.execute(new LoginCommand(dto.email, dto.password));
@@ -62,7 +72,11 @@ export class AuthController {
   @Post("refresh")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Refresh access token [Public]" })
-  @ApiResponse({ status: 200, description: "Token refreshed successfully" })
+  @ApiResponse({
+    status: 200,
+    description: "Token refreshed successfully",
+    type: AuthResponseDto,
+  })
   @ApiResponse({ status: 401, description: "Invalid refresh token" })
   async refreshToken(@Body(ZodValidationPipe) dto: RefreshTokenDto) {
     return this.commandBus.execute(new RefreshTokenCommand(dto.refreshToken));
@@ -72,7 +86,11 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get current user info [Any Role]" })
-  @ApiResponse({ status: 200, description: "Current user info" })
+  @ApiResponse({
+    status: 200,
+    description: "Current user info",
+    type: UserInfoResponseDto,
+  })
   @ApiResponse({ status: 401, description: "Unauthorized" })
   async me(@User() user: RequestUser) {
     return {
