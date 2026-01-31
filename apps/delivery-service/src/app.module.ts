@@ -1,5 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { ServeStaticModule } from "@nestjs/serve-static";
+import { join } from "path";
 
 // Infrastructure
 import { AppConfigModule } from "./infrastructure/config/app-config.module";
@@ -25,6 +27,12 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
       envFilePath: [".env", ".env.local"],
     }),
     AppConfigModule,
+
+    // Static File Serving
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, "..", "public"),
+      exclude: ["/api*"],
+    }),
 
     // Shared Infrastructure
     SharedKernelModule,
