@@ -30,7 +30,42 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
     AppConfigModule,
 
     // Logging & Monitoring
-    LoggerModule.forRoot(),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env.LOG_LEVEL || "info",
+        transport:
+          process.env.NODE_ENV !== "production"
+            ? { target: "pino-pretty", options: { colorize: true } }
+            : undefined,
+        genReqId: (req) =>
+          req.headers["x-request-id"] ||
+          `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        customProps: () => ({
+          service: "delivery-service",
+        }),
+        redact: {
+          paths: [
+            "req.headers.authorization",
+            "req.headers.cookie",
+            "req.body.password",
+            "req.body.refreshToken",
+          ],
+          censor: "[REDACTED]",
+        },
+        serializers: {
+          req: (req) => ({
+            id: req.id,
+            method: req.method,
+            url: req.url,
+            query: req.query,
+            params: req.params,
+          }),
+          res: (res) => ({
+            statusCode: res.statusCode,
+          }),
+        },
+      },
+    }),
     PrometheusModule.register(),
     MetricsModule,
 
