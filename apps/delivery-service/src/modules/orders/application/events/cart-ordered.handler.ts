@@ -37,6 +37,9 @@ export class CartOrderedEventHandler implements IEventHandler<CartOrderedMappedE
 
       // Record metrics
       this.metricsService.incrementOrdersCreated("pending");
+      this.metricsService.incrementOrdersPerRestaurant(event.restaurantId);
+      this.metricsService.recordOrderAmount(event.totalAmount, event.currency);
+      this.metricsService.incrementRevenue(event.totalAmount, event.currency);
     } catch (error) {
       this.logger.error(
         `Failed to create order for customer ${event.customerId}: ${error}`,
