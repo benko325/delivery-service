@@ -1,47 +1,33 @@
-import { CommandHandler, ICommandHandler, EventPublisher } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
-import { CreateDriverCommand } from './create-driver.command';
-import { IDriverAggregateRepository } from '../../../core/repositories/driver.repository.interface';
-import { DriverAggregate } from '../../../core/aggregates/driver.aggregate';
+import { CommandHandler, ICommandHandler, EventPublisher } from "@nestjs/cqrs";
+import { Inject } from "@nestjs/common";
+import { CreateDriverCommand } from "./create-driver.command";
+import { IDriverAggregateRepository } from "../../../core/repositories/driver.repository.interface";
+import { DriverAggregate } from "../../../core/aggregates/driver.aggregate";
 
 @CommandHandler(CreateDriverCommand)
-export class CreateDriverCommandHandler implements ICommandHandler<CreateDriverCommand> {
-    constructor(
-        @Inject('IDriverAggregateRepository')
-        private readonly driverAggregateRepository: IDriverAggregateRepository,
-        private readonly publisher: EventPublisher,
-    ) {}
+export class CreateDriverCommandHandler
+  implements ICommandHandler<CreateDriverCommand>
+{
+  constructor(
+    @Inject("IDriverAggregateRepository")
+    private readonly driverAggregateRepository: IDriverAggregateRepository,
+    private readonly publisher: EventPublisher,
+  ) {}
 
-    async execute(command: CreateDriverCommand): Promise<{ id: string }> {
-        const driverAggregate = this.publisher.mergeObjectContext(new DriverAggregate());
+  async execute(command: CreateDriverCommand): Promise<{ id: string }> {
+    const driverAggregate = this.publisher.mergeObjectContext(
+      new DriverAggregate(),
+    );
 
-        driverAggregate.create(
-            command.userId,
-            command.name,
-            command.email,
-            command.phone,
-            command.vehicleType,
-            command.licensePlate,
-        );
+    driverAggregate.create(
+      command.userId,
+      command.vehicleType,
+      command.licensePlate,
+    );
 
-        await this.driverAggregateRepository.save({
-            id: driverAggregate.id,
-            userId: driverAggregate.userId,
-            name: driverAggregate.name,
-            email: driverAggregate.email,
-            phone: driverAggregate.phone,
-            vehicleType: driverAggregate.vehicleType,
-            licensePlate: driverAggregate.licensePlate,
-            status: driverAggregate.status,
-            currentLocation: driverAggregate.currentLocation,
-            rating: driverAggregate.rating,
-            totalDeliveries: driverAggregate.totalDeliveries,
-            createdAt: driverAggregate.createdAt,
-            updatedAt: driverAggregate.updatedAt,
-        });
+    await this.driverAggregateRepository.save(driverAggregate);
+    driverAggregate.commit();
 
-        driverAggregate.commit();
-
-        return { id: driverAggregate.id };
-    }
+    return { id: driverAggregate.id };
+  }
 }

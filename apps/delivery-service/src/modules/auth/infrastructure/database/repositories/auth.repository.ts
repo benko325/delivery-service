@@ -75,6 +75,23 @@ export class AuthRepository implements IAuthRepository {
       .execute();
   }
 
+  async addRole(userId: string, role: string): Promise<void> {
+    await this.db
+      .updateTable("auth.users")
+      .set({
+        roles: sql`
+                CASE
+                WHEN roles @> ${JSON.stringify([role])}::jsonb
+                THEN roles
+                ELSE roles || ${JSON.stringify([role])}::jsonb
+                END
+            `,
+        updatedAt: new Date(),
+      } as never)
+      .where("id", "=", userId)
+      .execute();
+  }
+
   private mapToAuthUser(row: unknown): AuthUser {
     const data = row as Record<string, unknown>;
     return {

@@ -7,10 +7,12 @@ import {
   Body,
   Param,
   UseGuards,
-  HttpCode,
-  HttpStatus,
+  NotFoundException,
+  Req,
 } from "@nestjs/common";
+import { Request } from "express";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
+import { DeactivateDriverCommand } from "../../application/commands/deactivate-driver/deactivate-driver.command";
 import {
   ApiTags,
   ApiOperation,
@@ -28,7 +30,7 @@ import {
   UpdateDriverDto,
   UpdateLocationDto,
   SetAvailabilityDto,
-} from "../dtos/driver.dto";
+} from "../dto/driver.dto";
 import { CreateDriverCommand } from "../../application/commands/create-driver/create-driver.command";
 import { UpdateDriverCommand } from "../../application/commands/update-driver/update-driver.command";
 import { UpdateDriverLocationCommand } from "../../application/commands/update-driver-location/update-driver-location.command";
@@ -49,7 +51,7 @@ export class DriversController {
 
   @Get()
   @Roles("admin")
-  @ApiOperation({ summary: "Get all drivers [Admin]" })
+  @ApiOperation({ summary: "Get all drivers (admin only)" })
   @ApiResponse({ status: 200, description: "List of all drivers" })
   async findAll() {
     return this.queryBus.execute(new GetAllDriversQuery());
@@ -57,7 +59,7 @@ export class DriversController {
 
   @Get("available")
   @Roles("admin", "restaurant_owner")
-  @ApiOperation({ summary: "Get available drivers [Admin, Restaurant Owner]" })
+  @ApiOperation({ summary: "Get available drivers" })
   @ApiResponse({ status: 200, description: "List of available drivers" })
   async findAvailable() {
     return this.queryBus.execute(new GetAvailableDriversQuery());
@@ -65,7 +67,7 @@ export class DriversController {
 
   @Get("me")
   @Roles("driver")
-  @ApiOperation({ summary: "Get current driver profile [Driver]" })
+  @ApiOperation({ summary: "Get current driver profile" })
   @ApiResponse({ status: 200, description: "Driver profile" })
   async getMyProfile(@User() user: RequestUser) {
     return this.queryBus.execute(new GetDriverByIdQuery(user.userId, true));
@@ -73,27 +75,22 @@ export class DriversController {
 
   @Get(":id")
   @Roles("admin")
-  @ApiOperation({ summary: "Get driver by ID [Admin]" })
+  @ApiOperation({ summary: "Get driver by ID (admin only)" })
   @ApiResponse({ status: 200, description: "Driver details" })
   async findById(@Param("id") id: string) {
     return this.queryBus.execute(new GetDriverByIdQuery(id, false));
   }
 
   @Post()
-  @Roles("admin")
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: "Create a new driver [Admin]" })
+  @ApiOperation({ summary: "Create a new driver" })
   @ApiResponse({ status: 201, description: "Driver created" })
   async create(
-    @User() user: RequestUser,
+    @Req() req: Request & { user: RequestUser },
     @Body(ZodValidationPipe) dto: CreateDriverDto,
   ) {
     return this.commandBus.execute(
       new CreateDriverCommand(
-        user.userId,
-        dto.name,
-        dto.email,
-        dto.phone,
+        req.user.userId,
         dto.vehicleType,
         dto.licensePlate,
       ),
@@ -102,7 +99,7 @@ export class DriversController {
 
   @Put("me")
   @Roles("driver")
-  @ApiOperation({ summary: "Update current driver profile [Driver]" })
+  @ApiOperation({ summary: "Update current driver profile" })
   @ApiResponse({ status: 200, description: "Profile updated" })
   async updateMyProfile(
     @User() user: RequestUser,
@@ -111,8 +108,6 @@ export class DriversController {
     return this.commandBus.execute(
       new UpdateDriverCommand(
         user.userId,
-        dto.name,
-        dto.phone,
         dto.vehicleType,
         dto.licensePlate,
         true,
@@ -122,7 +117,7 @@ export class DriversController {
 
   @Patch("me/location")
   @Roles("driver")
-  @ApiOperation({ summary: "Update driver location [Driver]" })
+  @ApiOperation({ summary: "Update driver location" })
   @ApiResponse({ status: 200, description: "Location updated" })
   async updateLocation(
     @User() user: RequestUser,
@@ -140,7 +135,7 @@ export class DriversController {
 
   @Patch("me/availability")
   @Roles("driver")
-  @ApiOperation({ summary: "Set driver availability status [Driver]" })
+  @ApiOperation({ summary: "Set driver availability status" })
   @ApiResponse({ status: 200, description: "Availability updated" })
   async setAvailability(
     @User() user: RequestUser,
@@ -148,6 +143,34 @@ export class DriversController {
   ) {
     return this.commandBus.execute(
       new SetDriverAvailabilityCommand(user.userId, dto.status, true),
+    );
+  }
+
+  @Patch("me/deactivate")
+  @Roles("driver")
+  @ApiOperation({ summary: "Deactivate current driver account" })
+  @ApiResponse({ status: 200, description: "Driver deactivated" })
+  async deactivateMyAccount(@User() user: RequestUser) {
+    // resolve driver entity by userId and send entity id to command
+    const driver = await this.queryBus.execute(
+      new GetDriverByIdQuery(user.userId, true),
+    );
+    if (!driver) {
+      throw new NotFoundException("Driver profile not found");
+    }
+    return this.commandBus.execute(
+      new DeactivateDriverCommand(driver.id, user.userId, "driver"),
+    );
+  }
+
+  @Patch(":id/deactivate")
+  @Roles("admin")
+  @ApiOperation({ summary: "Deactivate a driver (admin only)" })
+  @ApiResponse({ status: 200, description: "Driver deactivated" })
+  async deactivateDriver(@Param("id") id: string, @User() user: RequestUser) {
+    // pass admin user id and role so handler can audit/authorize
+    return this.commandBus.execute(
+      new DeactivateDriverCommand(id, user.userId, "admin"),
     );
   }
 }

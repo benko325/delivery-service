@@ -18,6 +18,10 @@ import { LoginCommandHandler } from "./application/commands/login/login.handler"
 import { RefreshTokenCommandHandler } from "./application/commands/refresh-token/refresh-token.handler";
 import { UpdateUserRoleCommandHandler } from "./application/commands/update-user-role/update-user-role.handler";
 
+// Handlers
+import { DriverCreatedHandler } from "./core/events/handlers/driver-created.handler";
+import { DriverCreatedEventMapper } from "./infrastructure/anti-corruption-layer/driver-created.mapper";
+
 // Infrastructure
 import { JwtStrategy } from "./infrastructure/strategies/jwt.strategy";
 import { AuthRepository } from "./infrastructure/database/repositories/auth.repository";
@@ -25,6 +29,7 @@ import { RabbitMQPublisher, RabbitMQSubscriber } from "../shared-kernel";
 
 // Events
 import { UserRegisteredEvent } from "./core/events/user-registered.event";
+import { DriverCreatedEvent } from "../drivers/core/events/driver-created.event";
 
 const commandHandlers = [
   RegisterCommandHandler,
@@ -33,7 +38,7 @@ const commandHandlers = [
   UpdateUserRoleCommandHandler,
 ];
 
-const events = [UserRegisteredEvent];
+const events = [UserRegisteredEvent, DriverCreatedEvent];
 
 @Module({
   imports: [
@@ -63,6 +68,8 @@ const events = [UserRegisteredEvent];
   controllers: [AuthController],
   providers: [
     ...commandHandlers,
+    DriverCreatedHandler,
+    DriverCreatedEventMapper,
     JwtStrategy,
     {
       provide: "IAuthRepository",

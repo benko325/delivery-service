@@ -6,12 +6,13 @@ export class DriverLocationUpdatedEvent implements IEvent {
   public readonly location: DriverLocation;
   public readonly updatedAt: Date;
 
-  constructor(data: { id: string; location: DriverLocation; updatedAt: Date }) {
-    this.id = data.id;
-    this.location = data.location;
-    this.updatedAt =
-      data.updatedAt instanceof Date
-        ? data.updatedAt
-        : new Date(data.updatedAt);
+  constructor(params: {
+    id: string;
+    location: DriverLocation;
+    updatedAt: Date;
+  }) {
+    this.id = params.id;
+    this.location = params.location;
+    this.updatedAt = params.updatedAt;
   }
 }

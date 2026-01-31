@@ -7,18 +7,15 @@ export class DriverAvailabilityChangedEvent implements IEvent {
   public readonly newStatus: DriverStatus;
   public readonly changedAt: Date;
 
-  constructor(data: {
+  constructor(params: {
     id: string;
     previousStatus: DriverStatus;
     newStatus: DriverStatus;
     changedAt: Date;
   }) {
-    this.id = data.id;
-    this.previousStatus = data.previousStatus;
-    this.newStatus = data.newStatus;
-    this.changedAt =
-      data.changedAt instanceof Date
-        ? data.changedAt
-        : new Date(data.changedAt);
+    this.id = params.id;
+    this.previousStatus = params.previousStatus;
+    this.newStatus = params.newStatus;
+    this.changedAt = params.changedAt;
   }
 }
