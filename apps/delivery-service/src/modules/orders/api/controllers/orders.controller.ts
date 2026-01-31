@@ -27,7 +27,8 @@ import {
   AcceptOrderDto,
   UpdateOrderStatusDto,
   CancelOrderDto,
-} from "../dto/order.dto";
+} from "../dtos/order.dto";
+import { PayForOrderDto } from "../dtos/pay-for-order.dto";
 import { CreateOrderCommand } from "../../application/commands/create-order/create-order.command";
 import { AcceptOrderCommand } from "../../application/commands/accept-order/accept-order.command";
 import { UpdateOrderStatusCommand } from "../../application/commands/update-order-status/update-order-status.command";
@@ -91,9 +92,12 @@ export class OrdersController {
   @ApiOperation({ summary: "Pay for an order (customer)" })
   @ApiResponse({ status: 200, description: "Payment request initiated" })
   @ApiResponse({ status: 400, description: "Payment request failed" })
-  async payForOrder(@User() user: RequestUser, @Param("id") orderId: string) {
+  async payForOrder(
+    @User() user: RequestUser,
+    @Param(ZodValidationPipe) params: PayForOrderDto,
+  ) {
     return this.commandBus.execute(
-      new PayForOrderCommand(orderId, user.userId),
+      new PayForOrderCommand(params.orderId, user.userId),
     );
   }
 
