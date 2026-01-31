@@ -44,6 +44,7 @@ modules/
 ├── drivers/          # Driver bounded context
 ├── carts/            # Cart bounded context
 ├── orders/           # Order bounded context
+├── notifications/    # Event-driven notifications
 └── health/           # Health checks
 ```
 

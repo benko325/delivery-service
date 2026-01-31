@@ -42,6 +42,7 @@ solution-project/
 │           │   ├── drivers/        # Driver management
 │           │   ├── carts/          # Shopping cart
 │           │   ├── orders/         # Order management
+│           │   ├── notifications/  # Event-driven notifications
 │           │   └── health/         # Health check
 │           ├── migrations/         # Database migrations runner
 │           ├── app.module.ts
@@ -520,14 +521,15 @@ export class CreateOrderDto extends createZodDto(createOrderSchema) {}
 
 ### Customers Module
 - Customer profile management
-- Delivery address management
-- Listens to `UserRegisteredEvent` via ACL
+- Delivery address management (multiple addresses per customer)
+- Favorite restaurants management
+- Listens to `UserRegisteredEvent` via ACL to auto-create customer profile
 
 ### Restaurants Module
 - Restaurant CRUD operations
 - Menu item management
 - Categories: appetizer, main_course, dessert, beverage, side
-- Default currency: EUR
+- Order confirmation/rejection workflow
 
 ### Drivers Module
 - Driver registration and profile
@@ -542,12 +544,20 @@ export class CreateOrderDto extends createZodDto(createOrderSchema) {}
 - Automatic total calculation
 - Checkout publishes `CartOrderedEvent`
 
+### Notifications Module
+- Event-driven notification system
+- Listens to `OrderStatusChangedEvent` and `PaymentSucceededEvent`
+- Sends notifications to customers and restaurants
+- Uses Anti-Corruption Layer to map external events
+
 ### Orders Module
 - Order creation from cart (via ACL)
 - Order status workflow:
-  - pending → confirmed → preparing → ready_for_pickup → driver_assigned → picked_up → in_transit → delivered
-- Driver acceptance (drivers choose orders)
-- Order cancellation
+  - pending → payment_succeeded → confirmed → preparing → ready_for_pickup → in_transit → delivered
+  - Cancellation possible from: pending, payment_succeeded, confirmed, preparing, ready_for_pickup
+- Payment processing via Payment Gateway
+- Driver acceptance (drivers choose orders when status is ready_for_pickup)
+- Order cancellation with reason tracking
 
 ---
 
@@ -591,27 +601,54 @@ Swagger UI is available at: http://localhost:3000/api/docs
 ## API Endpoints
 
 ### Auth
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login
-- `POST /api/auth/refresh` - Refresh token
-- `GET /api/auth/me` - Get current user
+- `POST /api/auth/register` - Register new user (public)
+- `POST /api/auth/login` - Login (public)
+- `POST /api/auth/refresh` - Refresh access token (public)
+- `GET /api/auth/me` - Get current user info
+- `PATCH /api/auth/users/:userId/role` - Update user role (admin)
 
 ### Customers
-- `GET /api/customers/me` - Get profile
-- `PUT /api/customers/me` - Update profile
-- `PATCH /api/customers/me/address` - Update delivery address
+- `GET /api/customers` - List all customers (admin)
+- `GET /api/customers/me` - Get current customer profile
+- `GET /api/customers/:id` - Get customer by ID (admin)
+- `POST /api/customers` - Create customer (admin)
+- `PUT /api/customers/me` - Update current profile
+- `PUT /api/customers/:id` - Update customer (admin)
+- `POST /api/customers/me/addresses` - Add delivery address
+- `DELETE /api/customers/me/addresses/:addressId` - Remove address
+- `GET /api/customers/me/favorites` - Get favorite restaurants
+- `POST /api/customers/me/favorites/:restaurantId` - Add to favorites
+- `DELETE /api/customers/me/favorites/:restaurantId` - Remove from favorites
 
 ### Restaurants
-- `GET /api/restaurants` - List active restaurants
-- `GET /api/restaurants/:id` - Get restaurant details
-- `POST /api/restaurants` - Create restaurant (owner/admin)
-- `GET /api/restaurants/:id/menu` - Get menu items
+- `GET /api/restaurants` - List active restaurants (public)
+- `GET /api/restaurants/all` - List all restaurants including inactive (admin)
+- `GET /api/restaurants/:id` - Get restaurant details (public)
+- `POST /api/restaurants` - Create restaurant (admin/restaurant_owner)
+- `PUT /api/restaurants/:id` - Update restaurant (admin/restaurant_owner)
+- `POST /api/restaurants/:id/activate` - Activate restaurant
+- `POST /api/restaurants/:id/deactivate` - Deactivate restaurant
+- `POST /api/restaurants/:restaurantId/orders/:orderId/confirm` - Confirm order
+- `POST /api/restaurants/:restaurantId/orders/:orderId/reject` - Reject order
+
+### Menu Items
+- `GET /api/restaurants/:restaurantId/menu` - Get available menu items (public)
+- `GET /api/restaurants/:restaurantId/menu/all` - Get all menu items (admin/owner)
+- `POST /api/restaurants/:restaurantId/menu` - Create menu item (admin/owner)
+- `PUT /api/restaurants/:restaurantId/menu/:id` - Update menu item
+- `DELETE /api/restaurants/:restaurantId/menu/:id` - Delete menu item
 
 ### Drivers
-- `GET /api/drivers/me` - Get driver profile
-- `PUT /api/drivers/me` - Update profile
+- `GET /api/drivers` - List all drivers (admin)
+- `GET /api/drivers/available` - List available drivers (admin/restaurant_owner)
+- `GET /api/drivers/me` - Get current driver profile
+- `GET /api/drivers/:id` - Get driver by ID (admin)
+- `POST /api/drivers` - Register as driver
+- `PUT /api/drivers/me` - Update current profile
 - `PATCH /api/drivers/me/location` - Update location
-- `PATCH /api/drivers/me/availability` - Set availability
+- `PATCH /api/drivers/me/availability` - Set availability status
+- `PATCH /api/drivers/me/deactivate` - Deactivate own account
+- `PATCH /api/drivers/:id/deactivate` - Deactivate driver (admin)
 
 ### Carts
 - `GET /api/cart` - Get cart
@@ -622,12 +659,15 @@ Swagger UI is available at: http://localhost:3000/api/docs
 - `POST /api/cart/checkout` - Checkout cart (creates order)
 
 ### Orders
-- `POST /api/orders` - Create order directly
+- `POST /api/orders` - Create order directly (customer)
 - `GET /api/orders/my-orders` - Get customer orders
-- `GET /api/orders/available` - Get available orders (driver)
-- `POST /api/orders/:id/accept` - Accept order (driver)
-- `PATCH /api/orders/:id/status` - Update status
-- `POST /api/orders/:id/cancel` - Cancel order
+- `GET /api/orders/my-deliveries` - Get driver deliveries (driver)
+- `GET /api/orders/available` - Get available orders for pickup (driver)
+- `GET /api/orders/:id` - Get order by ID
+- `POST /api/orders/:id/pay` - Pay for order (customer)
+- `POST /api/orders/:id/accept` - Accept order for delivery (driver)
+- `PATCH /api/orders/:id/status` - Update status (admin/restaurant_owner/driver)
+- `POST /api/orders/:id/cancel` - Cancel order (customer/admin/restaurant_owner)
 
 ---
 
