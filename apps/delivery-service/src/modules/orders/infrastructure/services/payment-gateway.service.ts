@@ -45,7 +45,7 @@ export class PaymentGatewayService implements IPaymentGatewayService {
   }
 
   /**
-   * @brief Simulate external API call delay
+   * Simulate external API call delay
    */
   private async simulateExternalApiCall(): Promise<void> {
     return new Promise((resolve) => {
