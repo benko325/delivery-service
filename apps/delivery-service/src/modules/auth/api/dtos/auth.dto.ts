@@ -1,5 +1,25 @@
 import { z } from "zod";
 import { createZodDto } from "nestjs-zod";
+import { ApiProperty } from "@nestjs/swagger";
+
+export class AuthResponseDto {
+  @ApiProperty({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." })
+  accessToken!: string;
+
+  @ApiProperty({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." })
+  refreshToken!: string;
+}
+
+export class UserInfoResponseDto {
+  @ApiProperty({ example: "123e4567-e89b-12d3-a456-426614174000" })
+  userId!: string;
+
+  @ApiProperty({ example: "user@example.com" })
+  email!: string;
+
+  @ApiProperty({ type: [String], example: ["customer"] })
+  roles!: string[];
+}
 
 export const registerSchema = z.object({
   email: z.string().email("Invalid email format"),

@@ -28,9 +28,16 @@ export class OrderStatusChangedEventHandler implements IEventHandler<OrderStatus
         `Customer notification sent for order ${event.orderId} status change`,
       );
     } catch (error) {
-      this.logger.error(
-        `Failed to send customer notification for order ${event.orderId}: ${error}`,
-      );
+      if (error instanceof Error) {
+        this.logger.error(
+          `Failed to send customer notification for order ${event.orderId}: ${error.message}`,
+          error.stack,
+        );
+      } else {
+        this.logger.error(
+          `Failed to send customer notification for order ${event.orderId}: ${JSON.stringify(error)}`,
+        );
+      }
     }
   }
 }
