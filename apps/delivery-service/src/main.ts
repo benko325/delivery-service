@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { AppConfigService } from "./infrastructure/config/app-config.service";
 import { patchNestJsSwagger } from "nestjs-zod";
+import { saveOpenApiSpec } from "./infrastructure/saveOpenApiSpec";
 
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
@@ -44,6 +45,8 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup("api/docs", app, document);
+
+  saveOpenApiSpec(document, logger);
 
   // Start server
   const port = configService.port;

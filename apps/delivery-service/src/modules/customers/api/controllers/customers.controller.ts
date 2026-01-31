@@ -27,6 +27,7 @@ import {
   CreateCustomerDto,
   UpdateCustomerDto,
   AddAddressDto,
+  CustomerResponseDto,
 } from "../dto/customer.dto";
 import { CreateCustomerCommand } from "../../application/commands/create-customer/create-customer.command";
 import { UpdateCustomerCommand } from "../../application/commands/update-customer/update-customer.command";
@@ -51,7 +52,11 @@ export class CustomersController {
   @Get()
   @Roles("admin")
   @ApiOperation({ summary: "Get all customers (admin only)" })
-  @ApiResponse({ status: 200, description: "List of all customers" })
+  @ApiResponse({
+    status: 200,
+    description: "List of all customers",
+    type: [CustomerResponseDto],
+  })
   async findAll() {
     return this.queryBus.execute(new GetAllCustomersQuery());
   }
@@ -59,7 +64,11 @@ export class CustomersController {
   @Get("me")
   @Roles("customer")
   @ApiOperation({ summary: "Get current customer profile" })
-  @ApiResponse({ status: 200, description: "Customer profile" })
+  @ApiResponse({
+    status: 200,
+    description: "Customer profile",
+    type: CustomerResponseDto,
+  })
   async getMyProfile(@User() user: RequestUser) {
     return this.queryBus.execute(new GetCustomerByIdQuery(user.userId));
   }
@@ -67,7 +76,11 @@ export class CustomersController {
   @Get(":id")
   @Roles("admin")
   @ApiOperation({ summary: "Get customer by ID (admin only)" })
-  @ApiResponse({ status: 200, description: "Customer details" })
+  @ApiResponse({
+    status: 200,
+    description: "Customer details",
+    type: CustomerResponseDto,
+  })
   @ApiResponse({ status: 404, description: "Customer not found" })
   async findById(@Param("id") id: string) {
     return this.queryBus.execute(new GetCustomerByIdQuery(id));
@@ -77,7 +90,11 @@ export class CustomersController {
   @Roles("admin")
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: "Create a new customer (admin only)" })
-  @ApiResponse({ status: 201, description: "Customer created" })
+  @ApiResponse({
+    status: 201,
+    description: "Customer created",
+    type: CustomerResponseDto,
+  })
   async create(@Body(ZodValidationPipe) dto: CreateCustomerDto) {
     return this.commandBus.execute(
       new CreateCustomerCommand(null, dto.email, dto.name, dto.phone),
@@ -87,7 +104,11 @@ export class CustomersController {
   @Put("me")
   @Roles("customer")
   @ApiOperation({ summary: "Update current customer profile" })
-  @ApiResponse({ status: 200, description: "Profile updated" })
+  @ApiResponse({
+    status: 200,
+    description: "Profile updated",
+    type: CustomerResponseDto,
+  })
   async updateMyProfile(
     @User() user: RequestUser,
     @Body(ZodValidationPipe) dto: UpdateCustomerDto,
@@ -160,7 +181,11 @@ export class CustomersController {
   @Put(":id")
   @Roles("admin")
   @ApiOperation({ summary: "Update customer by ID (admin only)" })
-  @ApiResponse({ status: 200, description: "Customer updated" })
+  @ApiResponse({
+    status: 200,
+    description: "Customer updated",
+    type: CustomerResponseDto,
+  })
   async update(
     @Param("id") id: string,
     @Body(ZodValidationPipe) dto: UpdateCustomerDto,

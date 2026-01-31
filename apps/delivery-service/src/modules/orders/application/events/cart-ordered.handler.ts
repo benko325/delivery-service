@@ -4,9 +4,7 @@ import { CartOrderedMappedEvent } from "../../infrastructure/anti-corruption-lay
 import { CreateOrderCommand } from "../commands/create-order/create-order.command";
 
 @EventsHandler(CartOrderedMappedEvent)
-export class CartOrderedEventHandler
-  implements IEventHandler<CartOrderedMappedEvent>
-{
+export class CartOrderedEventHandler implements IEventHandler<CartOrderedMappedEvent> {
   private readonly logger = new Logger(CartOrderedEventHandler.name);
 
   constructor(private readonly commandBus: CommandBus) {}
@@ -33,9 +31,16 @@ export class CartOrderedEventHandler
         `Order created successfully for customer ${event.customerId}`,
       );
     } catch (error) {
-      this.logger.error(
-        `Failed to create order for customer ${event.customerId}: ${error}`,
-      );
+      if (error instanceof Error) {
+        this.logger.error(
+          `Failed to create order for customer ${event.customerId}: ${error.message}`,
+          error.stack,
+        );
+      } else {
+        this.logger.error(
+          `Failed to create order for customer ${event.customerId}: ${JSON.stringify(error)}`,
+        );
+      }
       throw error;
     }
   }

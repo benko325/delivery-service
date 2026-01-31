@@ -27,6 +27,7 @@ import {
   UpdateRestaurantDto,
   ConfirmOrderDto,
   RejectOrderDto,
+  RestaurantResponseDto,
 } from "../dtos/restaurant.dto";
 import { CreateRestaurantCommand } from "../../application/commands/create-restaurant/create-restaurant.command";
 import { UpdateRestaurantCommand } from "../../application/commands/update-restaurant/update-restaurant.command";
@@ -47,7 +48,11 @@ export class RestaurantsController {
 
   @Get()
   @ApiOperation({ summary: "Get all active restaurants [Public]" })
-  @ApiResponse({ status: 200, description: "List of active restaurants" })
+  @ApiResponse({
+    status: 200,
+    description: "List of active restaurants",
+    type: [RestaurantResponseDto],
+  })
   async findAll() {
     return this.queryBus.execute(new GetAllRestaurantsQuery(true));
   }
@@ -59,14 +64,22 @@ export class RestaurantsController {
   @ApiOperation({
     summary: "Get all restaurants including inactive [Admin]",
   })
-  @ApiResponse({ status: 200, description: "List of all restaurants" })
+  @ApiResponse({
+    status: 200,
+    description: "List of all restaurants",
+    type: [RestaurantResponseDto],
+  })
   async findAllIncludingInactive() {
     return this.queryBus.execute(new GetAllRestaurantsQuery(false));
   }
 
   @Get(":id")
   @ApiOperation({ summary: "Get restaurant by ID [Public]" })
-  @ApiResponse({ status: 200, description: "Restaurant details" })
+  @ApiResponse({
+    status: 200,
+    description: "Restaurant details",
+    type: RestaurantResponseDto,
+  })
   @ApiResponse({ status: 404, description: "Restaurant not found" })
   async findById(@Param("id") id: string) {
     return this.queryBus.execute(new GetRestaurantByIdQuery(id));
@@ -77,7 +90,9 @@ export class RestaurantsController {
   @Roles("admin", "restaurant_owner")
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: "Create a new restaurant [Admin, Restaurant Owner]" })
+  @ApiOperation({
+    summary: "Create a new restaurant [Admin, Restaurant Owner]",
+  })
   @ApiResponse({ status: 201, description: "Restaurant created" })
   async create(
     @User() user: RequestUser,
