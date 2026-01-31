@@ -21,19 +21,19 @@ COPY apps/delivery-service ./apps/delivery-service
 # Build the application
 RUN pnpm --filter @delivery-service/api build
 
+# Deploy the package (creates standalone directory with all deps)
+RUN pnpm --filter @delivery-service/api deploy --prod --legacy /deploy
+
+# Copy built dist to deploy folder
+RUN cp -r /app/apps/delivery-service/dist /deploy/dist
+
 # Production stage
 FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Copy package.json for reference
-COPY --from=builder /app/apps/delivery-service/package.json ./
-
-# Copy node_modules (production dependencies)
-COPY --from=builder /app/node_modules ./node_modules
-
-# Copy built application
-COPY --from=builder /app/apps/delivery-service/dist ./dist
+# Copy the deployed package (contains node_modules with real files, not symlinks)
+COPY --from=builder /deploy ./
 
 # Set environment
 ENV NODE_ENV=production

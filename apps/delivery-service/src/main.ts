@@ -1,14 +1,13 @@
 import { NestFactory } from "@nestjs/core";
-import { Logger } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { AppConfigService } from "./infrastructure/config/app-config.service";
 import { patchNestJsSwagger } from "nestjs-zod";
+import { Logger } from "nestjs-pino";
 
 async function bootstrap() {
-  const logger = new Logger("Bootstrap");
-
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.useLogger(app.get(Logger));
 
   // Get config service
   const configService = app.get(AppConfigService);
@@ -51,6 +50,7 @@ async function bootstrap() {
 
   await app.listen(port, host);
 
+  const logger = app.get(Logger);
   logger.log(`Application is running on: http://${host}:${port}`);
   logger.log(`Swagger documentation: http://${host}:${port}/api/docs`);
 }

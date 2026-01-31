@@ -1,11 +1,14 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { LoggerModule } from "nestjs-pino";
+import { PrometheusModule } from "@willsoto/nestjs-prometheus";
 
 // Infrastructure
 import { AppConfigModule } from "./infrastructure/config/app-config.module";
 
 // Shared Kernel
 import { SharedKernelModule } from "./modules/shared-kernel/shared-kernel.module";
+import { MetricsModule } from "./modules/shared-kernel/infrastructure/metrics";
 
 // Feature Modules
 import { HealthModule } from "./modules/health/health.module";
@@ -25,6 +28,11 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
       envFilePath: [".env", ".env.local"],
     }),
     AppConfigModule,
+
+    // Logging & Monitoring
+    LoggerModule.forRoot(),
+    PrometheusModule.register(),
+    MetricsModule,
 
     // Shared Infrastructure
     SharedKernelModule,
