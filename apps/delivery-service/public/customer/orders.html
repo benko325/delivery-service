@@ -23,7 +23,7 @@
     async function load(){
       const c = document.getElementById('orders'); c.innerHTML='Loading...';
       try{
-        const res = await fetch('/api/orders/my-orders',{headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+        const res = await fetch('/api/orders/my-orders',{headers:{'Authorization':'Bearer '+auth.getToken()}});
         if(!res.ok) throw new Error('fail');
         const data = await res.json(); c.innerHTML = '';
         (data||[]).forEach(o=>{ const el=document.createElement('div'); el.className='list-item'; el.innerHTML=`<strong>Order ${o.id}</strong><div class='small muted'>Status: ${o.status}</div><div class='small muted'>Total: ${o.total||''}</div>`; c.appendChild(el)});

@@ -30,7 +30,7 @@
     async function loadFor(restId){
       const container = document.getElementById('orders'); container.innerHTML='Loading...';
       try{
-        const res = await fetch('/api/orders/my-orders',{headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+        const res = await fetch('/api/orders/my-orders',{headers:{'Authorization':'Bearer '+auth.getToken()}});
         if(!res.ok) throw new Error('fail');
         const data = await res.json(); container.innerHTML='';
         const filtered = (data||[]).filter(o=>!restId||o.restaurantId==restId);
@@ -38,12 +38,12 @@
         container.querySelectorAll('.confirm').forEach(b=>b.addEventListener('click', async ()=>{
           const id=b.getAttribute('data-id');
           const rest = document.getElementById('restId').value.trim();
-          await fetch(`/api/restaurants/${rest}/orders/${id}/confirm`,{method:'POST',headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+          await fetch(`/api/restaurants/${rest}/orders/${id}/confirm`,{method:'POST',headers:{'Authorization':'Bearer '+auth.getToken()}});
           alert('Confirmed'); loadFor(rest);
         }))
         container.querySelectorAll('#reject').forEach(b=>b.addEventListener('click', async ()=>{
           const id=b.getAttribute('data-id'); const rest=document.getElementById('restId').value.trim();
-          await fetch(`/api/restaurants/${rest}/orders/${id}/reject`,{method:'POST',headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+          await fetch(`/api/restaurants/${rest}/orders/${id}/reject`,{method:'POST',headers:{'Authorization':'Bearer '+auth.getToken()}});
           alert('Rejected'); loadFor(rest);
         }))
       }catch(e){ container.innerHTML='<div class="center muted">Failed to load orders</div>' }

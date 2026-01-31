@@ -25,13 +25,13 @@
     async function loadAvailable(){
       const container = document.getElementById('orders'); container.innerHTML='Loading...';
       try{
-        const res = await fetch('/api/orders/available',{headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+        const res = await fetch('/api/orders/available',{headers:{'Authorization':'Bearer '+auth.getToken()}});
         if(!res.ok) throw new Error('fail');
         const data = await res.json(); container.innerHTML='';
         (data||[]).forEach(o=>{ const el=document.createElement('div'); el.className='list-item'; el.innerHTML=`<strong>Order ${o.id}</strong><div class='small muted'>${o.address||o.pickupAddress||''}</div><div style='margin-top:8px'><button class='btn accept' data-id='${o.id}'>Accept</button></div>`; container.appendChild(el) })
         container.querySelectorAll('.accept').forEach(b=>b.addEventListener('click', async ()=>{
           const id=b.getAttribute('data-id');
-          await fetch('/api/orders/'+id+'/accept',{method:'POST',headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+          await fetch('/api/orders/'+id+'/accept',{method:'POST',headers:{'Authorization':'Bearer '+auth.getToken()}});
           alert('Accepted'); loadAvailable();
         }))
       }catch(e){ container.innerHTML='<div class="center muted">Failed to load</div>' }
@@ -39,7 +39,7 @@
 
     document.getElementById('toggleAvail').addEventListener('click', async ()=>{
       try{
-        await fetch('/api/drivers/me/availability',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('accessToken')},body:JSON.stringify({available:true})});
+        await fetch('/api/drivers/me/availability',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+auth.getToken()},body:JSON.stringify({available:true})});
         document.getElementById('status').textContent='Availability toggled';
       }catch(e){ alert('Failed') }
     })

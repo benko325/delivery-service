@@ -36,9 +36,9 @@
   <script>
     async function loadAll(){
       try{
-        const r = await fetch('/api/restaurants/all',{headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
-        const d = await fetch('/api/drivers',{headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
-        const c = await fetch('/api/customers',{headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+        const r = await fetch('/api/restaurants/all',{headers:{'Authorization':'Bearer '+auth.getToken()}});
+        const d = await fetch('/api/drivers',{headers:{'Authorization':'Bearer '+auth.getToken()}});
+        const c = await fetch('/api/customers',{headers:{'Authorization':'Bearer '+auth.getToken()}});
         const rr = r.ok?await r.json():[]; const dd = d.ok?await d.json():[]; const cc = c.ok?await c.json():[];
         const restEl=document.getElementById('restaurants'); restEl.innerHTML=''; rr.forEach(x=>{ const el=document.createElement('div'); el.className='list-item'; el.innerHTML=`<strong>${x.name||x.title||x.id}</strong><div class='small muted'>${x.id}</div>`; restEl.appendChild(el) });
         const drvEl=document.getElementById('drivers'); drvEl.innerHTML=''; dd.forEach(x=>{ const el=document.createElement('div'); el.className='list-item'; el.innerHTML=`<strong>${x.id}</strong><div class='small muted'>${x.userId||''}</div><div style='margin-top:8px'><button class='btn role' data-id='${x.id}' data-user='${x.userId}'>Make Admin</button></div>`; drvEl.appendChild(el) });
@@ -48,7 +48,7 @@
           if(!user){ alert('No user id'); return }
           const newRole = prompt('Enter role to assign (admin/restaurant/driver/customer)', 'admin');
           if(!newRole) return;
-          await fetch('/api/auth/users/'+user+'/role',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('accessToken')},body:JSON.stringify({role:newRole})});
+          await fetch('/api/auth/users/'+user+'/role',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+auth.getToken()},body:JSON.stringify({role:newRole})});
           alert('Role updated');
         }))
       }catch(e){ console.error(e) }
