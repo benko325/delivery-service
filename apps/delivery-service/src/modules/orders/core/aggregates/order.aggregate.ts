@@ -123,6 +123,7 @@ export class OrderAggregate extends AggregateRoot {
     const previousStatus = this._status;
     this._driverId = driverId;
     this._estimatedDeliveryTime = estimatedDeliveryTime;
+    this._status = "in_transit";
     this._updatedAt = new Date();
 
     this.apply(
