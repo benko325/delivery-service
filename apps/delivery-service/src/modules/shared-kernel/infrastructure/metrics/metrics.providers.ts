@@ -68,6 +68,58 @@ export const restaurantsRegisteredCounterProvider = makeCounterProvider({
   help: "Total number of restaurants registered",
 });
 
+export const ordersPerRestaurantCounterProvider = makeCounterProvider({
+  name: "orders_per_restaurant_total",
+  help: "Total number of orders per restaurant",
+  labelNames: ["restaurant_id"],
+});
+
+// Authentication Metrics
+export const loginAttemptsCounterProvider = makeCounterProvider({
+  name: "login_attempts_total",
+  help: "Total number of login attempts",
+  labelNames: ["status"], // success, failure
+});
+
+export const tokenRefreshCounterProvider = makeCounterProvider({
+  name: "token_refresh_total",
+  help: "Total number of token refresh attempts",
+  labelNames: ["status"], // success, failure
+});
+
+export const registrationAttemptsCounterProvider = makeCounterProvider({
+  name: "registration_attempts_total",
+  help: "Total number of registration attempts",
+  labelNames: ["status", "user_type"], // success/failure, customer/driver/restaurant
+});
+
+// Error Metrics
+export const errorsCounterProvider = makeCounterProvider({
+  name: "errors_total",
+  help: "Total number of errors",
+  labelNames: ["type", "status_code"], // error type and HTTP status code
+});
+
+export const unhandledExceptionsCounterProvider = makeCounterProvider({
+  name: "unhandled_exceptions_total",
+  help: "Total number of unhandled exceptions",
+  labelNames: ["exception_type"],
+});
+
+// Revenue Metrics
+export const orderAmountHistogramProvider = makeHistogramProvider({
+  name: "order_amount",
+  help: "Order amounts distribution",
+  labelNames: ["currency"],
+  buckets: [5, 10, 20, 30, 50, 75, 100, 150, 200, 500], // Amount buckets
+});
+
+export const revenueCounterProvider = makeCounterProvider({
+  name: "revenue_total",
+  help: "Total revenue from orders",
+  labelNames: ["currency"],
+});
+
 // Delivery Metrics
 export const deliveryDurationHistogramProvider = makeHistogramProvider({
   name: "delivery_duration_seconds",
@@ -89,5 +141,16 @@ export const metricsProviders = [
   driversRegisteredCounterProvider,
   activeDriversGaugeProvider,
   restaurantsRegisteredCounterProvider,
+  ordersPerRestaurantCounterProvider,
   deliveryDurationHistogramProvider,
+  // Authentication
+  loginAttemptsCounterProvider,
+  tokenRefreshCounterProvider,
+  registrationAttemptsCounterProvider,
+  // Errors
+  errorsCounterProvider,
+  unhandledExceptionsCounterProvider,
+  // Revenue
+  orderAmountHistogramProvider,
+  revenueCounterProvider,
 ];
