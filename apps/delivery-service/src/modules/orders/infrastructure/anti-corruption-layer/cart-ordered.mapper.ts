@@ -1,30 +1,68 @@
-import { EventsHandler, IEventHandler, CommandBus } from "@nestjs/cqrs";
+import { EventsHandler, IEventHandler, EventBus } from "@nestjs/cqrs";
 import { Logger } from "@nestjs/common";
-import { CartOrderedEvent } from "../../../carts/core/events/cart-ordered.event";
-import { CreateOrderCommand } from "../../application/commands/create-order/create-order.command";
+// import { CartOrderedEvent } from "../../../carts/core/events/cart-ordered.event";
+
+import { IEvent } from "@nestjs/cqrs";
 import {
   OrderItem,
   DeliveryAddress,
 } from "../../core/types/order-database.types";
 
-@EventsHandler(CartOrderedEvent)
-export class CartOrderedEventHandler implements IEventHandler<CartOrderedEvent> {
-  private readonly logger = new Logger(CartOrderedEventHandler.name);
+export class CartOrderedMappedEvent implements IEvent {
+  constructor(
+    public readonly customerId: string,
+    public readonly restaurantId: string,
+    public readonly items: OrderItem[],
+    public readonly deliveryAddress: DeliveryAddress,
+    public readonly totalAmount: number,
+    public readonly deliveryFee: number,
+    public readonly currency: string,
+  ) {}
+}
 
-  constructor(private readonly commandBus: CommandBus) {}
+/**
+ * @todo This class is only a placeholder. Replace with actual import from Carts BC when available.
+ */
+class CartOrderedEventMock implements IEvent {
+  constructor(
+    public readonly cartId: string,
+    public readonly customerId: string,
+    public readonly restaurantId: string,
+    public readonly items: {
+      menuItemId: string;
+      name: string;
+      quantity: number;
+      price: number;
+      currency: string;
+    }[],
+    public readonly deliveryAddress: {
+      street: string;
+      city: string;
+      postalCode: string;
+      country: string;
+    },
+    public readonly totalAmount: number,
+    public readonly deliveryFee: number,
+    public readonly currency: string,
+    public readonly orderedAt: Date,
+  ) {}
+}
 
-  async handle(event: CartOrderedEvent): Promise<void> {
-    this.logger.log(
-      `Handling CartOrderedEvent for customer: ${event.customerId}`,
-    );
+@EventsHandler(CartOrderedEventMock)
+export class CartOrderedEventMapper implements IEventHandler<CartOrderedEventMock> {
+  private readonly logger = new Logger(CartOrderedEventMapper.name);
 
-    // Anti-corruption layer: Map Carts domain types to Orders domain types
-    const orderItems: OrderItem[] = event.items.map((cartItem) => ({
-      menuItemId: cartItem.menuItemId,
-      name: cartItem.name,
-      price: cartItem.price,
-      quantity: cartItem.quantity,
-      currency: cartItem.currency,
+  constructor(private readonly eventBus: EventBus) {}
+
+  handle(event: CartOrderedEventMock): void {
+    this.logger.log(`Mapping CartOrderedEvent for cart ${event.cartId}`);
+
+    const orderItems: OrderItem[] = event.items.map((item) => ({
+      menuItemId: item.menuItemId,
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price,
+      currency: item.currency,
     }));
 
     const deliveryAddress: DeliveryAddress = {
@@ -32,23 +70,20 @@ export class CartOrderedEventHandler implements IEventHandler<CartOrderedEvent> 
       city: event.deliveryAddress.city,
       postalCode: event.deliveryAddress.postalCode,
       country: event.deliveryAddress.country,
-      latitude: event.deliveryAddress.latitude,
-      longitude: event.deliveryAddress.longitude,
-      instructions: event.deliveryAddress.instructions,
     };
 
-    await this.commandBus.execute(
-      new CreateOrderCommand(
-        event.customerId,
-        event.restaurantId,
-        orderItems,
-        deliveryAddress,
-        event.totalAmount,
-        event.deliveryFee,
-        event.currency,
-      ),
+    const mappedEvent = new CartOrderedMappedEvent(
+      event.customerId,
+      event.restaurantId,
+      orderItems,
+      deliveryAddress,
+      event.totalAmount,
+      event.deliveryFee,
+      event.currency,
     );
 
-    this.logger.log(`Order created from cart: ${event.cartId}`);
+    this.eventBus.subject$.next(mappedEvent);
+
+    this.logger.log(`Mapped event published for customer ${event.customerId}`);
   }
 }

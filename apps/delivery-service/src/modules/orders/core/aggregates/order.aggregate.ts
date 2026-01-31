@@ -24,7 +24,7 @@ export class OrderAggregate extends AggregateRoot {
   private _status: OrderStatus = "pending";
   private _totalAmount: number = 0;
   private _deliveryFee: number = 0;
-  private _currency: string = "EUR";
+  private _currency: string = "USD";
   private _estimatedDeliveryTime: Date | null = null;
   private _actualDeliveryTime: Date | null = null;
   private _cancelledAt: Date | null = null;
@@ -103,13 +103,13 @@ export class OrderAggregate extends AggregateRoot {
     this._updatedAt = new Date();
 
     this.apply(
-      new OrderCreatedEvent({
-        orderId: this._id,
-        customerId: this._customerId,
-        restaurantId: this._restaurantId,
-        totalAmount: this._totalAmount,
-        createdAt: this._createdAt,
-      }),
+      new OrderCreatedEvent(
+        this._id,
+        this._customerId,
+        this._restaurantId,
+        this._totalAmount,
+        this._createdAt,
+      ),
     );
   }
 
@@ -122,35 +122,29 @@ export class OrderAggregate extends AggregateRoot {
 
     const previousStatus = this._status;
     this._driverId = driverId;
-    this._status = "driver_assigned";
     this._estimatedDeliveryTime = estimatedDeliveryTime;
     this._updatedAt = new Date();
 
     this.apply(
-      new OrderAcceptedByDriverEvent({
-        orderId: this._id,
-        driverId: driverId,
-        acceptedAt: this._updatedAt,
-      }),
+      new OrderAcceptedByDriverEvent(this._id, driverId, this._updatedAt),
     );
     this.apply(
-      new OrderStatusChangedEvent({
-        orderId: this._id,
-        previousStatus: previousStatus,
-        newStatus: this._status,
-        changedAt: this._updatedAt,
-      }),
+      new OrderStatusChangedEvent(
+        this._id,
+        previousStatus,
+        this._status,
+        this._updatedAt,
+      ),
     );
   }
 
   updateStatus(newStatus: OrderStatus): void {
     const validTransitions: Record<OrderStatus, OrderStatus[]> = {
-      pending: ["confirmed", "cancelled"],
+      pending: ["payment_succeeded", "cancelled"],
+      payment_succeeded: ["confirmed", "cancelled"],
       confirmed: ["preparing", "cancelled"],
       preparing: ["ready_for_pickup", "cancelled"],
-      ready_for_pickup: ["driver_assigned", "cancelled"],
-      driver_assigned: ["picked_up", "cancelled"],
-      picked_up: ["in_transit"],
+      ready_for_pickup: ["in_transit", "cancelled"],
       in_transit: ["delivered"],
       delivered: [],
       cancelled: [],
@@ -171,22 +165,22 @@ export class OrderAggregate extends AggregateRoot {
     }
 
     this.apply(
-      new OrderStatusChangedEvent({
-        orderId: this._id,
-        previousStatus: previousStatus,
-        newStatus: newStatus,
-        changedAt: this._updatedAt,
-      }),
+      new OrderStatusChangedEvent(
+        this._id,
+        previousStatus,
+        newStatus,
+        this._updatedAt,
+      ),
     );
   }
 
   cancel(reason: string): void {
     const cancellableStatuses: OrderStatus[] = [
       "pending",
+      "payment_succeeded",
       "confirmed",
       "preparing",
       "ready_for_pickup",
-      "driver_assigned",
     ];
 
     if (!cancellableStatuses.includes(this._status)) {
@@ -200,12 +194,12 @@ export class OrderAggregate extends AggregateRoot {
     this._updatedAt = new Date();
 
     this.apply(
-      new OrderStatusChangedEvent({
-        orderId: this._id,
-        previousStatus: previousStatus,
-        newStatus: "cancelled",
-        changedAt: this._updatedAt,
-      }),
+      new OrderStatusChangedEvent(
+        this._id,
+        previousStatus,
+        "cancelled",
+        this._updatedAt,
+      ),
     );
   }
 

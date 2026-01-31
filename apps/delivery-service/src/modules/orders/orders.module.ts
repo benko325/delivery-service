@@ -15,6 +15,7 @@ import { CreateOrderCommandHandler } from "./application/commands/create-order/c
 import { AcceptOrderCommandHandler } from "./application/commands/accept-order/accept-order.handler";
 import { UpdateOrderStatusCommandHandler } from "./application/commands/update-order-status/update-order-status.handler";
 import { CancelOrderCommandHandler } from "./application/commands/cancel-order/cancel-order.handler";
+import { PayForOrderCommandHandler } from "./application/commands/pay-for-order/pay-for-order.handler";
 
 // Application - Queries
 import { GetOrderByIdQueryHandler } from "./application/queries/get-order-by-id/get-order-by-id.handler";
@@ -22,26 +23,32 @@ import { GetOrdersByCustomerQueryHandler } from "./application/queries/get-order
 import { GetAvailableOrdersQueryHandler } from "./application/queries/get-available-orders/get-available-orders.handler";
 import { GetOrdersByDriverQueryHandler } from "./application/queries/get-orders-by-driver/get-orders-by-driver.handler";
 
-// Infrastructure - Anti-Corruption Layer
-import { CartOrderedEventHandler } from "./infrastructure/anti-corruption-layer/cart-ordered.mapper";
-import { OrderConfirmedByRestaurantMapper } from "./infrastructure/anti-corruption-layer/order-confirmed-by-restaurant.mapper";
-import { OrderRejectedByRestaurantMapper } from "./infrastructure/anti-corruption-layer/order-rejected-by-restaurant.mapper";
+// Application - Events
+import { CartOrderedEventHandler } from "./application/events/cart-ordered.handler";
+import { PaymentSucceededEventHandler } from "./application/events/payment-succeeded.handler";
 
-// Events (from other modules)
-import { CartOrderedEvent } from "../carts/core/events/cart-ordered.event";
-import { OrderConfirmedByRestaurantEvent } from "../restaurants/core/events/order-confirmed-by-restaurant.event";
-import { OrderRejectedByRestaurantEvent } from "../restaurants/core/events/order-rejected-by-restaurant.event";
+// Infrastructure - Anti-Corruption Layer
+import { CartOrderedEventMapper } from "./infrastructure/anti-corruption-layer/cart-ordered.mapper";
+
+// Infrastructure - Services
+import { PaymentGatewayService } from "./infrastructure/services/payment-gateway.service";
 
 // Infrastructure
 import { OrderRepository } from "./infrastructure/database/repositories/order.repository";
 import { OrderAggregateRepository } from "./infrastructure/database/repositories/order-aggregate.repository";
 import { RabbitMQPublisher, RabbitMQSubscriber } from "../shared-kernel";
+import { CartOrderedMappedEvent } from "./infrastructure/anti-corruption-layer/cart-ordered.mapper";
+
+// Events
+import { PaymentSucceededEvent } from "./core/events/payment-succeeded.event";
+import { OrderStatusChangedEvent } from "./core/events/order-status-changed.event";
 
 const commandHandlers = [
   CreateOrderCommandHandler,
   AcceptOrderCommandHandler,
   UpdateOrderStatusCommandHandler,
   CancelOrderCommandHandler,
+  PayForOrderCommandHandler,
 ];
 
 const queryHandlers = [
@@ -51,17 +58,17 @@ const queryHandlers = [
   GetOrdersByDriverQueryHandler,
 ];
 
-const eventHandlers = [
-  CartOrderedEventHandler,
-  OrderConfirmedByRestaurantMapper,
-  OrderRejectedByRestaurantMapper,
-];
+const eventHandlers = [CartOrderedEventHandler, PaymentSucceededEventHandler];
 
 const events = [
-  CartOrderedEvent,
-  OrderConfirmedByRestaurantEvent,
-  OrderRejectedByRestaurantEvent,
+  CartOrderedMappedEvent,
+  PaymentSucceededEvent,
+  OrderStatusChangedEvent,
 ];
+
+const antiCorruptionLayer = [CartOrderedEventMapper];
+
+const infrastructureServices = [PaymentGatewayService];
 
 @Module({
   imports: [
@@ -82,6 +89,8 @@ const events = [
     ...commandHandlers,
     ...queryHandlers,
     ...eventHandlers,
+    ...antiCorruptionLayer,
+    ...infrastructureServices,
     {
       provide: "IOrderRepository",
       useClass: OrderRepository,
@@ -92,6 +101,10 @@ const events = [
     },
     RabbitMQPublisher,
     RabbitMQSubscriber,
+    {
+      provide: "IPaymentGatewayService",
+      useClass: PaymentGatewayService,
+    },
     {
       provide: "EVENTS",
       useValue: events,

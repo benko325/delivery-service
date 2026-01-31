@@ -1,13 +1,12 @@
 import { Generated } from "kysely";
 
 export type OrderStatus =
-  | "pending" // Order created, waiting for restaurant confirmation
+  | "pending" // Order created, waiting for payment
+  | "payment_succeeded" // Payment was successful, waiting for restaurant confirmation
   | "confirmed" // Restaurant confirmed the order
   | "preparing" // Restaurant is preparing the order
-  | "ready_for_pickup" // Order ready, waiting for driver to accept
-  | "driver_assigned" // Driver accepted the order
-  | "picked_up" // Driver picked up the order
-  | "in_transit" // Driver is on the way
+  | "ready_for_pickup" // Order ready, waiting for driver
+  | "in_transit" // Driver is delivering the order
   | "delivered" // Order delivered successfully
   | "cancelled"; // Order was cancelled
 
@@ -15,8 +14,8 @@ export interface OrderItem {
   menuItemId: string;
   name: string;
   price: number;
-  quantity: number;
   currency: string;
+  quantity: number;
 }
 
 export interface DeliveryAddress {
@@ -24,9 +23,6 @@ export interface DeliveryAddress {
   city: string;
   postalCode: string;
   country: string;
-  latitude?: number;
-  longitude?: number;
-  instructions?: string;
 }
 
 export interface OrdersTable {
