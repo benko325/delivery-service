@@ -43,7 +43,12 @@ const antiCorruptionLayer = [
   OrderStatusChangedEventMapper,
 ];
 
-const infrastructureServices = [OrderDataService];
+const infrastructureServices = [
+  {
+    provide: "IOrderDataService",
+    useClass: OrderDataService,
+  },
+];
 
 @Module({
   imports: [
