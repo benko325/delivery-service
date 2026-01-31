@@ -572,7 +572,7 @@ The application includes comprehensive monitoring with Pino for structured loggi
 
 ### Metrics (Prometheus)
 
-Metrics are exposed at `/metrics` endpoint. Available metrics include:
+Metrics are exposed at `/api/metrics` endpoint. Available metrics include:
 
 | Metric | Type | Description |
 |--------|------|-------------|
@@ -603,7 +603,7 @@ docker-compose up -d
 # Access points:
 # - Prometheus: http://localhost:9095
 # - Grafana: http://localhost:3001
-# - Metrics endpoint: http://localhost:3000/metrics
+# - Metrics endpoint: http://localhost:3000/api/metrics
 ```
 
 ---
