@@ -62,7 +62,7 @@ export class OrdersController {
       (sum, item) => sum + item.price * item.quantity,
       0,
     );
-    const currency = dto.items[0]?.currency || "USD";
+    const currency = dto.items[0]?.currency || "EUR";
 
     return this.commandBus.execute(
       new CreateOrderCommand(

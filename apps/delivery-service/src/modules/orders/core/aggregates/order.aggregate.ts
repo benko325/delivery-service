@@ -24,7 +24,7 @@ export class OrderAggregate extends AggregateRoot {
   private _status: OrderStatus = "pending";
   private _totalAmount: number = 0;
   private _deliveryFee: number = 0;
-  private _currency: string = "USD";
+  private _currency: string = "EUR";
   private _estimatedDeliveryTime: Date | null = null;
   private _actualDeliveryTime: Date | null = null;
   private _cancelledAt: Date | null = null;
