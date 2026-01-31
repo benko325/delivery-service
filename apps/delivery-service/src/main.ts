@@ -4,6 +4,8 @@ import { AppModule } from "./app.module";
 import { AppConfigService } from "./infrastructure/config/app-config.service";
 import { patchNestJsSwagger } from "nestjs-zod";
 import { Logger } from "nestjs-pino";
+import { MetricsService } from "./modules/shared-kernel/infrastructure/metrics";
+import { MetricsExceptionFilter } from "./modules/shared-kernel/api/filters/metrics-exception.filter";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -22,6 +24,10 @@ async function bootstrap() {
 
   // Global prefix
   app.setGlobalPrefix("api");
+
+  // Global exception filter for metrics
+  const metricsService = app.get(MetricsService);
+  app.useGlobalFilters(new MetricsExceptionFilter(metricsService));
 
   // Swagger documentation
   const swaggerConfig = new DocumentBuilder()
