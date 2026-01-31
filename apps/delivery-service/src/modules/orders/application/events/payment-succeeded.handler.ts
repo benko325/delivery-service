@@ -15,7 +15,7 @@ export class PaymentSucceededEventHandler implements IEventHandler<PaymentSuccee
     );
 
     try {
-      this.commandBus.execute(
+      await this.commandBus.execute(
         new UpdateOrderStatusCommand(event.orderId, "payment_succeeded"),
       );
     } catch (error) {
