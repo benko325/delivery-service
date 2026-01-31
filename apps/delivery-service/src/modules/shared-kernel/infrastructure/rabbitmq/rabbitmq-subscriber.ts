@@ -27,7 +27,8 @@ export class RabbitMQSubscriber implements IMessageSource {
                 return;
               }
               const parsedJson = JSON.parse(message);
-              const receivedEvent = new Event(parsedJson);
+              const receivedEvent = Object.create(Event.prototype);
+              Object.assign(receivedEvent, parsedJson);
               this.bridge.next(receivedEvent);
               this.logger.debug(`Received event: ${Event.name}`);
             } catch (error) {

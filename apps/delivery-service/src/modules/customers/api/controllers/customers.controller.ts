@@ -3,7 +3,7 @@ import {
   Get,
   Post,
   Put,
-  Patch,
+  Delete,
   Body,
   Param,
   UseGuards,
@@ -26,13 +26,17 @@ import { RequestUser } from "../../../shared-kernel/core/types/user-types";
 import {
   CreateCustomerDto,
   UpdateCustomerDto,
-  UpdateAddressDto,
-} from "../dtos/customer.dto";
+  AddAddressDto,
+} from "../dto/customer.dto";
 import { CreateCustomerCommand } from "../../application/commands/create-customer/create-customer.command";
 import { UpdateCustomerCommand } from "../../application/commands/update-customer/update-customer.command";
-import { UpdateCustomerAddressCommand } from "../../application/commands/update-customer-address/update-customer-address.command";
+import { AddCustomerAddressCommand } from "../../application/commands/add-customer-address/add-customer-address.command";
+import { RemoveCustomerAddressCommand } from "../../application/commands/remove-customer-address/remove-customer-address.command";
+import { AddRestaurantToFavoritesCommand } from "../../application/commands/add-restaurant-to-favorites/add-restaurant-to-favorites.command";
+import { RemoveRestaurantFromFavoritesCommand } from "../../application/commands/remove-restaurant-from-favorites/remove-restaurant-from-favorites.command";
 import { GetCustomerByIdQuery } from "../../application/queries/get-customer-by-id/get-customer-by-id.query";
 import { GetAllCustomersQuery } from "../../application/queries/get-all-customers/get-all-customers.query";
+import { GetFavoriteRestaurantsQuery } from "../../application/queries/get-favorite-restaurants/get-favorite-restaurants.query";
 
 @ApiTags("Customers")
 @Controller("customers")
@@ -46,7 +50,7 @@ export class CustomersController {
 
   @Get()
   @Roles("admin")
-  @ApiOperation({ summary: "Get all customers [Admin]" })
+  @ApiOperation({ summary: "Get all customers (admin only)" })
   @ApiResponse({ status: 200, description: "List of all customers" })
   async findAll() {
     return this.queryBus.execute(new GetAllCustomersQuery());
@@ -54,7 +58,7 @@ export class CustomersController {
 
   @Get("me")
   @Roles("customer")
-  @ApiOperation({ summary: "Get current customer profile [Customer]" })
+  @ApiOperation({ summary: "Get current customer profile" })
   @ApiResponse({ status: 200, description: "Customer profile" })
   async getMyProfile(@User() user: RequestUser) {
     return this.queryBus.execute(new GetCustomerByIdQuery(user.userId));
@@ -62,7 +66,7 @@ export class CustomersController {
 
   @Get(":id")
   @Roles("admin")
-  @ApiOperation({ summary: "Get customer by ID [Admin]" })
+  @ApiOperation({ summary: "Get customer by ID (admin only)" })
   @ApiResponse({ status: 200, description: "Customer details" })
   @ApiResponse({ status: 404, description: "Customer not found" })
   async findById(@Param("id") id: string) {
@@ -72,7 +76,7 @@ export class CustomersController {
   @Post()
   @Roles("admin")
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: "Create a new customer [Admin]" })
+  @ApiOperation({ summary: "Create a new customer (admin only)" })
   @ApiResponse({ status: 201, description: "Customer created" })
   async create(@Body(ZodValidationPipe) dto: CreateCustomerDto) {
     return this.commandBus.execute(
@@ -82,7 +86,7 @@ export class CustomersController {
 
   @Put("me")
   @Roles("customer")
-  @ApiOperation({ summary: "Update current customer profile [Customer]" })
+  @ApiOperation({ summary: "Update current customer profile" })
   @ApiResponse({ status: 200, description: "Profile updated" })
   async updateMyProfile(
     @User() user: RequestUser,
@@ -93,22 +97,69 @@ export class CustomersController {
     );
   }
 
-  @Patch("me/address")
+  @Post("me/addresses")
   @Roles("customer")
-  @ApiOperation({ summary: "Update current customer delivery address [Customer]" })
-  @ApiResponse({ status: 200, description: "Address updated" })
-  async updateMyAddress(
+  @ApiOperation({ summary: "Add new address to customer profile" })
+  @ApiResponse({ status: 200, description: "Address added" })
+  async addAddress(
     @User() user: RequestUser,
-    @Body(ZodValidationPipe) dto: UpdateAddressDto,
+    @Body(ZodValidationPipe) dto: AddAddressDto,
   ) {
     return this.commandBus.execute(
-      new UpdateCustomerAddressCommand(user.userId, dto.address),
+      new AddCustomerAddressCommand(user.userId, dto.address),
+    );
+  }
+
+  @Delete("me/addresses/:addressId")
+  @Roles("customer")
+  @ApiOperation({ summary: "Remove address from customer profile" })
+  @ApiResponse({ status: 200, description: "Address removed" })
+  async removeAddress(
+    @User() user: RequestUser,
+    @Param("addressId") addressId: string,
+  ) {
+    return this.commandBus.execute(
+      new RemoveCustomerAddressCommand(user.userId, addressId),
+    );
+  }
+
+  @Post("me/favorites/:restaurantId")
+  @Roles("customer")
+  @ApiOperation({ summary: "Add restaurant to favorites" })
+  @ApiResponse({ status: 200, description: "Added to favorites" })
+  async addFavorite(
+    @User() user: RequestUser,
+    @Param("restaurantId") restaurantId: string,
+  ) {
+    return this.commandBus.execute(
+      new AddRestaurantToFavoritesCommand(user.userId, restaurantId),
+    );
+  }
+
+  @Get("me/favorites")
+  @Roles("customer")
+  @ApiOperation({ summary: "Get all favorite restaurants" })
+  @ApiResponse({ status: 200, description: "List of favorite restaurants" })
+  async getFavorites(@User() user: RequestUser) {
+    return this.queryBus.execute(new GetFavoriteRestaurantsQuery(user.userId));
+  }
+
+  @Delete("me/favorites/:restaurantId")
+  @Roles("customer")
+  @ApiOperation({ summary: "Remove restaurant from favorites" })
+  @ApiResponse({ status: 200, description: "Removed from favorites" })
+  async removeFavorite(
+    @User() user: RequestUser,
+    @Param("restaurantId") restaurantId: string,
+  ) {
+    return this.commandBus.execute(
+      new RemoveRestaurantFromFavoritesCommand(user.userId, restaurantId),
     );
   }
 
   @Put(":id")
   @Roles("admin")
-  @ApiOperation({ summary: "Update customer by ID [Admin]" })
+  @ApiOperation({ summary: "Update customer by ID (admin only)" })
   @ApiResponse({ status: 200, description: "Customer updated" })
   async update(
     @Param("id") id: string,

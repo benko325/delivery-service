@@ -13,14 +13,18 @@ import { CustomersController } from "./api/controllers/customers.controller";
 // Application - Commands
 import { CreateCustomerCommandHandler } from "./application/commands/create-customer/create-customer.handler";
 import { UpdateCustomerCommandHandler } from "./application/commands/update-customer/update-customer.handler";
-import { UpdateCustomerAddressCommandHandler } from "./application/commands/update-customer-address/update-customer-address.handler";
+import { AddCustomerAddressCommandHandler } from "./application/commands/add-customer-address/add-customer-address.handler";
+import { RemoveCustomerAddressCommandHandler } from "./application/commands/remove-customer-address/remove-customer-address.handler";
+import { AddRestaurantToFavoritesCommandHandler } from "./application/commands/add-restaurant-to-favorites/add-restaurant-to-favorites.handler";
+import { RemoveRestaurantFromFavoritesCommandHandler } from "./application/commands/remove-restaurant-from-favorites/remove-restaurant-from-favorites.handler";
 
 // Application - Queries
 import { GetCustomerByIdQueryHandler } from "./application/queries/get-customer-by-id/get-customer-by-id.handler";
 import { GetAllCustomersQueryHandler } from "./application/queries/get-all-customers/get-all-customers.handler";
+import { GetFavoriteRestaurantsQueryHandler } from "./application/queries/get-favorite-restaurants/get-favorite-restaurants.handler";
 
-// Infrastructure - Anti-Corruption Layer
-import { UserRegisteredEventHandler } from "./infrastructure/anti-corruption-layer/user-registered.mapper";
+// Infrastructure (Anti-corruption layer)
+import { UserRegisteredAcl } from "./infrastructure/acl/user-registered.acl";
 
 // Infrastructure
 import { CustomerRepository } from "./infrastructure/database/repositories/customer.repository";
@@ -33,15 +37,19 @@ import { UserRegisteredEvent } from "../auth/core/events/user-registered.event";
 const commandHandlers = [
   CreateCustomerCommandHandler,
   UpdateCustomerCommandHandler,
-  UpdateCustomerAddressCommandHandler,
+  AddCustomerAddressCommandHandler,
+  RemoveCustomerAddressCommandHandler,
+  AddRestaurantToFavoritesCommandHandler,
+  RemoveRestaurantFromFavoritesCommandHandler,
 ];
 
 const queryHandlers = [
   GetCustomerByIdQueryHandler,
   GetAllCustomersQueryHandler,
+  GetFavoriteRestaurantsQueryHandler,
 ];
 
-const eventHandlers = [UserRegisteredEventHandler];
+const eventHandlers = [UserRegisteredAcl];
 
 const events = [UserRegisteredEvent];
 
