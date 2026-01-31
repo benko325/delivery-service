@@ -3,11 +3,10 @@ import { createZodDto } from "nestjs-zod";
 
 const orderStatusSchema = z.enum([
   "pending",
+  "payment_succeeded",
   "confirmed",
   "preparing",
   "ready_for_pickup",
-  "driver_assigned",
-  "picked_up",
   "in_transit",
   "delivered",
   "cancelled",
