@@ -111,9 +111,18 @@ export class UpdateOrderStatusHandler {
 
 ### Order Status State Machine
 ```
-pending → confirmed → preparing → ready_for_pickup → driver_assigned → picked_up → in_transit → delivered
-   │          │           │              │                  │              │            │
-   └──────────┴───────────┴──────────────┴──────────────────┴──────────────┴────────────┴──→ cancelled
+pending → payment_succeeded → confirmed → preparing → ready_for_pickup → in_transit → delivered
+   │              │               │            │               │
+   └──────────────┴───────────────┴────────────┴───────────────┴──→ cancelled
+
+Valid transitions:
+- pending → payment_succeeded, cancelled
+- payment_succeeded → confirmed, cancelled
+- confirmed → preparing, cancelled
+- preparing → ready_for_pickup, cancelled
+- ready_for_pickup → in_transit, cancelled
+- in_transit → delivered
+- delivered, cancelled → (terminal states)
 ```
 
 ## Consequences
