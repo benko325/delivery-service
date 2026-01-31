@@ -84,7 +84,6 @@ export class CustomerAggregate extends AggregateRoot {
     );
   }
 
-  // Copilot: Povoliť vstup bez ID (doplní sa)
   addAddress(address: Omit<CustomerAddress, "id"> & { id?: string }): void {
     const addressWithId: CustomerAddress = {
       ...address,
