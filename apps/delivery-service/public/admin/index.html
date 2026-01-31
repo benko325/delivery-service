@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h2>Admin</h2>
+      <div class="topbar"><a class="link" href="/">Home</a></div>
+    </header>
+
+    <div class="card">
+      <h3 class="small">Restaurants</h3>
+      <div id="restaurants" class="grid"></div>
+    </div>
+
+    <div style="margin-top:12px" class="card">
+      <h3 class="small">Drivers</h3>
+      <div id="drivers" class="grid"></div>
+    </div>
+
+    <div style="margin-top:12px" class="card">
+      <h3 class="small">Customers</h3>
+      <div id="customers" class="grid"></div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/utils.js"></script>
+
+  <script>
+    async function loadAll(){
+      try{
+        const r = await fetch('/api/restaurants/all',{headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+        const d = await fetch('/api/drivers',{headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+        const c = await fetch('/api/customers',{headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+        const rr = r.ok?await r.json():[]; const dd = d.ok?await d.json():[]; const cc = c.ok?await c.json():[];
+        const restEl=document.getElementById('restaurants'); restEl.innerHTML=''; rr.forEach(x=>{ const el=document.createElement('div'); el.className='list-item'; el.innerHTML=`<strong>${x.name||x.title||x.id}</strong><div class='small muted'>${x.id}</div>`; restEl.appendChild(el) });
+        const drvEl=document.getElementById('drivers'); drvEl.innerHTML=''; dd.forEach(x=>{ const el=document.createElement('div'); el.className='list-item'; el.innerHTML=`<strong>${x.id}</strong><div class='small muted'>${x.userId||''}</div><div style='margin-top:8px'><button class='btn role' data-id='${x.id}' data-user='${x.userId}'>Make Admin</button></div>`; drvEl.appendChild(el) });
+        const cusEl=document.getElementById('customers'); cusEl.innerHTML=''; cc.forEach(x=>{ const el=document.createElement('div'); el.className='list-item'; el.innerHTML=`<strong>${x.id}</strong><div class='small muted'>${x.email||''}</div>`; cusEl.appendChild(el) });
+        document.querySelectorAll('.role').forEach(b=>b.addEventListener('click', async ()=>{
+          const user = b.getAttribute('data-user');
+          if(!user){ alert('No user id'); return }
+          const newRole = prompt('Enter role to assign (admin/restaurant/driver/customer)', 'admin');
+          if(!newRole) return;
+          await fetch('/api/auth/users/'+user+'/role',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('accessToken')},body:JSON.stringify({role:newRole})});
+          alert('Role updated');
+        }))
+      }catch(e){ console.error(e) }
+    }
+    loadAll();
+  </script>
+</body>
+</html>

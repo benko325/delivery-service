@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Restaurant Dashboard</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h2>Restaurant — Orders</h2>
+      <div class="topbar"><a class="link" href="/">Home</a></div>
+    </header>
+
+    <div style="margin-bottom:12px" class="card">
+      <label class="small muted">Filter by restaurant id:</label>
+      <input id="restId" placeholder="restaurant id" style="padding:6px;border-radius:6px;border:1px solid #e5e7eb">
+      <button id="refresh" class="btn" style="margin-left:8px">Load</button>
+    </div>
+
+    <div id="orders" class="grid"></div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/utils.js"></script>
+
+  <script>
+    async function loadFor(restId){
+      const container = document.getElementById('orders'); container.innerHTML='Loading...';
+      try{
+        const res = await fetch('/api/orders/my-orders',{headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+        if(!res.ok) throw new Error('fail');
+        const data = await res.json(); container.innerHTML='';
+        const filtered = (data||[]).filter(o=>!restId||o.restaurantId==restId);
+        filtered.forEach(o=>{ const el=document.createElement('div'); el.className='list-item'; el.innerHTML=`<strong>Order ${o.id}</strong><div class='small muted'>Status: ${o.status}</div><div style='margin-top:8px'><button class='btn confirm' data-id='${o.id}'>Confirm</button> <button class='btn' style='background:#ef4444' data-id='${o.id}' id='reject'>Reject</button></div>`; container.appendChild(el) })
+        container.querySelectorAll('.confirm').forEach(b=>b.addEventListener('click', async ()=>{
+          const id=b.getAttribute('data-id');
+          const rest = document.getElementById('restId').value.trim();
+          await fetch(`/api/restaurants/${rest}/orders/${id}/confirm`,{method:'POST',headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+          alert('Confirmed'); loadFor(rest);
+        }))
+        container.querySelectorAll('#reject').forEach(b=>b.addEventListener('click', async ()=>{
+          const id=b.getAttribute('data-id'); const rest=document.getElementById('restId').value.trim();
+          await fetch(`/api/restaurants/${rest}/orders/${id}/reject`,{method:'POST',headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+          alert('Rejected'); loadFor(rest);
+        }))
+      }catch(e){ container.innerHTML='<div class="center muted">Failed to load orders</div>' }
+    }
+
+    document.getElementById('refresh').addEventListener('click', ()=>{ loadFor(document.getElementById('restId').value.trim()) })
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurant Dashboard - Delivery Service</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+</head>
+<body class="bg-gray-50">
+  <!-- Navbar -->
+  <nav class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-xl font-bold text-gray-900">Delivery Service</h1>
+          <span class="ml-4 px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full">Restaurant</span>
+        </div>
+        <div class="flex items-center space-x-4">
+          <button onclick="auth.logout()" class="text-gray-700 hover:text-gray-900">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-gray-900">Incoming Orders</h2>
+      <button onclick="loadOrders()" class="text-blue-600 hover:text-blue-800">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      </button>
+    </div>
+
+    <div id="ordersList" class="space-y-4">
+      <!-- Orders will be loaded here -->
+    </div>
+  </div>
+
+  <script>
+    auth.checkAuth('restaurant_owner');
+
+    let restaurantId = null;
+
+    loadOrders();
+
+    // Auto-refresh every 5 seconds
+    setInterval(loadOrders, 5000);
+
+    async function loadOrders() {
+      try {
+        // Note: In a real app, you'd get the restaurant ID from the user's profile
+        // For this demo, we'll fetch all orders and filter for pending/payment_succeeded
+        const allOrders = await api.get('/orders/my-orders');
+        // Filter for orders that need restaurant action
+        const orders = allOrders.filter(o =>
+          o.status === 'pending' || o.status === 'payment_succeeded'
+        );
+        displayOrders(orders);
+      } catch (error) {
+        console.error('Failed to load orders:', error);
+      }
+    }
+
+    function displayOrders(orders) {
+      const container = document.getElementById('ordersList');
+
+      if (!orders || orders.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12">
+            <p class="text-gray-500">No pending orders</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = orders.map(order => `
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3 class="text-lg font-bold">Order #${order.id.substring(0, 8)}</h3>
+              <p class="text-sm text-gray-600">${formatDateTime(order.createdAt)}</p>
+            </div>
+            <span class="px-3 py-1 text-sm rounded-full ${getStatusColor(order.status)}">
+              ${formatStatus(order.status)}
+            </span>
+          </div>
+
+          <div class="mb-4">
+            <p class="text-sm text-gray-600 mb-2">Items:</p>
+            ${order.items ? order.items.map(item => `
+              <div class="flex justify-between text-sm mb-1">
+                <span>${item.quantity}x ${item.name}</span>
+                <span>${formatCurrency(item.price * item.quantity, order.currency)}</span>
+              </div>
+            `).join('') : '<p class="text-sm text-gray-500">No items</p>'}
+          </div>
+
+          <div class="mb-4">
+            <p class="text-sm text-gray-600">Delivery Address:</p>
+            <p class="text-sm">${order.deliveryAddress.street}, ${order.deliveryAddress.city}</p>
+          </div>
+
+          <div class="flex justify-between items-center pt-4 border-t">
+            <div>
+              <p class="text-sm text-gray-600">Total Amount</p>
+              <p class="text-lg font-bold text-blue-600">${formatCurrency(order.totalAmount, order.currency)}</p>
+            </div>
+            <div class="flex gap-2">
+              ${order.status === 'payment_succeeded' ? `
+                <button
+                  onclick="confirmOrder('${order.restaurantId}', '${order.id}')"
+                  class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  Confirm Order
+                </button>
+                <button
+                  onclick="rejectOrder('${order.restaurantId}', '${order.id}')"
+                  class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Reject
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function confirmOrder(restaurantId, orderId) {
+      try {
+        await api.post(`/restaurants/${restaurantId}/orders/${orderId}/confirm`, {
+          estimatedPreparationMinutes: 30
+        });
+        showToast('Order confirmed!', 'success');
+        loadOrders();
+      } catch (error) {
+        showToast('Failed to confirm order: ' + error.message, 'error');
+      }
+    }
+
+    async function rejectOrder(restaurantId, orderId) {
+      const reason = prompt('Reason for rejection:');
+      if (!reason) return;
+
+      try {
+        await api.post(`/restaurants/${restaurantId}/orders/${orderId}/reject`, {
+          reason
+        });
+        showToast('Order rejected', 'success');
+        loadOrders();
+      } catch (error) {
+        showToast('Failed to reject order: ' + error.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

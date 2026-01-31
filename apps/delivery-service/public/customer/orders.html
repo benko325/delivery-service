@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Customer - Orders</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h2>My Orders</h2>
+      <div class="topbar"><a class="link" href="/">Home</a></div>
+    </header>
+    <div id="orders" class="grid"></div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/utils.js"></script>
+
+  <script>
+    async function load(){
+      const c = document.getElementById('orders'); c.innerHTML='Loading...';
+      try{
+        const res = await fetch('/api/orders/my-orders',{headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+        if(!res.ok) throw new Error('fail');
+        const data = await res.json(); c.innerHTML = '';
+        (data||[]).forEach(o=>{ const el=document.createElement('div'); el.className='list-item'; el.innerHTML=`<strong>Order ${o.id}</strong><div class='small muted'>Status: ${o.status}</div><div class='small muted'>Total: ${o.total||''}</div>`; c.appendChild(el)});
+      }catch(e){ c.innerHTML='<div class="center muted">Failed to load orders</div>' }
+    }
+    load();
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders - Delivery Service</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+</head>
+<body class="bg-gray-50">
+  <!-- Navbar -->
+  <nav class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-xl font-bold text-gray-900">Delivery Service</h1>
+          <span class="ml-4 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">Customer</span>
+        </div>
+        <div class="flex items-center space-x-4">
+          <a href="/customer/index.html" class="text-gray-700 hover:text-gray-900">Browse Restaurants</a>
+          <button onclick="auth.logout()" class="text-gray-700 hover:text-gray-900">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-gray-900">My Orders</h2>
+      <button onclick="loadOrders()" class="text-blue-600 hover:text-blue-800">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      </button>
+    </div>
+
+    <div id="ordersList" class="space-y-4">
+      <!-- Orders will be loaded here -->
+    </div>
+  </div>
+
+  <script>
+    auth.checkAuth('customer');
+
+    loadOrders();
+
+    // Auto-refresh every 5 seconds to show real-time updates
+    setInterval(loadOrders, 5000);
+
+    async function loadOrders() {
+      try {
+        const orders = await api.get('/orders/my-orders');
+        displayOrders(orders);
+      } catch (error) {
+        console.error('Failed to load orders:', error);
+      }
+    }
+
+    function displayOrders(orders) {
+      const container = document.getElementById('ordersList');
+
+      if (!orders || orders.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12">
+            <p class="text-gray-500 mb-4">No orders yet</p>
+            <a href="/customer/index.html" class="text-blue-600 hover:text-blue-800">Browse restaurants to place your first order</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = orders.map(order => `
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3 class="text-lg font-bold text-gray-900">Order #${order.id.substring(0, 8)}</h3>
+              <p class="text-sm text-gray-600">${formatDateTime(order.createdAt)}</p>
+            </div>
+            <span class="px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(order.status)}">
+              ${formatStatus(order.status)}
+            </span>
+          </div>
+
+          <div class="border-t pt-4">
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <p class="text-sm text-gray-600">Total Amount</p>
+                <p class="font-semibold">${formatCurrency(order.totalAmount, order.currency)}</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-600">Delivery Fee</p>
+                <p class="font-semibold">${formatCurrency(order.deliveryFee, order.currency)}</p>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <p class="text-sm text-gray-600 mb-1">Delivery Address</p>
+              <p class="text-sm">${order.deliveryAddress.street}, ${order.deliveryAddress.city}</p>
+            </div>
+
+            ${order.items && order.items.length > 0 ? `
+              <div>
+                <p class="text-sm text-gray-600 mb-2">Items (${order.items.length})</p>
+                <div class="space-y-1">
+                  ${order.items.slice(0, 3).map(item => `
+                    <p class="text-sm">${item.quantity}x ${item.name}</p>
+                  `).join('')}
+                  ${order.items.length > 3 ? `<p class="text-sm text-gray-500">+${order.items.length - 3} more items</p>` : ''}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

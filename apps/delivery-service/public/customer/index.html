@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Customer - Restaurants</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h2>Customer — Restaurants</h2>
+      <div class="topbar">
+        <a class="link" href="/">Home</a>
+        <a class="link" href="/customer/orders.html">My Orders</a>
+      </div>
+    </header>
+
+    <div id="restaurants" class="grid"></div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/utils.js"></script>
+  <script>
+    async function loadRestaurants(){
+      const container = document.getElementById('restaurants');
+      container.innerHTML = '<div class="center muted">Loading...</div>';
+      try{
+        const res = await fetch('/api/restaurants');
+        if(!res.ok) throw new Error('Failed');
+        const data = await res.json();
+        container.innerHTML = '';
+        (data||[]).forEach(r => {
+          const el = document.createElement('div'); el.className='list-item';
+          el.innerHTML = `<strong>${r.name||r.title||'Restaurant'}</strong><div class="small muted">${r.description||''}</div><div style="margin-top:8px"><button class='btn' data-id='${r.id}'>View menu</button></div>`;
+          container.appendChild(el);
+        })
+        container.querySelectorAll('button[data-id]').forEach(btn=>btn.addEventListener('click', async (e)=>{
+          const id = btn.getAttribute('data-id');
+          const menuRes = await fetch('/api/restaurants/'+id+'/menu');
+          if(!menuRes.ok){ alert('No menu'); return }
+          const menu = await menuRes.json();
+          const items = (menu||[]).map(m=>`<div class="list-item"><strong>${m.name}</strong><div class="small muted">${m.description||''}</div><div style="margin-top:8px"><button class='btn add' data-item='${m.id}' data-restaurant='${id}'>Add to cart</button></div></div>`).join('');
+          const win = window.open('','_blank','width=600,height=600');
+          win.document.write(`<html><head><link rel='stylesheet' href='/css/styles.css'></head><body><div class='container'><h3>Menu</h3>${items}</div><script>document.querySelectorAll('.add').forEach(b=>b.addEventListener('click', async ()=>{ const id=b.getAttribute('data-item'); const rest=b.getAttribute('data-restaurant'); await fetch('/api/cart/items',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restaurantId:rest,menuItemId:id,quantity:1})}); alert('Added to cart'); }));</script></body></html>`);
+        }))
+      }catch(e){ container.innerHTML='<div class="center muted">Failed to load</div>' }
+    }
+    loadRestaurants();
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Dashboard - Delivery Service</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+</head>
+<body class="bg-gray-50">
+  <!-- Navbar -->
+  <nav class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-xl font-bold text-gray-900">Delivery Service</h1>
+          <span class="ml-4 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">Customer</span>
+        </div>
+        <div class="flex items-center space-x-4">
+          <a href="/customer/orders.html" class="text-gray-700 hover:text-gray-900">My Orders</a>
+          <button
+            onclick="viewCart()"
+            class="relative px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            <span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">
+              0
+            </span>
+            View Cart
+          </button>
+          <button onclick="auth.logout()" class="text-gray-700 hover:text-gray-900">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Restaurants Section -->
+    <div id="restaurantsSection">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">Browse Restaurants</h2>
+      </div>
+
+      <div id="restaurantsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Restaurants will be loaded here -->
+      </div>
+    </div>
+
+    <!-- Restaurant Menu Section (hidden by default) -->
+    <div id="menuSection" class="hidden">
+      <div class="flex justify-between items-center mb-6">
+        <button
+          onclick="backToRestaurants()"
+          class="flex items-center text-blue-600 hover:text-blue-800"
+        >
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Restaurants
+        </button>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 id="restaurantName" class="text-2xl font-bold text-gray-900 mb-2"></h2>
+        <p id="restaurantDescription" class="text-gray-600"></p>
+      </div>
+
+      <div id="menuItemsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Menu items will be loaded here -->
+      </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-bold">Shopping Cart</h3>
+            <button onclick="closeCart()" class="text-gray-500 hover:text-gray-700">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div id="cartItems">
+            <!-- Cart items will be loaded here -->
+          </div>
+
+          <div class="mt-6 pt-6 border-t">
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-600">Subtotal:</span>
+              <span id="cartSubtotal" class="font-semibold">$0.00</span>
+            </div>
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-600">Delivery Fee:</span>
+              <span id="cartDeliveryFee" class="font-semibold">$0.00</span>
+            </div>
+            <div class="flex justify-between text-lg font-bold">
+              <span>Total:</span>
+              <span id="cartTotal">$0.00</span>
+            </div>
+          </div>
+
+          <div class="mt-6 flex space-x-3">
+            <button
+              onclick="clearCart()"
+              class="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            >
+              Clear Cart
+            </button>
+            <button
+              onclick="checkout()"
+              id="checkoutBtn"
+              class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Checkout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check auth on page load
+    auth.checkAuth('customer');
+
+    let currentRestaurant = null;
+    let cart = null;
+
+    // Load restaurants on page load
+    loadRestaurants();
+    loadCart();
+
+    async function loadRestaurants() {
+      try {
+        const restaurants = await api.get('/restaurants');
+        displayRestaurants(restaurants);
+      } catch (error) {
+        showToast('Failed to load restaurants: ' + error.message, 'error');
+      }
+    }
+
+    function displayRestaurants(restaurants) {
+      const container = document.getElementById('restaurantsList');
+
+      if (!restaurants || restaurants.length === 0) {
+        container.innerHTML = '<p class="col-span-full text-center text-gray-500">No restaurants available</p>';
+        return;
+      }
+
+      container.innerHTML = restaurants.map(restaurant => `
+        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onclick="viewRestaurant('${restaurant.id}')">
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-2">${restaurant.name}</h3>
+            <p class="text-gray-600 text-sm mb-4">${restaurant.description}</p>
+            <div class="text-sm text-gray-500">
+              <p>${restaurant.address.street}, ${restaurant.address.city}</p>
+              <p class="mt-2">
+                <span class="inline-block px-2 py-1 ${restaurant.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} rounded text-xs">
+                  ${restaurant.isActive ? 'Open' : 'Closed'}
+                </span>
+              </p>
+            </div>
+          </div>
+          <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <button class="text-blue-600 hover:text-blue-800 font-medium">View Menu →</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function viewRestaurant(restaurantId) {
+      try {
+        const restaurant = await api.get(`/restaurants/${restaurantId}`);
+        const menu = await api.get(`/restaurants/${restaurantId}/menu`);
+
+        currentRestaurant = restaurant;
+
+        document.getElementById('restaurantName').textContent = restaurant.name;
+        document.getElementById('restaurantDescription').textContent = restaurant.description;
+
+        displayMenu(menu);
+
+        document.getElementById('restaurantsSection').classList.add('hidden');
+        document.getElementById('menuSection').classList.remove('hidden');
+      } catch (error) {
+        showToast('Failed to load restaurant: ' + error.message, 'error');
+      }
+    }
+
+    function displayMenu(menuItems) {
+      const container = document.getElementById('menuItemsList');
+
+      if (!menuItems || menuItems.length === 0) {
+        container.innerHTML = '<p class="col-span-full text-center text-gray-500">No menu items available</p>';
+        return;
+      }
+
+      container.innerHTML = menuItems.map(item => `
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="text-lg font-bold text-gray-900">${item.name}</h3>
+              <span class="text-lg font-bold text-blue-600">${formatCurrency(item.price, item.currency)}</span>
+            </div>
+            <p class="text-sm text-gray-600 mb-3">${item.description}</p>
+            <div class="flex justify-between items-center">
+              <span class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded">${formatStatus(item.category)}</span>
+              <button
+                onclick="addToCart('${item.id}', '${item.name}', ${item.price}, '${item.currency}')"
+                class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 ${!item.isAvailable ? 'opacity-50 cursor-not-allowed' : ''}"
+                ${!item.isAvailable ? 'disabled' : ''}
+              >
+                ${item.isAvailable ? 'Add to Cart' : 'Unavailable'}
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function backToRestaurants() {
+      document.getElementById('restaurantsSection').classList.remove('hidden');
+      document.getElementById('menuSection').classList.add('hidden');
+      currentRestaurant = null;
+    }
+
+    async function addToCart(menuItemId, name, price, currency) {
+      try {
+        await api.post('/cart/items', {
+          menuItemId,
+          restaurantId: currentRestaurant.id,
+          name,
+          price,
+          currency,
+          quantity: 1
+        });
+
+        showToast('Added to cart!', 'success');
+        await loadCart();
+      } catch (error) {
+        showToast('Failed to add to cart: ' + error.message, 'error');
+      }
+    }
+
+    async function loadCart() {
+      try {
+        cart = await api.get('/cart');
+        updateCartBadge();
+      } catch (error) {
+        console.error('Failed to load cart:', error);
+      }
+    }
+
+    function updateCartBadge() {
+      const badge = document.getElementById('cartCount');
+      const count = cart?.items?.length || 0;
+
+      if (count > 0) {
+        badge.textContent = count;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    async function viewCart() {
+      await loadCart();
+      displayCart();
+      document.getElementById('cartModal').classList.remove('hidden');
+    }
+
+    function displayCart() {
+      const container = document.getElementById('cartItems');
+
+      if (!cart || !cart.items || cart.items.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-4">Your cart is empty</p>';
+        document.getElementById('checkoutBtn').disabled = true;
+        return;
+      }
+
+      document.getElementById('checkoutBtn').disabled = false;
+
+      container.innerHTML = cart.items.map(item => `
+        <div class="flex justify-between items-center py-3 border-b">
+          <div class="flex-1">
+            <h4 class="font-medium">${item.name}</h4>
+            <p class="text-sm text-gray-600">${formatCurrency(item.price, item.currency)}</p>
+          </div>
+          <div class="flex items-center space-x-3">
+            <button
+              onclick="updateQuantity('${item.menuItemId}', ${item.quantity - 1})"
+              class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+            >
+              -
+            </button>
+            <span class="w-8 text-center">${item.quantity}</span>
+            <button
+              onclick="updateQuantity('${item.menuItemId}', ${item.quantity + 1})"
+              class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+            >
+              +
+            </button>
+            <button
+              onclick="removeFromCart('${item.menuItemId}')"
+              class="text-red-600 hover:text-red-800 ml-2"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      const subtotal = cart.totalAmount || 0;
+      const deliveryFee = cart.deliveryFee || 0;
+      const total = subtotal + deliveryFee;
+
+      document.getElementById('cartSubtotal').textContent = formatCurrency(subtotal, cart.currency);
+      document.getElementById('cartDeliveryFee').textContent = formatCurrency(deliveryFee, cart.currency);
+      document.getElementById('cartTotal').textContent = formatCurrency(total, cart.currency);
+    }
+
+    async function updateQuantity(menuItemId, quantity) {
+      if (quantity < 1) {
+        await removeFromCart(menuItemId);
+        return;
+      }
+
+      try {
+        await api.patch('/cart/items', { menuItemId, quantity });
+        await loadCart();
+        displayCart();
+      } catch (error) {
+        showToast('Failed to update quantity: ' + error.message, 'error');
+      }
+    }
+
+    async function removeFromCart(menuItemId) {
+      try {
+        await api.delete('/cart/items', { menuItemId });
+        await loadCart();
+        displayCart();
+        showToast('Item removed from cart', 'success');
+      } catch (error) {
+        showToast('Failed to remove item: ' + error.message, 'error');
+      }
+    }
+
+    async function clearCart() {
+      if (!confirm('Are you sure you want to clear your cart?')) return;
+
+      try {
+        await api.delete('/cart');
+        await loadCart();
+        displayCart();
+        showToast('Cart cleared', 'success');
+      } catch (error) {
+        showToast('Failed to clear cart: ' + error.message, 'error');
+      }
+    }
+
+    async function checkout() {
+      const btn = document.getElementById('checkoutBtn');
+      setLoading(btn, true);
+
+      try {
+        // For simplicity, using a default address
+        // In a real app, you'd prompt for address selection
+        const order = await api.post('/cart/checkout', {
+          deliveryAddress: {
+            street: '123 Main St',
+            city: 'New York',
+            postalCode: '10001',
+            country: 'USA'
+          },
+          deliveryFee: 5.00
+        });
+
+        showToast('Order placed successfully!', 'success');
+        closeCart();
+
+        // Redirect to orders page after a short delay
+        setTimeout(() => {
+          window.location.href = '/customer/orders.html';
+        }, 1500);
+      } catch (error) {
+        showToast('Checkout failed: ' + error.message, 'error');
+        setLoading(btn, false);
+      }
+    }
+
+    function closeCart() {
+      document.getElementById('cartModal').classList.add('hidden');
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('cartModal').addEventListener('click', (e) => {
+      if (e.target.id === 'cartModal') {
+        closeCart();
+      }
+    });
+  </script>
+</body>
+</html>

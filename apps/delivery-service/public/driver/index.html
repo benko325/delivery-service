@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Driver Dashboard</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h2>Driver — Available Orders</h2>
+      <div class="topbar"><a class="link" href="/">Home</a></div>
+    </header>
+    <div style="margin-bottom:12px" class="card">
+      <button id="toggleAvail" class="btn">Toggle Availability</button>
+      <span id="status" class="token-info" style="margin-left:8px"></span>
+    </div>
+    <div id="orders" class="grid"></div>
+  </div>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/utils.js"></script>
+  <script>
+    async function loadAvailable(){
+      const container = document.getElementById('orders'); container.innerHTML='Loading...';
+      try{
+        const res = await fetch('/api/orders/available',{headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+        if(!res.ok) throw new Error('fail');
+        const data = await res.json(); container.innerHTML='';
+        (data||[]).forEach(o=>{ const el=document.createElement('div'); el.className='list-item'; el.innerHTML=`<strong>Order ${o.id}</strong><div class='small muted'>${o.address||o.pickupAddress||''}</div><div style='margin-top:8px'><button class='btn accept' data-id='${o.id}'>Accept</button></div>`; container.appendChild(el) })
+        container.querySelectorAll('.accept').forEach(b=>b.addEventListener('click', async ()=>{
+          const id=b.getAttribute('data-id');
+          await fetch('/api/orders/'+id+'/accept',{method:'POST',headers:{'Authorization':'Bearer '+localStorage.getItem('accessToken')}});
+          alert('Accepted'); loadAvailable();
+        }))
+      }catch(e){ container.innerHTML='<div class="center muted">Failed to load</div>' }
+    }
+
+    document.getElementById('toggleAvail').addEventListener('click', async ()=>{
+      try{
+        await fetch('/api/drivers/me/availability',{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('accessToken')},body:JSON.stringify({available:true})});
+        document.getElementById('status').textContent='Availability toggled';
+      }catch(e){ alert('Failed') }
+    })
+
+    loadAvailable();
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Driver Dashboard - Delivery Service</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+</head>
+<body class="bg-gray-50">
+  <!-- Navbar -->
+  <nav class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-xl font-bold text-gray-900">Delivery Service</h1>
+          <span class="ml-4 px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">Driver</span>
+        </div>
+        <div class="flex items-center space-x-4">
+          <button onclick="auth.logout()" class="text-gray-700 hover:text-gray-900">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Driver Info Card -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-xl font-bold mb-4">Driver Status</h2>
+      <div id="driverInfo" class="grid grid-cols-3 gap-4">
+        <div>
+          <p class="text-sm text-gray-600">Status</p>
+          <p id="driverStatus" class="font-semibold">Loading...</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">Vehicle</p>
+          <p id="driverVehicle" class="font-semibold">-</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">License Plate</p>
+          <p id="driverPlate" class="font-semibold">-</p>
+        </div>
+      </div>
+      <div class="mt-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Availability</label>
+        <select id="availabilitySelect" onchange="updateAvailability()" class="block w-full max-w-xs px-3 py-2 border border-gray-300 rounded-md">
+          <option value="available">Available</option>
+          <option value="busy">Busy</option>
+          <option value="offline">Offline</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Available Orders -->
+    <div class="mb-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Available Orders</h2>
+      <div id="availableOrders" class="space-y-4">
+        <!-- Available orders will be loaded here -->
+      </div>
+    </div>
+
+    <!-- My Deliveries -->
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">My Deliveries</h2>
+      <div id="myDeliveries" class="space-y-4">
+        <!-- Driver's deliveries will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    auth.checkAuth('driver');
+
+    loadDriverInfo();
+    loadAvailableOrders();
+    loadMyDeliveries();
+
+    // Auto-refresh
+    setInterval(() => {
+      loadAvailableOrders();
+      loadMyDeliveries();
+    }, 5000);
+
+    async function loadDriverInfo() {
+      try {
+        const driver = await api.get('/drivers/me');
+        document.getElementById('driverStatus').textContent = formatStatus(driver.availabilityStatus);
+        document.getElementById('driverVehicle').textContent = driver.vehicleType;
+        document.getElementById('driverPlate').textContent = driver.licensePlate;
+        document.getElementById('availabilitySelect').value = driver.availabilityStatus;
+      } catch (error) {
+        showToast('Failed to load driver info: ' + error.message, 'error');
+      }
+    }
+
+    async function updateAvailability() {
+      const status = document.getElementById('availabilitySelect').value;
+      try {
+        await api.patch('/drivers/me/availability', { status });
+        showToast('Availability updated', 'success');
+        loadDriverInfo();
+      } catch (error) {
+        showToast('Failed to update availability: ' + error.message, 'error');
+      }
+    }
+
+    async function loadAvailableOrders() {
+      try {
+        const orders = await api.get('/orders/available');
+        displayAvailableOrders(orders);
+      } catch (error) {
+        console.error('Failed to load available orders:', error);
+      }
+    }
+
+    function displayAvailableOrders(orders) {
+      const container = document.getElementById('availableOrders');
+
+      if (!orders || orders.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-4">No available orders</p>';
+        return;
+      }
+
+      container.innerHTML = orders.map(order => `
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3 class="font-bold">Order #${order.id.substring(0, 8)}</h3>
+              <p class="text-sm text-gray-600">${formatDateTime(order.createdAt)}</p>
+            </div>
+            <span class="px-3 py-1 text-sm rounded-full ${getStatusColor(order.status)}">
+              ${formatStatus(order.status)}
+            </span>
+          </div>
+          <div class="mb-4">
+            <p class="text-sm text-gray-600">Delivery to:</p>
+            <p class="font-medium">${order.deliveryAddress.street}, ${order.deliveryAddress.city}</p>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-blue-600">${formatCurrency(order.totalAmount, order.currency)}</span>
+            <button onclick="acceptOrder('${order.id}')" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+              Accept Order
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function acceptOrder(orderId) {
+      if (!confirm('Accept this delivery?')) return;
+
+      try {
+        await api.post(`/orders/${orderId}/accept`, { estimatedMinutes: 30 });
+        showToast('Order accepted!', 'success');
+        loadAvailableOrders();
+        loadMyDeliveries();
+      } catch (error) {
+        showToast('Failed to accept order: ' + error.message, 'error');
+      }
+    }
+
+    async function loadMyDeliveries() {
+      try {
+        const deliveries = await api.get('/orders/my-deliveries');
+        displayMyDeliveries(deliveries);
+      } catch (error) {
+        console.error('Failed to load deliveries:', error);
+      }
+    }
+
+    function displayMyDeliveries(deliveries) {
+      const container = document.getElementById('myDeliveries');
+
+      if (!deliveries || deliveries.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-4">No active deliveries</p>';
+        return;
+      }
+
+      container.innerHTML = deliveries.map(order => `
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3 class="font-bold">Order #${order.id.substring(0, 8)}</h3>
+              <p class="text-sm text-gray-600">${formatDateTime(order.createdAt)}</p>
+            </div>
+            <span class="px-3 py-1 text-sm rounded-full ${getStatusColor(order.status)}">
+              ${formatStatus(order.status)}
+            </span>
+          </div>
+          <div class="mb-4">
+            <p class="text-sm text-gray-600">Delivery to:</p>
+            <p class="font-medium">${order.deliveryAddress.street}, ${order.deliveryAddress.city}</p>
+          </div>
+          <div class="flex gap-2">
+            ${order.status === 'ready_for_pickup' ? `
+              <button onclick="updateStatus('${order.id}', 'in_transit')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                Mark In Transit
+              </button>
+            ` : ''}
+            ${order.status === 'in_transit' ? `
+              <button onclick="updateStatus('${order.id}', 'delivered')" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                Mark Delivered
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function updateStatus(orderId, status) {
+      try {
+        await api.patch(`/orders/${orderId}/status`, { status });
+        showToast('Status updated', 'success');
+        loadMyDeliveries();
+      } catch (error) {
+        showToast('Failed to update status: ' + error.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>
