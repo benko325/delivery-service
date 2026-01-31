@@ -7,14 +7,9 @@ import { CreateCustomerCommand } from "../../application/commands/create-custome
 export class UserRegisteredAcl implements IEventHandler<UserRegisteredEvent> {
   private readonly logger = new Logger(UserRegisteredAcl.name);
 
-  constructor(private readonly commandBus: CommandBus) {
-    // Copilot: Debug - Overenie, či sa ACL handler načíta
-    console.log("[ACL DEBUG] UserRegisteredAcl handler initialized!");
-  }
+  constructor(private readonly commandBus: CommandBus) {}
 
   async handle(event: UserRegisteredEvent): Promise<void> {
-    // Copilot: Debug - Overenie, či sa event dostane do handlera
-    console.log("[ACL DEBUG] handle() called for event:", event);
     this.logger.log(
       `[ACL] Handling UserRegisteredEvent for user: ${event.email}`,
     );
@@ -22,7 +17,6 @@ export class UserRegisteredAcl implements IEventHandler<UserRegisteredEvent> {
     // Anti-corruption layer: Map Auth domain event to Customers domain command
     // Only create customer if user has customer role
     if (event.roles.includes("customer")) {
-      console.log("[ACL DEBUG] Creating customer for:", event.email);
       await this.commandBus.execute(
         new CreateCustomerCommand(
           event.id,
