@@ -27,6 +27,7 @@ import {
   UpdateItemQuantityDto,
   RemoveItemFromCartDto,
   CheckoutCartDto,
+  CartResponseDto,
 } from "../dtos/cart.dto";
 import { AddItemToCartCommand } from "../../application/commands/add-item-to-cart/add-item-to-cart.command";
 import { RemoveItemFromCartCommand } from "../../application/commands/remove-item-from-cart/remove-item-from-cart.command";
@@ -48,7 +49,11 @@ export class CartsController {
 
   @Get()
   @ApiOperation({ summary: "Get current customer cart [Customer]" })
-  @ApiResponse({ status: 200, description: "Cart details" })
+  @ApiResponse({
+    status: 200,
+    description: "Cart details",
+    type: CartResponseDto,
+  })
   async getMyCart(@User() user: RequestUser) {
     return this.queryBus.execute(new GetCartByCustomerIdQuery(user.userId));
   }

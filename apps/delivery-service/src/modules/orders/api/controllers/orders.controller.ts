@@ -27,6 +27,7 @@ import {
   AcceptOrderDto,
   UpdateOrderStatusDto,
   CancelOrderDto,
+  OrderResponseDto,
 } from "../dtos/order.dto";
 import { CreateOrderCommand } from "../../application/commands/create-order/create-order.command";
 import { AcceptOrderCommand } from "../../application/commands/accept-order/accept-order.command";
@@ -80,7 +81,11 @@ export class OrdersController {
   @Get("my-orders")
   @Roles("customer")
   @ApiOperation({ summary: "Get customer orders" })
-  @ApiResponse({ status: 200, description: "List of customer orders" })
+  @ApiResponse({
+    status: 200,
+    description: "List of customer orders",
+    type: [OrderResponseDto],
+  })
   async getMyOrders(@User() user: RequestUser) {
     return this.queryBus.execute(new GetOrdersByCustomerQuery(user.userId));
   }
@@ -101,7 +106,11 @@ export class OrdersController {
   @Get("available")
   @Roles("driver")
   @ApiOperation({ summary: "Get available orders for drivers" })
-  @ApiResponse({ status: 200, description: "List of available orders" })
+  @ApiResponse({
+    status: 200,
+    description: "List of available orders",
+    type: [OrderResponseDto],
+  })
   async getAvailableOrders() {
     return this.queryBus.execute(new GetAvailableOrdersQuery());
   }
@@ -109,7 +118,11 @@ export class OrdersController {
   @Get("my-deliveries")
   @Roles("driver")
   @ApiOperation({ summary: "Get driver deliveries" })
-  @ApiResponse({ status: 200, description: "List of driver deliveries" })
+  @ApiResponse({
+    status: 200,
+    description: "List of driver deliveries",
+    type: [OrderResponseDto],
+  })
   async getMyDeliveries(@User() user: RequestUser) {
     return this.queryBus.execute(new GetOrdersByDriverQuery(user.userId));
   }
@@ -159,7 +172,11 @@ export class OrdersController {
   @Get(":id")
   @Roles("customer", "driver", "admin", "restaurant_owner")
   @ApiOperation({ summary: "Get order by ID" })
-  @ApiResponse({ status: 200, description: "Order details" })
+  @ApiResponse({
+    status: 200,
+    description: "Order details",
+    type: OrderResponseDto,
+  })
   async getOrderById(@Param("id") orderId: string) {
     return this.queryBus.execute(new GetOrderByIdQuery(orderId));
   }

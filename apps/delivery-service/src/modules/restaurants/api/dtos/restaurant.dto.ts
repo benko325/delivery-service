@@ -1,5 +1,85 @@
 import { z } from "zod";
 import { createZodDto } from "nestjs-zod";
+import { ApiProperty } from "@nestjs/swagger";
+
+class RestaurantAddressDto {
+  @ApiProperty({ example: "123 Main Street" })
+  street!: string;
+
+  @ApiProperty({ example: "New York" })
+  city!: string;
+
+  @ApiProperty({ example: "NY", required: false })
+  state?: string;
+
+  @ApiProperty({ example: "10001" })
+  postalCode!: string;
+
+  @ApiProperty({ example: "USA" })
+  country!: string;
+
+  @ApiProperty({ example: 40.7128, required: false })
+  latitude?: number;
+
+  @ApiProperty({ example: -74.006, required: false })
+  longitude?: number;
+}
+
+class OpeningHoursSlotDto {
+  @ApiProperty({ example: "09:00" })
+  open!: string;
+
+  @ApiProperty({ example: "22:00" })
+  close!: string;
+}
+
+export class RestaurantResponseDto {
+  @ApiProperty({ example: "123e4567-e89b-12d3-a456-426614174000" })
+  id!: string;
+
+  @ApiProperty({ example: "123e4567-e89b-12d3-a456-426614174001" })
+  ownerId!: string;
+
+  @ApiProperty({ example: "Pizza Paradise" })
+  name!: string;
+
+  @ApiProperty({ example: "Authentic Italian pizza with fresh ingredients" })
+  description!: string;
+
+  @ApiProperty({ type: RestaurantAddressDto })
+  address!: RestaurantAddressDto;
+
+  @ApiProperty({ example: "+1-555-0101" })
+  phone!: string;
+
+  @ApiProperty({ example: "contact@pizzaparadise.com" })
+  email!: string;
+
+  @ApiProperty({ example: true })
+  isActive!: boolean;
+
+  @ApiProperty({
+    type: "object",
+    additionalProperties: {
+      type: "object",
+      properties: {
+        open: { type: "string", example: "09:00" },
+        close: { type: "string", example: "22:00" },
+      },
+    },
+    example: {
+      monday: { open: "09:00", close: "22:00" },
+      tuesday: { open: "09:00", close: "22:00" },
+    },
+  })
+  openingHours!: Record<string, OpeningHoursSlotDto>;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  createdAt!: Date;
+
+  @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
+  updatedAt!: Date;
+}
 
 const addressSchema = z.object({
   street: z.string().min(1),
