@@ -74,7 +74,13 @@ export class DriverAggregate extends AggregateRoot {
     this._createdAt = new Date();
     this._updatedAt = new Date();
 
-    this.apply(new DriverCreatedEvent(this._id, this._userId, this._createdAt));
+    this.apply(
+      new DriverCreatedEvent({
+        id: this._id,
+        userId: this._userId,
+        createdAt: this._createdAt,
+      }),
+    );
   }
 
   update(vehicleType: string, licensePlate: string): void {
@@ -89,12 +95,12 @@ export class DriverAggregate extends AggregateRoot {
     this._updatedAt = new Date();
 
     this.apply(
-      new DriverAvailabilityChangedEvent(
-        this._id,
+      new DriverAvailabilityChangedEvent({
+        id: this._id,
         previousStatus,
-        status,
-        this._updatedAt,
-      ),
+        newStatus: status,
+        changedAt: this._updatedAt,
+      }),
     );
   }
 
@@ -107,11 +113,11 @@ export class DriverAggregate extends AggregateRoot {
     this._updatedAt = new Date();
 
     this.apply(
-      new DriverLocationUpdatedEvent(
-        this._id,
-        this._currentLocation,
-        this._updatedAt,
-      ),
+      new DriverLocationUpdatedEvent({
+        id: this._id,
+        location: this._currentLocation,
+        updatedAt: this._updatedAt,
+      }),
     );
   }
 
@@ -121,6 +127,11 @@ export class DriverAggregate extends AggregateRoot {
     this._rating =
       (this._rating * (this._totalDeliveries - 1) + newRating) /
       this._totalDeliveries;
+    this._updatedAt = new Date();
+  }
+
+  deactivate(): void {
+    this._isActive = false;
     this._updatedAt = new Date();
   }
 

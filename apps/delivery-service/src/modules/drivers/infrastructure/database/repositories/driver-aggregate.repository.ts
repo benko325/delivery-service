@@ -2,6 +2,7 @@ import { Injectable, Inject } from "@nestjs/common";
 import { Kysely, sql } from "kysely";
 import { IDriverAggregateRepository } from "../../../core/repositories/driver.repository.interface";
 import { Driver } from "../../../core/entities/driver.entity";
+import { DriverAggregate } from "../../../core/aggregates/driver.aggregate";
 import {
   DriverDatabase,
   DriverStatus,
@@ -15,19 +16,7 @@ export class DriverAggregateRepository implements IDriverAggregateRepository {
     private readonly db: Kysely<DriverDatabase>,
   ) {}
 
-  async save(driver: {
-    id: string;
-    userId: string;
-    vehicleType: string;
-    licensePlate: string;
-    status: DriverStatus;
-    currentLocation: DriverLocation | null;
-    rating: number;
-    totalDeliveries: number;
-    isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-  }): Promise<void> {
+  async save(driver: DriverAggregate): Promise<void> {
     await this.db
       .insertInto("drivers.drivers")
       .values({
@@ -45,6 +34,20 @@ export class DriverAggregateRepository implements IDriverAggregateRepository {
         createdAt: driver.createdAt,
         updatedAt: driver.updatedAt,
       } as never)
+      .onConflict((oc) =>
+        oc.column("id").doUpdateSet({
+          vehicleType: driver.vehicleType,
+          licensePlate: driver.licensePlate.toUpperCase(),
+          status: driver.status,
+          currentLocation: driver.currentLocation
+            ? sql`${JSON.stringify(driver.currentLocation)}::jsonb`
+            : null,
+          rating: driver.rating,
+          totalDeliveries: driver.totalDeliveries,
+          isActive: driver.isActive,
+          updatedAt: driver.updatedAt,
+        } as never),
+      )
       .execute();
   }
 
@@ -86,19 +89,20 @@ export class DriverAggregateRepository implements IDriverAggregateRepository {
       .execute();
   }
 
-  async findById(id: string): Promise<Driver | null> {
+  async findById(id: string): Promise<DriverAggregate | null> {
     const driver = await this.db
       .selectFrom("drivers.drivers")
       .selectAll()
       .where("id", "=", id)
       .executeTakeFirst();
 
-    return driver ? this.mapToDriver(driver) : null;
+    return driver ? this.mapToAggregate(driver) : null;
   }
 
-  private mapToDriver(row: unknown): Driver {
+  private mapToAggregate(row: unknown): DriverAggregate {
     const data = row as Record<string, unknown>;
-    return {
+    const aggregate = new DriverAggregate();
+    aggregate.loadState({
       id: data.id as string,
       userId: data.userId as string,
       vehicleType: data.vehicleType as string,
@@ -114,6 +118,7 @@ export class DriverAggregateRepository implements IDriverAggregateRepository {
       isActive: (data.isActive as boolean) ?? true,
       createdAt: new Date(data.createdAt as string),
       updatedAt: new Date(data.updatedAt as string),
-    };
+    });
+    return aggregate;
   }
 }

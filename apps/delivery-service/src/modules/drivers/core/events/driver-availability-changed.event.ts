@@ -1,11 +1,21 @@
-import { IEvent } from '@nestjs/cqrs';
-import { DriverStatus } from '../types/driver-database.types';
+import { IEvent } from "@nestjs/cqrs";
+import { DriverStatus } from "../types/driver-database.types";
 
 export class DriverAvailabilityChangedEvent implements IEvent {
-    constructor(
-        public readonly id: string,
-        public readonly previousStatus: DriverStatus,
-        public readonly newStatus: DriverStatus,
-        public readonly changedAt: Date,
-    ) {}
+  public readonly id: string;
+  public readonly previousStatus: DriverStatus;
+  public readonly newStatus: DriverStatus;
+  public readonly changedAt: Date;
+
+  constructor(params: {
+    id: string;
+    previousStatus: DriverStatus;
+    newStatus: DriverStatus;
+    changedAt: Date;
+  }) {
+    this.id = params.id;
+    this.previousStatus = params.previousStatus;
+    this.newStatus = params.newStatus;
+    this.changedAt = params.changedAt;
+  }
 }

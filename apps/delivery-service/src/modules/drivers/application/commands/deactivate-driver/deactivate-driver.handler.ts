@@ -1,4 +1,4 @@
-import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
+import { CommandHandler, ICommandHandler, EventPublisher } from "@nestjs/cqrs";
 import {
   Inject,
   NotFoundException,
@@ -15,6 +15,7 @@ export class DeactivateDriverCommandHandler
   constructor(
     @Inject("IDriverAggregateRepository")
     private readonly driverAggregateRepository: IDriverAggregateRepository,
+    private readonly publisher: EventPublisher,
   ) {
     if (!this.driverAggregateRepository) {
       throw new InternalServerErrorException(
@@ -45,12 +46,11 @@ export class DeactivateDriverCommandHandler
     }
 
     try {
-      await this.driverAggregateRepository.update(target.id, {
-        isActive: false,
-        updatedAt: new Date(),
-      });
+      const publishedAggregate = this.publisher.mergeObjectContext(target);
+      publishedAggregate.deactivate();
+      await this.driverAggregateRepository.save(publishedAggregate);
+      publishedAggregate.commit();
     } catch (err: unknown) {
-       
       if (err instanceof Error) {
         console.error("[DeactivateDriverCommandHandler] update failed", err);
       } else {

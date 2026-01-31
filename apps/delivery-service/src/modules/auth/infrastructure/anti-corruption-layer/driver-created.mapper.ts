@@ -30,79 +30,15 @@ export class DriverCreatedEventMapper
   constructor(private readonly eventBus: EventBus) {}
 
   handle(event: ExternalDriverCreatedEvent): void {
-    const raw = event as unknown as Record<string, unknown>;
-
-    const driverId =
-      (typeof raw["driverId"] === "string" && (raw["driverId"] as string)) ||
-      (typeof raw["id"] === "string" && (raw["id"] as string)) ||
-      (raw["id"] &&
-      typeof raw["id"] === "object" &&
-      typeof (raw["id"] as Record<string, unknown>)["driverId"] === "string"
-        ? ((raw["id"] as Record<string, unknown>)["driverId"] as string)
-        : "") ||
-      "";
-
-    let userId: string | undefined = undefined;
-    if (typeof raw["userId"] === "string") {
-      userId = raw["userId"] as string;
-    } else if (
-      raw["id"] &&
-      typeof raw["id"] === "object" &&
-      typeof (raw["id"] as Record<string, unknown>)["userId"] === "string"
-    ) {
-      userId = (raw["id"] as Record<string, unknown>)["userId"] as string;
-    } else if (
-      raw["payload"] &&
-      typeof raw["payload"] === "object" &&
-      typeof (raw["payload"] as Record<string, unknown>)["userId"] === "string"
-    ) {
-      userId = (raw["payload"] as Record<string, unknown>)["userId"] as string;
-    }
-
-    const firstName =
-      ((raw["firstName"] ?? raw["name"]) as string | undefined) ?? "";
-    const lastName = (raw["lastName"] ?? "") as string;
-    const fullName =
-      [firstName, lastName].filter(Boolean).join(" ").trim() || "";
-
-    const email =
-      (raw["contact"] && typeof raw["contact"] === "object"
-        ? ((raw["contact"] as Record<string, unknown>)["email"] as
-            | string
-            | undefined)
-        : undefined) ?? (raw["email"] as string | undefined);
-    const phone =
-      (raw["contact"] && typeof raw["contact"] === "object"
-        ? ((raw["contact"] as Record<string, unknown>)["phone"] as
-            | string
-            | undefined)
-        : undefined) ?? (raw["phone"] as string | undefined);
-    const vehicleRegistration =
-      (raw["vehicle"] && typeof raw["vehicle"] === "object"
-        ? ((raw["vehicle"] as Record<string, unknown>)["registration"] as
-            | string
-            | undefined)
-        : undefined) ?? undefined;
-    const vehicleModel =
-      (raw["vehicle"] && typeof raw["vehicle"] === "object"
-        ? ((raw["vehicle"] as Record<string, unknown>)["model"] as
-            | string
-            | undefined)
-        : undefined) ?? undefined;
-    const location =
-      raw["lastKnownLocation"] && typeof raw["lastKnownLocation"] === "object"
-        ? {
-            lat: (raw["lastKnownLocation"] as Record<string, unknown>)[
-              "lat"
-            ] as number,
-            lon: (raw["lastKnownLocation"] as Record<string, unknown>)[
-              "lon"
-            ] as number,
-          }
-        : undefined;
-    const registeredAt = (raw["createdAt"] ?? raw["registeredAt"]) as
-      | string
-      | undefined;
+    const driverId = event.id;
+    const userId = event.userId;
+    const fullName = "";
+    const email = undefined;
+    const phone = undefined;
+    const vehicleRegistration = undefined;
+    const vehicleModel = undefined;
+    const location = undefined;
+    const registeredAt = event.createdAt;
 
     this.logger.log(
       `Mapping external DriverCreated event -> driverId=${driverId} userId=${userId ?? "<missing>"}`,

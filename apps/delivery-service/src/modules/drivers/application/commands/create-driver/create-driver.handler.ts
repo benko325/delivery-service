@@ -25,20 +25,7 @@ export class CreateDriverCommandHandler
       command.licensePlate,
     );
 
-    await this.driverAggregateRepository.save({
-      id: driverAggregate.id,
-      userId: driverAggregate.userId,
-      vehicleType: driverAggregate.vehicleType,
-      licensePlate: driverAggregate.licensePlate,
-      status: driverAggregate.status,
-      currentLocation: driverAggregate.currentLocation,
-      rating: driverAggregate.rating,
-      totalDeliveries: driverAggregate.totalDeliveries,
-      isActive: driverAggregate.isActive,
-      createdAt: driverAggregate.createdAt,
-      updatedAt: driverAggregate.updatedAt,
-    });
-
+    await this.driverAggregateRepository.save(driverAggregate);
     driverAggregate.commit();
 
     return { id: driverAggregate.id };

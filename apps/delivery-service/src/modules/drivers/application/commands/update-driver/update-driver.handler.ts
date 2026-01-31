@@ -20,28 +20,32 @@ export class UpdateDriverCommandHandler
   ) {}
 
   async execute(command: UpdateDriverCommand): Promise<{ success: boolean }> {
-    const existingDriver = command.isUserId
-      ? await this.driverRepository.findByUserId(command.id)
-      : await this.driverAggregateRepository.findById(command.id);
+    let driverAggregate: DriverAggregate | null;
 
-    if (!existingDriver) {
-      throw new NotFoundException(`Driver not found`);
+    if (command.isUserId) {
+      const existingDriver = await this.driverRepository.findByUserId(
+        command.id,
+      );
+      if (!existingDriver) {
+        throw new NotFoundException(`Driver not found`);
+      }
+      driverAggregate = new DriverAggregate();
+      driverAggregate.loadState(existingDriver);
+    } else {
+      driverAggregate = await this.driverAggregateRepository.findById(
+        command.id,
+      );
+      if (!driverAggregate) {
+        throw new NotFoundException(`Driver not found`);
+      }
     }
 
-    const driverAggregate = this.publisher.mergeObjectContext(
-      new DriverAggregate(),
-    );
-    driverAggregate.loadState(existingDriver);
+    const publishedAggregate =
+      this.publisher.mergeObjectContext(driverAggregate);
+    publishedAggregate.update(command.vehicleType, command.licensePlate);
 
-    driverAggregate.update(command.vehicleType, command.licensePlate);
-
-    await this.driverAggregateRepository.update(existingDriver.id, {
-      vehicleType: driverAggregate.vehicleType,
-      licensePlate: driverAggregate.licensePlate,
-      updatedAt: driverAggregate.updatedAt,
-    });
-
-    driverAggregate.commit();
+    await this.driverAggregateRepository.save(publishedAggregate);
+    publishedAggregate.commit();
 
     return { success: true };
   }
