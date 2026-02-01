@@ -32,9 +32,11 @@ export class CheckoutCartCommandHandler implements ICommandHandler<CheckoutCartC
 
     cartAggregate.checkout(command.deliveryAddress, command.deliveryFee);
 
-    await this.cartAggregateRepository.delete(cart.id);
-
+    // Commit events first to ensure order is created before cart is deleted
+    // If event publishing fails, cart remains and user can retry
     cartAggregate.commit();
+
+    await this.cartAggregateRepository.delete(cart.id);
 
     return { message: "Cart ordered successfully" };
   }

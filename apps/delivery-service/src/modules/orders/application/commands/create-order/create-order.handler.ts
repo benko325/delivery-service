@@ -29,6 +29,10 @@ export class CreateOrderCommandHandler implements ICommandHandler<CreateOrderCom
       command.currency,
     );
 
+    // Commit events first to ensure downstream services are notified before persistence
+    // If event publishing fails, order is not saved and can be retried
+    orderAggregate.commit();
+
     await this.orderAggregateRepository.save({
       id: orderAggregate.id,
       customerId: orderAggregate.customerId,
@@ -47,8 +51,6 @@ export class CreateOrderCommandHandler implements ICommandHandler<CreateOrderCom
       createdAt: orderAggregate.createdAt,
       updatedAt: orderAggregate.updatedAt,
     });
-
-    orderAggregate.commit();
 
     return {
       id: orderAggregate.id,

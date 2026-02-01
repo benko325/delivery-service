@@ -24,6 +24,7 @@ export class AddItemToCartCommandHandler implements ICommandHandler<AddItemToCar
     const cartAggregate = this.publisher.mergeObjectContext(
       new CartAggregate(),
     );
+    const isNewCart = !cart;
 
     if (cart) {
       cartAggregate.loadState(cart);
@@ -40,15 +41,10 @@ export class AddItemToCartCommandHandler implements ICommandHandler<AddItemToCar
       command.quantity,
     );
 
-    if (cart) {
-      await this.cartAggregateRepository.update(cart.id, {
-        restaurantId: cartAggregate.restaurantId,
-        items: cartAggregate.items,
-        totalAmount: cartAggregate.totalAmount,
-        currency: cartAggregate.currency,
-        updatedAt: cartAggregate.updatedAt,
-      });
-    } else {
+    // Commit events first to ensure downstream services are notified before persistence
+    cartAggregate.commit();
+
+    if (isNewCart) {
       await this.cartAggregateRepository.save({
         id: cartAggregate.id,
         customerId: cartAggregate.customerId,
@@ -62,12 +58,18 @@ export class AddItemToCartCommandHandler implements ICommandHandler<AddItemToCar
 
       // Record cart created metric for new carts
       this.metricsService.incrementCartsCreated();
+    } else {
+      await this.cartAggregateRepository.update(cart.id, {
+        restaurantId: cartAggregate.restaurantId,
+        items: cartAggregate.items,
+        totalAmount: cartAggregate.totalAmount,
+        currency: cartAggregate.currency,
+        updatedAt: cartAggregate.updatedAt,
+      });
     }
 
     // Record item added metric
     this.metricsService.incrementCartItemsAdded(command.quantity);
-
-    cartAggregate.commit();
 
     return {
       cartId: cartAggregate.id,

@@ -68,6 +68,28 @@ export const restaurantsRegisteredCounterProvider = makeCounterProvider({
   help: "Total number of restaurants registered",
 });
 
+export const restaurantsActivatedCounterProvider = makeCounterProvider({
+  name: "restaurants_activated_total",
+  help: "Total number of restaurant activations",
+});
+
+export const restaurantsDeactivatedCounterProvider = makeCounterProvider({
+  name: "restaurants_deactivated_total",
+  help: "Total number of restaurant deactivations",
+});
+
+export const ordersConfirmedByRestaurantCounterProvider = makeCounterProvider({
+  name: "orders_confirmed_by_restaurant_total",
+  help: "Total number of orders confirmed by restaurants",
+  labelNames: ["restaurant_id"],
+});
+
+export const ordersRejectedByRestaurantCounterProvider = makeCounterProvider({
+  name: "orders_rejected_by_restaurant_total",
+  help: "Total number of orders rejected by restaurants",
+  labelNames: ["restaurant_id"],
+});
+
 export const ordersPerRestaurantCounterProvider = makeCounterProvider({
   name: "orders_per_restaurant_total",
   help: "Total number of orders per restaurant",
@@ -141,6 +163,10 @@ export const metricsProviders = [
   driversRegisteredCounterProvider,
   activeDriversGaugeProvider,
   restaurantsRegisteredCounterProvider,
+  restaurantsActivatedCounterProvider,
+  restaurantsDeactivatedCounterProvider,
+  ordersConfirmedByRestaurantCounterProvider,
+  ordersRejectedByRestaurantCounterProvider,
   ordersPerRestaurantCounterProvider,
   deliveryDurationHistogramProvider,
   // Authentication

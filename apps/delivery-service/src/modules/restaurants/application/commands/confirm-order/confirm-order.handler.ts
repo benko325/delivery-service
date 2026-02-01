@@ -1,40 +1,56 @@
-import { CommandHandler, ICommandHandler, EventBus } from "@nestjs/cqrs";
-import { Inject, NotFoundException, BadRequestException } from "@nestjs/common";
+import { CommandHandler, ICommandHandler, EventPublisher } from "@nestjs/cqrs";
+import { Inject, NotFoundException, ForbiddenException } from "@nestjs/common";
 import { ConfirmOrderCommand } from "./confirm-order.command";
-import { IRestaurantRepository } from "../../../core/repositories/restaurant.repository.interface";
-import { OrderConfirmedByRestaurantEvent } from "../../../core/events/order-confirmed-by-restaurant.event";
+import { IRestaurantAggregateRepository } from "../../../core/repositories/restaurant.repository.interface";
+import { RestaurantAggregate } from "../../../core/aggregates/restaurant.aggregate";
+import { MetricsService } from "../../../../shared-kernel/infrastructure/metrics/metrics.service";
 
 @CommandHandler(ConfirmOrderCommand)
 export class ConfirmOrderCommandHandler implements ICommandHandler<ConfirmOrderCommand> {
   constructor(
-    @Inject("IRestaurantRepository")
-    private readonly restaurantRepository: IRestaurantRepository,
-    private readonly eventBus: EventBus,
+    @Inject("IRestaurantAggregateRepository")
+    private readonly restaurantAggregateRepository: IRestaurantAggregateRepository,
+    private readonly publisher: EventPublisher,
+    private readonly metricsService: MetricsService,
   ) {}
 
   async execute(command: ConfirmOrderCommand): Promise<{ success: boolean }> {
-    const restaurant = await this.restaurantRepository.findById(
-      command.restaurantId,
-    );
+    const existingRestaurant =
+      await this.restaurantAggregateRepository.findById(command.restaurantId);
 
-    if (!restaurant) {
+    if (!existingRestaurant) {
       throw new NotFoundException(
         `Restaurant with ID ${command.restaurantId} not found`,
       );
     }
 
-    if (!restaurant.isActive) {
-      throw new BadRequestException("Restaurant is not active");
+    // Check ownership: admins can confirm any restaurant's orders, owners can only confirm their own
+    const isAdmin = command.userRoles.includes("admin");
+    const isOwner = existingRestaurant.ownerId === command.userId;
+
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException(
+        "You do not have permission to confirm orders for this restaurant",
+      );
     }
 
-    const event = new OrderConfirmedByRestaurantEvent({
-      orderId: command.orderId,
-      restaurantId: command.restaurantId,
-      estimatedPreparationMinutes: command.estimatedPreparationMinutes,
-      confirmedAt: new Date(),
-    });
+    const restaurantAggregate = this.publisher.mergeObjectContext(
+      new RestaurantAggregate(),
+    );
+    restaurantAggregate.loadState(existingRestaurant);
 
-    this.eventBus.publish(event);
+    // Domain logic and event emission through aggregate
+    restaurantAggregate.confirmOrder(
+      command.orderId,
+      command.estimatedPreparationMinutes,
+    );
+
+    // Commit events (publishes to RabbitMQ)
+    restaurantAggregate.commit();
+
+    this.metricsService.incrementOrdersConfirmedByRestaurant(
+      command.restaurantId,
+    );
 
     return { success: true };
   }
