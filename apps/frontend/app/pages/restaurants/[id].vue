@@ -128,14 +128,22 @@ const formatPrice = (price: number, currency: string) => {
  * @brief Add menu item to cart
  * @param item Menu item to add
  */
-const addToCart = (item: any) => {
-  cartStore.addItem({
-    menuItemId: item.id,
-    restaurantId: restaurantId.value,
-    name: item.name,
-    price: item.price,
-    currency: item.currency,
-    quantity: 1,
-  });
+const addToCart = async (item: any) => {
+  try {
+    await cartStore.addItem({
+      menuItemId: item.id,
+      restaurantId: restaurantId.value,
+      name: item.name,
+      price: item.price,
+      currency: item.currency,
+      quantity: 1,
+    });
+    
+    // Optional: Show success feedback
+    // You can add a toast notification here for better UX
+  } catch (error) {
+    console.error('Failed to add item to cart:', error);
+    alert('Failed to add item to cart. Please try again.');
+  }
 };
 </script>
