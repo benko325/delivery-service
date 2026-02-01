@@ -6,9 +6,7 @@ import { CartAggregate } from "../../../core/aggregates/cart.aggregate";
 import { MetricsService } from "../../../../shared-kernel/infrastructure/metrics";
 
 @CommandHandler(AddItemToCartCommand)
-export class AddItemToCartCommandHandler
-  implements ICommandHandler<AddItemToCartCommand>
-{
+export class AddItemToCartCommandHandler implements ICommandHandler<AddItemToCartCommand> {
   constructor(
     @Inject("ICartAggregateRepository")
     private readonly cartAggregateRepository: ICartAggregateRepository,
@@ -23,7 +21,9 @@ export class AddItemToCartCommandHandler
       command.customerId,
     );
 
-    const cartAggregate = this.publisher.mergeObjectContext(new CartAggregate());
+    const cartAggregate = this.publisher.mergeObjectContext(
+      new CartAggregate(),
+    );
     const isNewCart = !cart;
 
     if (cart) {

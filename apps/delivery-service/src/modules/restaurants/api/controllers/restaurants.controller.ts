@@ -117,7 +117,10 @@ export class RestaurantsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: "Update restaurant [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 200, description: "Restaurant updated" })
-  @ApiResponse({ status: 403, description: "Not authorized to update this restaurant" })
+  @ApiResponse({
+    status: 403,
+    description: "Not authorized to update this restaurant",
+  })
   async update(
     @Param("id") id: string,
     @User() user: RequestUser,
@@ -146,9 +149,14 @@ export class RestaurantsController {
   @ApiOperation({ summary: "Activate restaurant [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 200, description: "Restaurant activated" })
   @ApiResponse({ status: 404, description: "Restaurant not found" })
-  @ApiResponse({ status: 403, description: "Not authorized to activate this restaurant" })
+  @ApiResponse({
+    status: 403,
+    description: "Not authorized to activate this restaurant",
+  })
   async activate(@Param("id") id: string, @User() user: RequestUser) {
-    return this.commandBus.execute(new ActivateRestaurantCommand(id, user.userId, user.roles));
+    return this.commandBus.execute(
+      new ActivateRestaurantCommand(id, user.userId, user.roles),
+    );
   }
 
   @Post(":id/deactivate")
@@ -159,9 +167,14 @@ export class RestaurantsController {
   @ApiOperation({ summary: "Deactivate restaurant [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 200, description: "Restaurant deactivated" })
   @ApiResponse({ status: 404, description: "Restaurant not found" })
-  @ApiResponse({ status: 403, description: "Not authorized to deactivate this restaurant" })
+  @ApiResponse({
+    status: 403,
+    description: "Not authorized to deactivate this restaurant",
+  })
   async deactivate(@Param("id") id: string, @User() user: RequestUser) {
-    return this.commandBus.execute(new DeactivateRestaurantCommand(id, user.userId, user.roles));
+    return this.commandBus.execute(
+      new DeactivateRestaurantCommand(id, user.userId, user.roles),
+    );
   }
 
   @Post(":restaurantId/orders/:orderId/confirm")
@@ -173,7 +186,10 @@ export class RestaurantsController {
   @ApiResponse({ status: 200, description: "Order confirmed" })
   @ApiResponse({ status: 404, description: "Restaurant not found" })
   @ApiResponse({ status: 400, description: "Restaurant is not active" })
-  @ApiResponse({ status: 403, description: "Not authorized to confirm orders for this restaurant" })
+  @ApiResponse({
+    status: 403,
+    description: "Not authorized to confirm orders for this restaurant",
+  })
   async confirmOrder(
     @Param("restaurantId") restaurantId: string,
     @Param("orderId") orderId: string,
@@ -199,7 +215,10 @@ export class RestaurantsController {
   @ApiOperation({ summary: "Reject an order [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 200, description: "Order rejected" })
   @ApiResponse({ status: 404, description: "Restaurant not found" })
-  @ApiResponse({ status: 403, description: "Not authorized to reject orders for this restaurant" })
+  @ApiResponse({
+    status: 403,
+    description: "Not authorized to reject orders for this restaurant",
+  })
   async rejectOrder(
     @Param("restaurantId") restaurantId: string,
     @Param("orderId") orderId: string,
@@ -207,7 +226,13 @@ export class RestaurantsController {
     @Body(ZodValidationPipe) dto: RejectOrderDto,
   ) {
     return this.commandBus.execute(
-      new RejectOrderCommand(restaurantId, orderId, dto.reason, user.userId, user.roles),
+      new RejectOrderCommand(
+        restaurantId,
+        orderId,
+        dto.reason,
+        user.userId,
+        user.roles,
+      ),
     );
   }
 }

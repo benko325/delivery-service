@@ -13,7 +13,12 @@ A food delivery service system built with NestJS using modern architecture patte
 
 | Category | Technology |
 |----------|------------|
-| Framework | NestJS 11 |
+| Backend Framework | NestJS 11 |
+| **Frontend Framework** | Nuxt 4 | Vue 3 SSR framework with file-based routing |
+| **UI Components** | Vue 3 + Bootstrap 5 | Reactive components with responsive styling |
+| **State Management** | Pinia | Vue store for auth and cart state |
+| **API Client** | openapi-fetch | Type-safe API client from OpenAPI schema |
+| **Data Fetching** | TanStack Query | Server state management with caching |
 | Database | PostgreSQL 17 |
 | ORM | Kysely |
 | Message Queue | RabbitMQ |
@@ -21,32 +26,54 @@ A food delivery service system built with NestJS using modern architecture patte
 | Validation | Zod + nestjs-zod |
 | Logging | Pino |
 | Metrics | Prometheus + Grafana |
+| **Reverse Proxy** | Nginx | Unified domain routing and load balancing |
+| **Containerization** | Docker + Compose | Multi-container orchestration |
 | Build Tool | Turbo + pnpm |
 | API Docs | Swagger/OpenAPI |
 
 ## Project Structure
 
 ```
-solution-project/
+delivery-service/
 ├── apps/
-│   └── delivery-service/           # Main NestJS application
-│       ├── src/
-│       │   ├── infrastructure/     # App-level infrastructure
-│       │   ├── modules/
-│       │   │   ├── shared-kernel/  # Cross-cutting concerns
-│       │   │   ├── auth/           # Authentication
-│       │   │   ├── customers/      # Customer management
-│       │   │   ├── restaurants/    # Restaurant & menu
-│       │   │   ├── drivers/        # Driver management
-│       │   │   ├── carts/          # Shopping cart
-│       │   │   ├── orders/         # Order management
-│       │   │   ├── notifications/  # Event-driven notifications
-│       │   │   └── health/         # Health check
-│       │   └── migrations/         # Database migrations
-│       ├── prometheus.yml
-│       └── grafana/
-├── docker-compose.yml
-└── init-db.sql
+│   ├── delivery-service/           # Main NestJS application
+│   │   ├── src/
+│   │   │   ├── infrastructure/     # App-level infrastructure
+│   │   │   ├── modules/
+│   │   │   │   ├── shared-kernel/  # Cross-cutting concerns
+│   │   │   │   ├── auth/           # Authentication
+│   │   │   │   ├── customers/      # Customer management
+│   │   │   │   ├── restaurants/    # Restaurant & menu management
+│   │   │   │   ├── drivers/        # Driver management
+│   │   │   │   ├── carts/          # Shopping cart
+│   │   │   │   ├── orders/         # Order management
+│   │   │   │   ├── notifications/  # Event-driven notifications
+│   │   │   │   └── health/         # Health check
+│   │   │   ├── migrations/         # Database migrations runner
+│   │   │   ├── app.module.ts
+│   │   │   └── main.ts
+│   │   ├── prometheus.yml          # Prometheus scrape config
+│   │   └── grafana/                # Grafana provisioning
+│   ├── frontend/                   # Nuxt 4 frontend application
+│   │   ├── app/
+│   │   │   ├── pages/              # File-based routing
+│   │   │   ├── components/         # Reusable Vue components
+│   │   │   ├── composables/        # API hooks
+│   │   │   ├── stores/             # Pinia stores (auth, cart)
+│   │   │   ├── middleware/         # Route guards
+│   │   │   └── layouts/            # Page layouts
+│   │   ├── types/
+│   │   │   └── api.d.ts           # Auto-generated OpenAPI types
+│   │   └── utils/
+│   │       └── api-client.ts      # Configured API client
+│   └── nginx/                      # Nginx reverse proxy
+│       ├── nginx.conf              # Proxy configuration
+│       └── README.md
+├── docs/
+│   └── adr/                        # Architecture Decision Records
+├── docker-compose.yml              # Full stack orchestration
+├── init-db.sql                     # Schema initialization
+└── README.md
 ```
 
 ## Module Structure (Vertical Slice)
@@ -65,11 +92,25 @@ module/
 docker-compose up -d
 ```
 
-This starts the entire stack (app, database, RabbitMQ, Prometheus, Grafana). Migrations run automatically.
+This starts the entire stack (app, database, RabbitMQ, Prometheus, Grafana, frontend, nginx). Migrations run automatically.
 
-- **API**: http://localhost:3000
-- **Swagger Docs**: http://localhost:3000/api/docs
+- **API**: http://localhost:3000 or http://ds.localhost/api
+- **Frontend**: http://localhost:3002 (port may vary) or http://ds.localhost
+- **Swagger Docs**: http://localhost:3000/api/docs or http://ds.localhost/api/docs
 - **Grafana**: http://localhost:3001
+
+
+## Default Test Credentials
+
+After running migrations and seed data:
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@delivery.local | Admin123! |
+| Customer | customer@delivery.local | Customer123! |
+| Driver | driver@delivery.local | Driver123! |
+| Restaurant Owner | owner@delivery.local | Owner123! |
+
 
 ## Documentation
 
