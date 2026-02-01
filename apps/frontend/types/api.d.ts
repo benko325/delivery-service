@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+  "/api/metrics": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["PrometheusController_index"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/health": {
     parameters: {
       query?: never;
@@ -507,6 +523,57 @@ export interface paths {
     patch: operations["DriversController_setAvailability"];
     trace?: never;
   };
+  "/api/drivers/deliveries/{orderId}/accept": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Accept a delivery */
+    post: operations["DriversController_acceptDelivery"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/drivers/deliveries/{orderId}/reject": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Reject a delivery */
+    post: operations["DriversController_rejectDelivery"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/drivers/deliveries/complete": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Complete current delivery */
+    post: operations["DriversController_completeDelivery"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/drivers/me/deactivate": {
     parameters: {
       query?: never;
@@ -691,6 +758,23 @@ export interface paths {
     put?: never;
     /** Accept an order (driver) */
     post: operations["OrdersController_acceptOrder"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/orders/restaurant/{restaurantId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get orders for a specific restaurant */
+    get: operations["OrdersController_getRestaurantOrders"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -1090,6 +1174,9 @@ export interface components {
       /** @enum {string} */
       status: "available" | "busy" | "offline";
     };
+    RejectDeliveryDto: {
+      reason: string;
+    };
     CartItemDto: {
       /** @example 123e4567-e89b-12d3-a456-426614174000 */
       menuItemId: string;
@@ -1295,6 +1382,23 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  PrometheusController_index: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   HealthController_check: {
     parameters: {
       query?: never;
@@ -2247,6 +2351,68 @@ export interface operations {
       };
     };
   };
+  DriversController_acceptDelivery: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        orderId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Delivery accepted */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  DriversController_rejectDelivery: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        orderId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RejectDeliveryDto"];
+      };
+    };
+    responses: {
+      /** @description Delivery rejected */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  DriversController_completeDelivery: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Delivery completed */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   DriversController_deactivateMyAccount: {
     parameters: {
       query?: never;
@@ -2551,6 +2717,35 @@ export interface operations {
     responses: {
       /** @description Order accepted */
       200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  OrdersController_getRestaurantOrders: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        restaurantId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description List of restaurant orders */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["OrderResponseDto"][];
+        };
+      };
+      /** @description Access denied - not your restaurant */
+      403: {
         headers: {
           [name: string]: unknown;
         };
