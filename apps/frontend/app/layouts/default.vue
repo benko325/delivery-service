@@ -40,14 +40,10 @@
                 <i class="bi bi-cart3 me-1"></i>
                 Cart
                 <span
-                  v-if="
-                    authStore.isAuthenticated &&
-                    cartStore?.itemCount &&
-                    cartStore?.itemCount > 0
-                  "
+                  v-if="cartStore.itemCount > 0"
                   class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                 >
-                  {{ cartStore?.itemCount }}
+                  {{ cartStore.itemCount }}
                 </span>
               </NuxtLink>
             </li>
@@ -96,7 +92,7 @@ import { useAuthStore } from "~/stores/auth";
 import { useCartStore } from "~/stores/cart";
 
 const authStore = useAuthStore();
-const cartStore = authStore.isAuthenticated ? useCartStore() : null;
+const cartStore = useCartStore();
 const router = useRouter();
 
 // Load auth and cart on mount
@@ -109,7 +105,7 @@ onMounted(() => {
  */
 const handleLogout = () => {
   authStore.logout();
-  cartStore?.clear();
+  cartStore.clear();
   router.push("/");
 };
 </script>
