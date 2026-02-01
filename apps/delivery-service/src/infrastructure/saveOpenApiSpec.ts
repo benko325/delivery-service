@@ -9,11 +9,11 @@ export function saveOpenApiSpec(
 ) {
   const outputPath = path.resolve(process.cwd(), "openapi.json");
 
-  fs.writeFileSync(
-    outputPath,
-    JSON.stringify(openApiDocument, null, 2),
-    "utf-8",
-  );
+  try {
+    fs.writeFileSync(outputPath, JSON.stringify(openApiDocument, null, 2));
+  } catch (error) {
+    logger?.error("Failed to write OpenAPI spec: ", error);
+  }
 
   logger?.log(`OpenAPI spec written to: ${outputPath}`);
 }
