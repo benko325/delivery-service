@@ -147,10 +147,6 @@ import {
   useCancelOrder,
 } from "~/composables/useOrders";
 
-// Protect this page with auth middleware
-definePageMeta({
-  middleware: "auth",
-});
 
 const route = useRoute();
 const orderId = computed(() => route.params.id as string);

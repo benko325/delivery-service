@@ -121,10 +121,6 @@ import { useCartStore } from "~/stores/cart";
 import { useAuthStore } from "~/stores/auth";
 import { useCreateOrder } from "~/composables/useOrders";
 
-// Protect this page with auth middleware
-definePageMeta({
-  middleware: "auth",
-});
 
 const cartStore = useCartStore();
 const authStore = useAuthStore();

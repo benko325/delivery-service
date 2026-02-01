@@ -1,9 +1,20 @@
 /**
- * @file Authentication middleware
+ * @file Global authentication middleware
  * @description Checks if user is authenticated, redirects to login if not
+ * Runs on every route change automatically
  */
 
 export default defineNuxtRouteMiddleware((to) => {
+  // Define public routes that don't require authentication
+  const publicRoutes = ["/login", "/register"];
+
+  // Check if the current route is public
+  const isPublicRoute = publicRoutes.some((route) => to.path.startsWith(route));
+
+  if (isPublicRoute) {
+    return; // Allow access to public routes
+  }
+
   // Access the auth store
   const authStore = useAuthStore();
 

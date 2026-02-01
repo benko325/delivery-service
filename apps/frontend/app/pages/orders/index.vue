@@ -66,10 +66,6 @@
 <script setup lang="ts">
 import { useOrders } from "~/composables/useOrders";
 
-// Protect this page with auth middleware
-definePageMeta({
-  middleware: "auth",
-});
 
 const { data: orders, isLoading, error } = useOrders();
 

@@ -100,10 +100,6 @@
 <script setup lang="ts">
 import { useCartStore } from "~/stores/cart";
 
-// Protect this page with auth middleware
-definePageMeta({
-  middleware: "auth",
-});
 
 const cartStore = useCartStore();
 
