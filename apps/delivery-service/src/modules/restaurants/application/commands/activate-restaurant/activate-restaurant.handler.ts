@@ -1,8 +1,9 @@
 import { CommandHandler, ICommandHandler, EventPublisher } from "@nestjs/cqrs";
-import { Inject, NotFoundException } from "@nestjs/common";
+import { Inject, NotFoundException, ForbiddenException } from "@nestjs/common";
 import { ActivateRestaurantCommand } from "./activate-restaurant.command";
 import { IRestaurantAggregateRepository } from "../../../core/repositories/restaurant.repository.interface";
 import { RestaurantAggregate } from "../../../core/aggregates/restaurant.aggregate";
+import { MetricsService } from "../../../../shared-kernel/infrastructure/metrics/metrics.service";
 
 @CommandHandler(ActivateRestaurantCommand)
 export class ActivateRestaurantCommandHandler implements ICommandHandler<ActivateRestaurantCommand> {
@@ -10,6 +11,7 @@ export class ActivateRestaurantCommandHandler implements ICommandHandler<Activat
     @Inject("IRestaurantAggregateRepository")
     private readonly restaurantAggregateRepository: IRestaurantAggregateRepository,
     private readonly publisher: EventPublisher,
+    private readonly metricsService: MetricsService,
   ) {}
 
   async execute(
@@ -21,6 +23,16 @@ export class ActivateRestaurantCommandHandler implements ICommandHandler<Activat
     if (!existingRestaurant) {
       throw new NotFoundException(
         `Restaurant with ID ${command.restaurantId} not found`,
+      );
+    }
+
+    // Check ownership: admins can activate any restaurant, owners can only activate their own
+    const isAdmin = command.userRoles.includes("admin");
+    const isOwner = existingRestaurant.ownerId === command.userId;
+
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException(
+        "You do not have permission to activate this restaurant",
       );
     }
 
@@ -37,6 +49,8 @@ export class ActivateRestaurantCommandHandler implements ICommandHandler<Activat
     });
 
     restaurantAggregate.commit();
+
+    this.metricsService.incrementRestaurantsActivated();
 
     return { success: true };
   }

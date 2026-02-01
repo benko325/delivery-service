@@ -5,5 +5,7 @@ export class ConfirmOrderCommand implements ICommand {
     public readonly restaurantId: string,
     public readonly orderId: string,
     public readonly estimatedPreparationMinutes: number,
+    public readonly userId: string,
+    public readonly userRoles: string[],
   ) {}
 }

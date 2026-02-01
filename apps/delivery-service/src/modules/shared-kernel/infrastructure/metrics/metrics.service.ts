@@ -35,6 +35,18 @@ export class MetricsService {
     @InjectMetric("restaurants_registered_total")
     private readonly restaurantsRegisteredCounter: Counter<string>,
 
+    @InjectMetric("restaurants_activated_total")
+    private readonly restaurantsActivatedCounter: Counter<string>,
+
+    @InjectMetric("restaurants_deactivated_total")
+    private readonly restaurantsDeactivatedCounter: Counter<string>,
+
+    @InjectMetric("orders_confirmed_by_restaurant_total")
+    private readonly ordersConfirmedByRestaurantCounter: Counter<string>,
+
+    @InjectMetric("orders_rejected_by_restaurant_total")
+    private readonly ordersRejectedByRestaurantCounter: Counter<string>,
+
     @InjectMetric("orders_per_restaurant_total")
     private readonly ordersPerRestaurantCounter: Counter<string>,
 
@@ -125,6 +137,24 @@ export class MetricsService {
   // Restaurant metrics
   incrementRestaurantsRegistered(): void {
     this.restaurantsRegisteredCounter.inc();
+  }
+
+  incrementRestaurantsActivated(): void {
+    this.restaurantsActivatedCounter.inc();
+  }
+
+  incrementRestaurantsDeactivated(): void {
+    this.restaurantsDeactivatedCounter.inc();
+  }
+
+  incrementOrdersConfirmedByRestaurant(restaurantId: string): void {
+    this.ordersConfirmedByRestaurantCounter.inc({
+      restaurant_id: restaurantId,
+    });
+  }
+
+  incrementOrdersRejectedByRestaurant(restaurantId: string): void {
+    this.ordersRejectedByRestaurantCounter.inc({ restaurant_id: restaurantId });
   }
 
   incrementOrdersPerRestaurant(restaurantId: string): void {

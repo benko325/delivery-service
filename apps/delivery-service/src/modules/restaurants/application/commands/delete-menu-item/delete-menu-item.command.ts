@@ -1,5 +1,9 @@
-import { ICommand } from '@nestjs/cqrs';
+import { ICommand } from "@nestjs/cqrs";
 
 export class DeleteMenuItemCommand implements ICommand {
-    constructor(public readonly id: string) {}
+  constructor(
+    public readonly id: string,
+    public readonly userId: string,
+    public readonly userRoles: string[],
+  ) {}
 }
