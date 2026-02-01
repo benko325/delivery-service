@@ -4,7 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 export function saveOpenApiSpec(
-  openApiDocument?: OpenAPIObject,
+  openApiDocument: OpenAPIObject,
   logger?: Logger,
 ) {
   const outputPath = path.resolve(process.cwd(), "openapi.json");
