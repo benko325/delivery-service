@@ -3,6 +3,7 @@ import { Inject, NotFoundException, ForbiddenException } from "@nestjs/common";
 import { RejectOrderCommand } from "./reject-order.command";
 import { IRestaurantAggregateRepository } from "../../../core/repositories/restaurant.repository.interface";
 import { RestaurantAggregate } from "../../../core/aggregates/restaurant.aggregate";
+import { MetricsService } from "../../../../shared-kernel/infrastructure/metrics/metrics.service";
 
 @CommandHandler(RejectOrderCommand)
 export class RejectOrderCommandHandler implements ICommandHandler<RejectOrderCommand> {
@@ -10,12 +11,12 @@ export class RejectOrderCommandHandler implements ICommandHandler<RejectOrderCom
     @Inject("IRestaurantAggregateRepository")
     private readonly restaurantAggregateRepository: IRestaurantAggregateRepository,
     private readonly publisher: EventPublisher,
+    private readonly metricsService: MetricsService,
   ) {}
 
   async execute(command: RejectOrderCommand): Promise<{ success: boolean }> {
-    const existingRestaurant = await this.restaurantAggregateRepository.findById(
-      command.restaurantId,
-    );
+    const existingRestaurant =
+      await this.restaurantAggregateRepository.findById(command.restaurantId);
 
     if (!existingRestaurant) {
       throw new NotFoundException(
@@ -24,11 +25,13 @@ export class RejectOrderCommandHandler implements ICommandHandler<RejectOrderCom
     }
 
     // Check ownership: admins can reject any restaurant's orders, owners can only reject their own
-    const isAdmin = command.userRoles.includes('admin');
+    const isAdmin = command.userRoles.includes("admin");
     const isOwner = existingRestaurant.ownerId === command.userId;
 
     if (!isAdmin && !isOwner) {
-      throw new ForbiddenException('You do not have permission to reject orders for this restaurant');
+      throw new ForbiddenException(
+        "You do not have permission to reject orders for this restaurant",
+      );
     }
 
     const restaurantAggregate = this.publisher.mergeObjectContext(
@@ -41,6 +44,10 @@ export class RejectOrderCommandHandler implements ICommandHandler<RejectOrderCom
 
     // Commit events (publishes to RabbitMQ)
     restaurantAggregate.commit();
+
+    this.metricsService.incrementOrdersRejectedByRestaurant(
+      command.restaurantId,
+    );
 
     return { success: true };
   }

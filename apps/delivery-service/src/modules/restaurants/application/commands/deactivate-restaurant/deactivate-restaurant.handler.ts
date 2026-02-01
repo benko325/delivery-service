@@ -3,6 +3,7 @@ import { Inject, NotFoundException, ForbiddenException } from "@nestjs/common";
 import { DeactivateRestaurantCommand } from "./deactivate-restaurant.command";
 import { IRestaurantAggregateRepository } from "../../../core/repositories/restaurant.repository.interface";
 import { RestaurantAggregate } from "../../../core/aggregates/restaurant.aggregate";
+import { MetricsService } from "../../../../shared-kernel/infrastructure/metrics/metrics.service";
 
 @CommandHandler(DeactivateRestaurantCommand)
 export class DeactivateRestaurantCommandHandler implements ICommandHandler<DeactivateRestaurantCommand> {
@@ -10,6 +11,7 @@ export class DeactivateRestaurantCommandHandler implements ICommandHandler<Deact
     @Inject("IRestaurantAggregateRepository")
     private readonly restaurantAggregateRepository: IRestaurantAggregateRepository,
     private readonly publisher: EventPublisher,
+    private readonly metricsService: MetricsService,
   ) {}
 
   async execute(
@@ -25,11 +27,13 @@ export class DeactivateRestaurantCommandHandler implements ICommandHandler<Deact
     }
 
     // Check ownership: admins can deactivate any restaurant, owners can only deactivate their own
-    const isAdmin = command.userRoles.includes('admin');
+    const isAdmin = command.userRoles.includes("admin");
     const isOwner = existingRestaurant.ownerId === command.userId;
 
     if (!isAdmin && !isOwner) {
-      throw new ForbiddenException('You do not have permission to deactivate this restaurant');
+      throw new ForbiddenException(
+        "You do not have permission to deactivate this restaurant",
+      );
     }
 
     const restaurantAggregate = this.publisher.mergeObjectContext(
@@ -45,6 +49,8 @@ export class DeactivateRestaurantCommandHandler implements ICommandHandler<Deact
     });
 
     restaurantAggregate.commit();
+
+    this.metricsService.incrementRestaurantsDeactivated();
 
     return { success: true };
   }
