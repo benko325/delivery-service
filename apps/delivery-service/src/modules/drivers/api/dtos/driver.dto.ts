@@ -34,8 +34,8 @@ export class DriverResponseDto {
   })
   status!: "available" | "busy" | "offline";
 
-  @ApiProperty({ type: DriverLocationDto, required: false })
-  currentLocation?: DriverLocationDto | null;
+  @ApiProperty({ type: DriverLocationDto, required: false, nullable: true })
+  currentLocation?: DriverLocationDto;
 
   @ApiProperty({ example: 4.8 })
   rating!: number;

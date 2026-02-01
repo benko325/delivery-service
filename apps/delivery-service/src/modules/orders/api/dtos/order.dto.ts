@@ -57,8 +57,9 @@ export class OrderResponseDto {
   @ApiProperty({
     example: "123e4567-e89b-12d3-a456-426614174003",
     required: false,
+    nullable: true,
   })
-  driverId?: string | null;
+  driverId?: string;
 
   @ApiProperty({ type: [OrderItemDto] })
   items!: OrderItemDto[];
@@ -90,17 +91,33 @@ export class OrderResponseDto {
   @ApiProperty({ example: "EUR" })
   currency!: string;
 
-  @ApiProperty({ example: "2024-01-01T01:00:00.000Z", required: false })
-  estimatedDeliveryTime?: Date | null;
+  @ApiProperty({
+    example: "2024-01-01T01:00:00.000Z",
+    required: false,
+    nullable: true,
+  })
+  estimatedDeliveryTime?: Date;
 
-  @ApiProperty({ example: "2024-01-01T01:15:00.000Z", required: false })
-  actualDeliveryTime?: Date | null;
+  @ApiProperty({
+    example: "2024-01-01T01:15:00.000Z",
+    required: false,
+    nullable: true,
+  })
+  actualDeliveryTime?: Date;
 
-  @ApiProperty({ example: "2024-01-01T00:30:00.000Z", required: false })
-  cancelledAt?: Date | null;
+  @ApiProperty({
+    example: "2024-01-01T00:30:00.000Z",
+    required: false,
+    nullable: true,
+  })
+  cancelledAt?: Date;
 
-  @ApiProperty({ example: "Customer requested cancellation", required: false })
-  cancellationReason?: string | null;
+  @ApiProperty({
+    example: "Customer requested cancellation",
+    required: false,
+    nullable: true,
+  })
+  cancellationReason?: string;
 
   @ApiProperty({ example: "2024-01-01T00:00:00.000Z" })
   createdAt!: Date;

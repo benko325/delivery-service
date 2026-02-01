@@ -30,8 +30,9 @@ export class MenuItemResponseDto {
   @ApiProperty({
     example: "https://example.com/images/pizza.jpg",
     required: false,
+    nullable: true,
   })
-  imageUrl?: string | null;
+  imageUrl?: string;
 
   @ApiProperty({ example: 15 })
   preparationTime!: number;
