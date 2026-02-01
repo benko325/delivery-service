@@ -24,7 +24,7 @@ export class OrdersUnauthorizedTests {
           name: 'Test Item',
           price: 10.00,
           quantity: 1,
-          currency: 'USD',
+          currency: 'EUR',
         },
       ],
       deliveryAddress: {

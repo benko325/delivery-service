@@ -106,11 +106,29 @@ export class CartOrderedEvent implements IEvent {
 ### Events Updated
 
 All domain events in the system follow this pattern:
-- `UserRegisteredEvent` (Auth)
-- `CustomerCreatedEvent`, `CustomerUpdatedEvent`, `CustomerAddressUpdatedEvent` (Customers)
-- `OrderCreatedEvent`, `OrderStatusChangedEvent`, `OrderAcceptedByDriverEvent` (Orders)
-- `CartItemAddedEvent`, `CartClearedEvent`, `CartOrderedEvent` (Carts)
-- `DriverCreatedEvent`, `DriverAvailabilityChangedEvent`, `DriverLocationUpdatedEvent` (Drivers)
+
+**Auth Module:**
+- `UserRegisteredEvent`
+
+**Customers Module:**
+- `CustomerCreatedEvent`, `CustomerUpdatedEvent`
+- `CustomerAddressAddedEvent`, `CustomerAddressUpdatedEvent`, `CustomerAddressRemovedEvent`
+- `RestaurantAddedToFavoritesEvent`, `RestaurantRemovedFromFavoritesEvent`
+
+**Orders Module:**
+- `OrderCreatedEvent`, `OrderStatusChangedEvent`, `OrderAcceptedByDriverEvent`
+- `PaymentSucceededEvent`
+
+**Carts Module:**
+- `CartItemAddedEvent`, `CartClearedEvent`, `CartOrderedEvent`
+
+**Drivers Module:**
+- `DriverCreatedEvent`, `DriverAvailabilityChangedEvent`, `DriverLocationUpdatedEvent`
+
+**Restaurants Module:**
+- `RestaurantCreatedEvent`, `RestaurantDeactivatedEvent`
+- `MenuItemCreatedEvent`
+- `OrderConfirmedByRestaurantEvent`, `OrderRejectedByRestaurantEvent`
 
 ## Consequences
 
