@@ -1,8 +1,11 @@
 import { AggregateRoot } from "@nestjs/cqrs";
+import { BadRequestException } from "@nestjs/common";
 import * as crypto from "crypto";
 import { RestaurantAddress } from "../types/restaurant-database.types";
 import { RestaurantCreatedEvent } from "../events/restaurant-created.event";
 import { RestaurantDeactivatedEvent } from "../events/restaurant-deactivated.event";
+import { OrderConfirmedByRestaurantEvent } from "../events/order-confirmed-by-restaurant.event";
+import { OrderRejectedByRestaurantEvent } from "../events/order-rejected-by-restaurant.event";
 
 export class RestaurantAggregate extends AggregateRoot {
   private _id: string = "";
@@ -158,5 +161,35 @@ export class RestaurantAggregate extends AggregateRoot {
     this._openingHours = data.openingHours;
     this._createdAt = data.createdAt;
     this._updatedAt = data.updatedAt;
+  }
+
+  confirmOrder(orderId: string, estimatedPreparationMinutes: number): void {
+    if (!this._isActive) {
+      throw new BadRequestException("Restaurant is not active");
+    }
+
+    this.apply(
+      new OrderConfirmedByRestaurantEvent({
+        orderId,
+        restaurantId: this._id,
+        estimatedPreparationMinutes,
+        confirmedAt: new Date(),
+      }),
+    );
+  }
+
+  rejectOrder(orderId: string, reason: string): void {
+    if (!this._isActive) {
+      throw new BadRequestException("Restaurant is not active");
+    }
+
+    this.apply(
+      new OrderRejectedByRestaurantEvent({
+        orderId,
+        restaurantId: this._id,
+        reason,
+        rejectedAt: new Date(),
+      }),
+    );
   }
 }

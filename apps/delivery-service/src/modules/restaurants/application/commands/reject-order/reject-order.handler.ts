@@ -1,36 +1,46 @@
-import { CommandHandler, ICommandHandler, EventBus } from "@nestjs/cqrs";
-import { Inject, NotFoundException } from "@nestjs/common";
+import { CommandHandler, ICommandHandler, EventPublisher } from "@nestjs/cqrs";
+import { Inject, NotFoundException, ForbiddenException } from "@nestjs/common";
 import { RejectOrderCommand } from "./reject-order.command";
-import { IRestaurantRepository } from "../../../core/repositories/restaurant.repository.interface";
-import { OrderRejectedByRestaurantEvent } from "../../../core/events/order-rejected-by-restaurant.event";
+import { IRestaurantAggregateRepository } from "../../../core/repositories/restaurant.repository.interface";
+import { RestaurantAggregate } from "../../../core/aggregates/restaurant.aggregate";
 
 @CommandHandler(RejectOrderCommand)
 export class RejectOrderCommandHandler implements ICommandHandler<RejectOrderCommand> {
   constructor(
-    @Inject("IRestaurantRepository")
-    private readonly restaurantRepository: IRestaurantRepository,
-    private readonly eventBus: EventBus,
+    @Inject("IRestaurantAggregateRepository")
+    private readonly restaurantAggregateRepository: IRestaurantAggregateRepository,
+    private readonly publisher: EventPublisher,
   ) {}
 
   async execute(command: RejectOrderCommand): Promise<{ success: boolean }> {
-    const restaurant = await this.restaurantRepository.findById(
+    const existingRestaurant = await this.restaurantAggregateRepository.findById(
       command.restaurantId,
     );
 
-    if (!restaurant) {
+    if (!existingRestaurant) {
       throw new NotFoundException(
         `Restaurant with ID ${command.restaurantId} not found`,
       );
     }
 
-    const event = new OrderRejectedByRestaurantEvent({
-      orderId: command.orderId,
-      restaurantId: command.restaurantId,
-      reason: command.reason,
-      rejectedAt: new Date(),
-    });
+    // Check ownership: admins can reject any restaurant's orders, owners can only reject their own
+    const isAdmin = command.userRoles.includes('admin');
+    const isOwner = existingRestaurant.ownerId === command.userId;
 
-    this.eventBus.publish(event);
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException('You do not have permission to reject orders for this restaurant');
+    }
+
+    const restaurantAggregate = this.publisher.mergeObjectContext(
+      new RestaurantAggregate(),
+    );
+    restaurantAggregate.loadState(existingRestaurant);
+
+    // Domain logic and event emission through aggregate
+    restaurantAggregate.rejectOrder(command.orderId, command.reason);
+
+    // Commit events (publishes to RabbitMQ)
+    restaurantAggregate.commit();
 
     return { success: true };
   }
