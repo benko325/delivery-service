@@ -7,8 +7,12 @@ import { Logger } from "nestjs-pino";
 import { MetricsService } from "./modules/shared-kernel/infrastructure/metrics";
 import { MetricsExceptionFilter } from "./modules/shared-kernel/api/filters/metrics-exception.filter";
 import { saveOpenApiSpec } from "./infrastructure/saveOpenApiSpec";
+import { runMigrations } from "./infrastructure/database/run-migrations";
 
 async function bootstrap() {
+  // Run database migrations before starting the app
+  await runMigrations();
+
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
 
