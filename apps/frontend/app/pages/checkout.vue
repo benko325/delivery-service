@@ -6,7 +6,7 @@
     </h1>
 
     <!-- Empty Cart Redirect -->
-    <div v-if="cartStore.items.length === 0" class="alert alert-warning">
+    <div v-if="!cartStore.isLoading && cartStore.items.length === 0" class="alert alert-warning">
       <i class="bi bi-exclamation-triangle me-2"></i>
       Your cart is empty. Please add items before checkout.
       <NuxtLink to="/" class="alert-link ms-2">Browse Restaurants</NuxtLink>
@@ -32,10 +32,19 @@
               }}</span>
             </div>
             <hr />
+            <div class="d-flex justify-content-between mb-2">
+              <span>Subtotal:</span>
+              <span>{{ formatPrice(cartStore.total, cartStore.currency || "EUR") }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span>Delivery Fee:</span>
+              <span>{{ formatPrice(deliveryFee, cartStore.currency || "EUR") }}</span>
+            </div>
+            <hr />
             <div class="d-flex justify-content-between">
               <strong>Total:</strong>
               <strong class="text-primary">
-                {{ formatPrice(cartStore.total, cartStore.currency || "EUR") }}
+                {{ formatPrice(cartStore.total + deliveryFee, cartStore.currency || "EUR") }}
               </strong>
             </div>
           </div>
@@ -49,57 +58,131 @@
             <h5 class="card-title mb-4">Delivery Information</h5>
 
             <form @submit.prevent="handleSubmit">
-              <!-- Delivery Address (Simplified) -->
+              <!-- Street -->
               <div class="mb-3">
-                <label for="address" class="form-label">Delivery Address</label>
-                <textarea
-                  id="address"
-                  v-model="deliveryAddress"
+                <label for="street" class="form-label">Street Address *</label>
+                <input
+                  id="street"
+                  v-model="form.street"
+                  type="text"
                   class="form-control"
-                  rows="3"
                   required
-                  placeholder="Enter your delivery address"
-                ></textarea>
-                <div class="form-text">
-                  Note: In production, this would use saved addresses from your
-                  profile.
+                  placeholder="123 Main Street"
+                />
+              </div>
+
+              <!-- City -->
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="city" class="form-label">City *</label>
+                  <input
+                    id="city"
+                    v-model="form.city"
+                    type="text"
+                    class="form-control"
+                    required
+                    placeholder="Brno"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="postalCode" class="form-label">Postal Code *</label>
+                  <input
+                    id="postalCode"
+                    v-model="form.postalCode"
+                    type="text"
+                    class="form-control"
+                    required
+                    placeholder="602 00"
+                  />
                 </div>
               </div>
 
-              <!-- Payment Method -->
+              <!-- Country -->
               <div class="mb-3">
-                <label for="paymentMethod" class="form-label"
-                  >Payment Method</label
-                >
-                <select
-                  id="paymentMethod"
-                  v-model="paymentMethod"
-                  class="form-select"
+                <label for="country" class="form-label">Country *</label>
+                <input
+                  id="country"
+                  v-model="form.country"
+                  type="text"
+                  class="form-control"
                   required
-                >
-                  <option value="">Select payment method</option>
-                  <option value="credit_card">Credit Card</option>
-                  <option value="debit_card">Debit Card</option>
-                  <option value="cash">Cash on Delivery</option>
-                </select>
+                  placeholder="Czech Republic"
+                />
+              </div>
+
+              <!-- Optional GPS Coordinates -->
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="latitude" class="form-label">Latitude (Optional)</label>
+                  <input
+                    id="latitude"
+                    v-model.number="form.latitude"
+                    type="number"
+                    step="any"
+                    class="form-control"
+                    placeholder="49.1951"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label for="longitude" class="form-label">Longitude (Optional)</label>
+                  <input
+                    id="longitude"
+                    v-model.number="form.longitude"
+                    type="number"
+                    step="any"
+                    class="form-control"
+                    placeholder="16.6068"
+                  />
+                </div>
+              </div>
+
+              <!-- Delivery Instructions -->
+              <div class="mb-3">
+                <label for="instructions" class="form-label">Delivery Instructions (Optional)</label>
+                <textarea
+                  id="instructions"
+                  v-model="form.instructions"
+                  class="form-control"
+                  rows="2"
+                  placeholder="Ring the doorbell, apartment 2B"
+                ></textarea>
+              </div>
+
+              <!-- Delivery Fee -->
+              <div class="mb-3">
+                <label for="deliveryFee" class="form-label">Delivery Fee</label>
+                <div class="input-group">
+                  <input
+                    id="deliveryFee"
+                    v-model.number="deliveryFee"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    class="form-control"
+                  />
+                  <span class="input-group-text">{{ cartStore.currency || 'EUR' }}</span>
+                </div>
+                <div class="form-text">
+                  Adjust delivery fee if needed (default: 0)
+                </div>
               </div>
 
               <!-- Error Message -->
               <div
-                v-if="createOrderMutation.isError.value"
+                v-if="checkoutMutation.isError.value"
                 class="alert alert-danger"
               >
                 <i class="bi bi-exclamation-triangle me-2"></i>
-                Failed to create order. Please try again.
+                {{ checkoutMutation.error.value?.message || 'Failed to create order. Please try again.' }}
               </div>
 
               <!-- Submit Button -->
               <button
                 type="submit"
                 class="btn btn-primary btn-lg w-100"
-                :disabled="createOrderMutation.isPending.value"
+                :disabled="checkoutMutation.isPending.value"
               >
-                <span v-if="createOrderMutation.isPending.value">
+                <span v-if="checkoutMutation.isPending.value">
                   <span class="spinner-border spinner-border-sm me-2"></span>
                   Placing Order...
                 </span>
@@ -118,17 +201,24 @@
 
 <script setup lang="ts">
 import { useCartStore } from "~/stores/cart";
-import { useAuthStore } from "~/stores/auth";
-import { useCreateOrder } from "~/composables/useOrders";
-
+import { useCheckoutCart } from "~/composables/useCart";
 
 const cartStore = useCartStore();
-const authStore = useAuthStore();
 const router = useRouter();
+const checkoutMutation = useCheckoutCart();
 
-const deliveryAddress = ref("");
-const paymentMethod = ref("");
-const createOrderMutation = useCreateOrder();
+// Form data
+const form = ref({
+  street: '',
+  city: '',
+  postalCode: '',
+  country: '',
+  latitude: undefined as number | undefined,
+  longitude: undefined as number | undefined,
+  instructions: '',
+});
+
+const deliveryFee = ref(0);
 
 /**
  * @brief Format price with currency
@@ -143,24 +233,26 @@ const formatPrice = (price: number, currency: string) => {
 /**
  * @brief Handle order submission
  */
-const handleSubmit = () => {
-  // Note: This is simplified. In production, you'd need to:
-  // 1. Create/select a delivery address first
-  // 2. Use the actual address ID
-  // For demo purposes, we'll show an alert
-
-  alert(
-    "Order creation requires a delivery address ID from your customer profile. This would be implemented with proper customer address management.",
+const handleSubmit = async () => {
+  checkoutMutation.mutate(
+    {
+      deliveryAddress: {
+        street: form.value.street,
+        city: form.value.city,
+        postalCode: form.value.postalCode,
+        country: form.value.country,
+        latitude: form.value.latitude,
+        longitude: form.value.longitude,
+        instructions: form.value.instructions || undefined,
+      },
+      deliveryFee: deliveryFee.value,
+    },
+    {
+      onSuccess: (data) => {
+        // Navigate to orders page after successful checkout
+        router.push('/orders');
+      },
+    }
   );
-
-  // Example of what the actual implementation would look like:
-  // createOrderMutation.mutate({
-  //   restaurantId: cartStore.restaurantId!,
-  //   deliveryAddressId: 'address-uuid-here',
-  //   items: cartStore.items.map(item => ({
-  //     menuItemId: item.menuItemId,
-  //     quantity: item.quantity,
-  //   })),
-  // });
 };
 </script>
