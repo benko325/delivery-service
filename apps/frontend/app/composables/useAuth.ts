@@ -145,12 +145,10 @@ export function useRegister() {
  */
 export function useLogout() {
   const authStore = useAuthStore();
-  const cartStore = useCartStore();
   const router = useRouter();
 
   return () => {
     authStore.logout();
-    cartStore.clear();
     router.push("/login");
   };
 }

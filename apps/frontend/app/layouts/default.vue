@@ -126,7 +126,6 @@ const isDriver = computed(() => {
  */
 const handleLogout = () => {
   authStore.logout();
-  cartStore.clear();
   router.push("/");
 };
 </script>
