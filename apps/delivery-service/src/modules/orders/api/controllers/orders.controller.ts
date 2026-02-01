@@ -8,6 +8,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  ForbiddenException,
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
@@ -38,6 +39,7 @@ import { GetOrdersByCustomerQuery } from "../../application/queries/get-orders-b
 import { GetAvailableOrdersQuery } from "../../application/queries/get-available-orders/get-available-orders.query";
 import { GetOrdersByDriverQuery } from "../../application/queries/get-orders-by-driver/get-orders-by-driver.query";
 import { GetOrdersByRestaurantQuery } from "../../application/queries/get-orders-by-restaurant/get-orders-by-restaurant.query";
+import { GetRestaurantByIdQuery } from "../../../restaurants/application/queries/get-restaurant-by-id/get-restaurant-by-id.query";
 
 @ApiTags("Orders")
 @Controller("orders")
@@ -139,7 +141,25 @@ export class OrdersController {
     description: "List of restaurant orders",
     // type: [OrderResponseDto],
   })
-  async getRestaurantOrders(@Param("restaurantId") restaurantId: string) {
+  @ApiResponse({
+    status: 403,
+    description: "Access denied - not your restaurant",
+  })
+  async getRestaurantOrders(
+    @Param("restaurantId") restaurantId: string,
+    @User() user: RequestUser,
+  ) {
+    // Restaurant owners can only view their own restaurant's orders
+    if (!user.roles.includes("admin")) {
+      const restaurant = await this.queryBus.execute(
+        new GetRestaurantByIdQuery(restaurantId),
+      );
+      if (!restaurant || restaurant.ownerId !== user.userId) {
+        throw new ForbiddenException(
+          "You can only view orders for your own restaurant",
+        );
+      }
+    }
     return this.queryBus.execute(new GetOrdersByRestaurantQuery(restaurantId));
   }
 
