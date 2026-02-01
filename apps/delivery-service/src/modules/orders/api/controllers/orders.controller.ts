@@ -152,7 +152,7 @@ export class OrdersController {
   @ApiResponse({
     status: 200,
     description: "List of restaurant orders",
-    // type: [OrderResponseDto],
+    type: [OrderResponseDto],
   })
   @ApiResponse({
     status: 403,
