@@ -1,7 +1,5 @@
 import { EventsHandler, IEventHandler, EventBus } from "@nestjs/cqrs";
 import { Logger } from "@nestjs/common";
-// import { CartOrderedEvent } from "../../../carts/core/events/cart-ordered.event";
-
 import { IEvent } from "@nestjs/cqrs";
 import {
   OrderItem,
