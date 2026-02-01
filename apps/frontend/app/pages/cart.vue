@@ -5,9 +5,16 @@
       Shopping Cart
     </h1>
 
+    <!-- Loading State -->
+    <div v-if="cartStore.isLoading" class="text-center my-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
     <!-- Empty Cart -->
     <div
-      v-if="cartStore.items.length === 0"
+      v-else-if="cartStore.items.length === 0"
       class="text-center text-muted my-5"
     >
       <i class="bi bi-cart-x" style="font-size: 3rem"></i>
@@ -36,9 +43,8 @@
               <div class="btn-group" role="group">
                 <button
                   class="btn btn-sm btn-outline-secondary"
-                  @click="
-                    cartStore.updateQuantity(item.menuItemId, item.quantity - 1)
-                  "
+                  @click="handleUpdateQuantity(item.menuItemId, item.quantity - 1)"
+                  :disabled="isUpdating"
                 >
                   <i class="bi bi-dash"></i>
                 </button>
@@ -47,9 +53,8 @@
                 </button>
                 <button
                   class="btn btn-sm btn-outline-secondary"
-                  @click="
-                    cartStore.updateQuantity(item.menuItemId, item.quantity + 1)
-                  "
+                  @click="handleUpdateQuantity(item.menuItemId, item.quantity + 1)"
+                  :disabled="isUpdating"
                 >
                   <i class="bi bi-plus"></i>
                 </button>
@@ -65,7 +70,8 @@
               <!-- Remove Button -->
               <button
                 class="btn btn-sm btn-outline-danger"
-                @click="cartStore.removeItem(item.menuItemId)"
+                @click="handleRemoveItem(item.menuItemId)"
+                :disabled="isUpdating"
               >
                 <i class="bi bi-trash"></i>
               </button>
@@ -84,7 +90,11 @@
 
       <!-- Actions -->
       <div class="d-flex gap-2">
-        <button class="btn btn-outline-danger" @click="handleClearCart">
+        <button 
+          class="btn btn-outline-danger" 
+          @click="handleClearCart"
+          :disabled="isUpdating"
+        >
           <i class="bi bi-trash me-2"></i>
           Clear Cart
         </button>
@@ -100,8 +110,8 @@
 <script setup lang="ts">
 import { useCartStore } from "~/stores/cart";
 
-
 const cartStore = useCartStore();
+const isUpdating = ref(false);
 
 /**
  * @brief Format price with currency
@@ -117,11 +127,43 @@ const formatPrice = (price: number, currency: string) => {
 };
 
 /**
+ * @brief Handle updating item quantity
+ * @param menuItemId Menu item ID
+ * @param newQuantity New quantity value
+ */
+const handleUpdateQuantity = async (menuItemId: string, newQuantity: number) => {
+  isUpdating.value = true;
+  try {
+    await cartStore.updateQuantity(menuItemId, newQuantity);
+  } finally {
+    isUpdating.value = false;
+  }
+};
+
+/**
+ * @brief Handle removing item from cart
+ * @param menuItemId Menu item ID
+ */
+const handleRemoveItem = async (menuItemId: string) => {
+  isUpdating.value = true;
+  try {
+    await cartStore.removeItem(menuItemId);
+  } finally {
+    isUpdating.value = false;
+  }
+};
+
+/**
  * @brief Handle clear cart action
  */
-const handleClearCart = () => {
+const handleClearCart = async () => {
   if (confirm("Are you sure you want to clear your cart?")) {
-    cartStore.clear();
+    isUpdating.value = true;
+    try {
+      await cartStore.clear();
+    } finally {
+      isUpdating.value = false;
+    }
   }
 };
 </script>
