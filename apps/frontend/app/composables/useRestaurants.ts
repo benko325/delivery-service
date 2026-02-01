@@ -69,3 +69,24 @@ export function useMenuItems(restaurantId: Ref<string> | string) {
     enabled: computed(() => !!id.value),
   });
 }
+
+/**
+ * @brief Get restaurants owned by the current user
+ * @return Query result with owned restaurants
+ */
+export function useMyRestaurants() {
+  const authStore = useAuthStore();
+  const { data: allRestaurants, ...queryResult } = useRestaurants();
+
+  const myRestaurants = computed(() => {
+    if (!allRestaurants.value || !authStore.user?.id) return [];
+    return allRestaurants.value.filter(
+      (restaurant) => restaurant.ownerId === authStore.user?.id,
+    );
+  });
+
+  return {
+    data: myRestaurants,
+    ...queryResult,
+  };
+}
