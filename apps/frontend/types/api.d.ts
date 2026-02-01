@@ -990,7 +990,7 @@ export interface components {
        */
       category: "appetizer" | "main_course" | "dessert" | "beverage" | "side";
       /** @example https://example.com/images/pizza.jpg */
-      imageUrl?: Record<string, never>;
+      imageUrl?: string | null;
       /** @example 15 */
       preparationTime: number;
       /** @example true */
@@ -1056,7 +1056,7 @@ export interface components {
        * @enum {string}
        */
       status: "available" | "busy" | "offline";
-      currentLocation?: components["schemas"]["DriverLocationDto"];
+      currentLocation?: components["schemas"]["DriverLocationDto"] | null;
       /** @example 4.8 */
       rating: number;
       /** @example 150 */
@@ -1110,7 +1110,7 @@ export interface components {
       /** @example 123e4567-e89b-12d3-a456-426614174001 */
       customerId: string;
       /** @example 123e4567-e89b-12d3-a456-426614174002 */
-      restaurantId?: Record<string, never>;
+      restaurantId?: string | null;
       items: components["schemas"]["CartItemDto"][];
       /** @example 25.98 */
       totalAmount: number;
@@ -1217,7 +1217,7 @@ export interface components {
       /** @example 123e4567-e89b-12d3-a456-426614174002 */
       restaurantId: string;
       /** @example 123e4567-e89b-12d3-a456-426614174003 */
-      driverId?: Record<string, never>;
+      driverId?: string | null;
       items: components["schemas"]["OrderItemDto"][];
       deliveryAddress: components["schemas"]["DeliveryAddressDto"];
       /**
@@ -1239,14 +1239,23 @@ export interface components {
       deliveryFee: number;
       /** @example EUR */
       currency: string;
-      /** @example 2024-01-01T01:00:00.000Z */
-      estimatedDeliveryTime?: Record<string, never>;
-      /** @example 2024-01-01T01:15:00.000Z */
-      actualDeliveryTime?: Record<string, never>;
-      /** @example 2024-01-01T00:30:00.000Z */
-      cancelledAt?: Record<string, never>;
+      /**
+       * Format: date-time
+       * @example 2024-01-01T01:00:00.000Z
+       */
+      estimatedDeliveryTime?: string | null;
+      /**
+       * Format: date-time
+       * @example 2024-01-01T01:15:00.000Z
+       */
+      actualDeliveryTime?: string | null;
+      /**
+       * Format: date-time
+       * @example 2024-01-01T00:30:00.000Z
+       */
+      cancelledAt?: string | null;
       /** @example Customer requested cancellation */
-      cancellationReason?: Record<string, never>;
+      cancellationReason?: string | null;
       /**
        * Format: date-time
        * @example 2024-01-01T00:00:00.000Z
