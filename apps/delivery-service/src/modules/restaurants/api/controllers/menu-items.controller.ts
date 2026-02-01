@@ -21,6 +21,8 @@ import { ZodValidationPipe } from "nestjs-zod";
 import { JwtAuthGuard } from "../../../shared-kernel/api/guards/jwt.guard";
 import { RolesGuard } from "../../../shared-kernel/api/guards/roles.guard";
 import { Roles } from "../../../shared-kernel/api/decorators/roles.decorator";
+import { User } from "../../../shared-kernel/api/decorators/user.decorator";
+import { RequestUser } from "../../../shared-kernel/core/types/user-types";
 import {
   CreateMenuItemDto,
   UpdateMenuItemDto,
@@ -82,8 +84,13 @@ export class MenuItemsController {
     description: "Menu item created",
     type: MenuItemResponseDto,
   })
+  @ApiResponse({
+    status: 403,
+    description: "Not authorized to create menu items for this restaurant",
+  })
   async create(
     @Param("restaurantId") restaurantId: string,
+    @User() user: RequestUser,
     @Body(ZodValidationPipe) dto: CreateMenuItemDto,
   ) {
     return this.commandBus.execute(
@@ -96,6 +103,8 @@ export class MenuItemsController {
         dto.category,
         dto.imageUrl || null,
         dto.preparationTime,
+        user.userId,
+        user.roles,
       ),
     );
   }
@@ -110,8 +119,13 @@ export class MenuItemsController {
     description: "Menu item updated",
     type: MenuItemResponseDto,
   })
+  @ApiResponse({
+    status: 403,
+    description: "Not authorized to update menu items for this restaurant",
+  })
   async update(
     @Param("id") id: string,
+    @User() user: RequestUser,
     @Body(ZodValidationPipe) dto: UpdateMenuItemDto,
   ) {
     return this.commandBus.execute(
@@ -125,6 +139,8 @@ export class MenuItemsController {
         dto.imageUrl || null,
         dto.preparationTime,
         dto.isAvailable,
+        user.userId,
+        user.roles,
       ),
     );
   }
@@ -136,7 +152,13 @@ export class MenuItemsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: "Delete menu item [Admin, Restaurant Owner]" })
   @ApiResponse({ status: 204, description: "Menu item deleted" })
-  async delete(@Param("id") id: string) {
-    return this.commandBus.execute(new DeleteMenuItemCommand(id));
+  @ApiResponse({
+    status: 403,
+    description: "Not authorized to delete menu items for this restaurant",
+  })
+  async delete(@Param("id") id: string, @User() user: RequestUser) {
+    return this.commandBus.execute(
+      new DeleteMenuItemCommand(id, user.userId, user.roles),
+    );
   }
 }
