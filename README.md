@@ -54,8 +54,10 @@ solution-project/
 │           └── provisioning/
 │               ├── datasources/    # Prometheus datasource
 │               └── dashboards/     # Pre-built dashboards
-├── docker-compose.yml              # PostgreSQL + RabbitMQ + Prometheus + Grafana
+├── docker-compose.yml              # Full stack: App + PostgreSQL + RabbitMQ + Prometheus + Grafana
 ├── init-db.sql                     # Schema initialization
+├── DOCKER_STARTUP.md               # Docker Compose startup guide
+├── SEEDED_DATA.md                  # Test credentials and seeded data
 └── README.md
 ```
 
@@ -305,6 +307,8 @@ export class OrderRepository implements IOrderRepository {
 ```
 
 ### Running Migrations
+
+Migrations run automatically when starting with `docker-compose up`. For manual control:
 
 ```bash
 cd apps/delivery-service
@@ -605,52 +609,23 @@ Pre-configured dashboards available at http://localhost:3001 (default credential
 
 ### Accessing Monitoring Tools
 
-```bash
-# Start all services including monitoring
-docker-compose up -d
-
-# Access points:
-# - Prometheus: http://localhost:9095
-# - Grafana: http://localhost:3001
-# - Metrics endpoint: http://localhost:3000/api/metrics
-```
+See [DOCKER_STARTUP.md](DOCKER_STARTUP.md) for all access points and credentials.
 
 ---
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 20+
-- pnpm 10+
-- Docker & Docker Compose
-
-### Installation
-
-1. Install dependencies:
-```bash
-pnpm install
-```
-
-2. Start infrastructure:
 ```bash
 docker-compose up -d
 ```
 
-3. Run migrations:
-```bash
-cd apps/delivery-service
-pnpm migrate
-```
+This starts the entire stack (app, database, RabbitMQ, Prometheus, Grafana). Migrations run automatically.
 
-4. Start development server:
-```bash
-pnpm dev
-```
+For detailed setup instructions, see [DOCKER_STARTUP.md](DOCKER_STARTUP.md).
 
 ### API Documentation
 
-Swagger UI is available at: http://localhost:3000/api/docs
+Swagger UI available at: http://localhost:3000/api/docs
 
 ---
 
@@ -736,16 +711,8 @@ Swagger UI is available at: http://localhost:3000/api/docs
 
 ---
 
-## Default Test Credentials
+## Test Data
 
-After running migrations and seed data:
+The database is seeded with test users, a restaurant with menu items, and sample profiles.
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@delivery.local | admin123 |
-
----
-
-## Currency
-
-The default currency across the system is **EUR** (Euro).
+See [SEEDED_DATA.md](SEEDED_DATA.md) for all test credentials and seeded data.
