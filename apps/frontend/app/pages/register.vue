@@ -104,6 +104,10 @@
 <script setup lang="ts">
 import { useRegister } from "~/composables/useAuth";
 
+definePageMeta({
+  layout: 'public',
+});
+
 const name = ref("");
 const email = ref("");
 const password = ref("");

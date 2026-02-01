@@ -72,6 +72,10 @@
 <script setup lang="ts">
 import { useLogin } from '~/composables/useAuth';
 
+definePageMeta({
+  layout: 'public',
+});
+
 const route = useRoute();
 const email = ref('');
 const password = ref('');
