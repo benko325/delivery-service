@@ -75,7 +75,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health"]
       interval: 30s
       timeout: 10s
       start_period: 40s
@@ -91,6 +91,9 @@ services:
       - "9095:9090"
     volumes:
       - ./apps/delivery-service/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      delivery-service:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
       interval: 10s
