@@ -52,6 +52,16 @@ export class DriverRepository implements IDriverRepository {
     return drivers.map((d) => this.mapToDriver(d));
   }
 
+  async findByCurrentOrder(orderId: string): Promise<Driver | null> {
+    const driver = await this.db
+      .selectFrom("drivers.drivers")
+      .selectAll()
+      .where("currentOrderId", "=", orderId)
+      .executeTakeFirst();
+
+    return driver ? this.mapToDriver(driver) : null;
+  }
+
   private mapToDriver(row: unknown): Driver {
     const data = row as Record<string, unknown>;
     return {
@@ -65,6 +75,7 @@ export class DriverRepository implements IDriverRepository {
           ? JSON.parse(data.currentLocation)
           : data.currentLocation
         : null,
+      currentOrderId: (data.currentOrderId as string) || null,
       rating: data.rating as number,
       totalDeliveries: data.totalDeliveries as number,
       isActive: (data.isActive as boolean) ?? true,

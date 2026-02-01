@@ -16,11 +16,28 @@ import { UpdateDriverCommandHandler } from "./application/commands/update-driver
 import { UpdateDriverLocationCommandHandler } from "./application/commands/update-driver-location/update-driver-location.handler";
 import { SetDriverAvailabilityCommandHandler } from "./application/commands/set-driver-availability/set-driver-availability.handler";
 import { DeactivateDriverCommandHandler } from "./application/commands/deactivate-driver/deactivate-driver.handler";
+import { AcceptDeliveryCommandHandler } from "./application/commands/accept-delivery/accept-delivery.handler";
+import { RejectDeliveryCommandHandler } from "./application/commands/reject-delivery/reject-delivery.handler";
+import { CompleteDeliveryCommandHandler } from "./application/commands/complete-delivery/complete-delivery.handler";
 
 // Application - Queries
 import { GetDriverByIdQueryHandler } from "./application/queries/get-driver-by-id/get-driver-by-id.handler";
 import { GetAllDriversQueryHandler } from "./application/queries/get-all-drivers/get-all-drivers.handler";
 import { GetAvailableDriversQueryHandler } from "./application/queries/get-available-drivers/get-available-drivers.handler";
+
+// Application - Events
+import { OrderReadyForPickupEventHandler } from "./application/events/order-ready-for-pickup.handler";
+
+// Infrastructure - ACL
+import {
+  OrderReadyForPickupEventMapper,
+  OrderReadyForPickupMappedEvent,
+} from "./infrastructure/anti-corruption-layer/order-ready-for-pickup.mapper";
+
+// Core - Events
+import { DeliveryAssignedEvent } from "./core/events/delivery-assigned.event";
+import { DeliveryCompletedEvent } from "./core/events/delivery-completed.event";
+import { DeliveryRejectedEvent } from "./core/events/delivery-rejected.event";
 
 // Infrastructure
 import { DriverRepository } from "./infrastructure/database/repositories/driver.repository";
@@ -33,6 +50,9 @@ const commandHandlers = [
   UpdateDriverLocationCommandHandler,
   SetDriverAvailabilityCommandHandler,
   DeactivateDriverCommandHandler,
+  AcceptDeliveryCommandHandler,
+  RejectDeliveryCommandHandler,
+  CompleteDeliveryCommandHandler,
 ];
 
 const queryHandlers = [
@@ -41,7 +61,16 @@ const queryHandlers = [
   GetAvailableDriversQueryHandler,
 ];
 
-const events: never[] = [];
+const eventHandlers = [OrderReadyForPickupEventHandler];
+
+const antiCorruptionLayer = [OrderReadyForPickupEventMapper];
+
+const events = [
+  OrderReadyForPickupMappedEvent,
+  DeliveryAssignedEvent,
+  DeliveryCompletedEvent,
+  DeliveryRejectedEvent,
+];
 
 @Module({
   imports: [
@@ -61,6 +90,8 @@ const events: never[] = [];
   providers: [
     ...commandHandlers,
     ...queryHandlers,
+    ...eventHandlers,
+    ...antiCorruptionLayer,
     {
       provide: "IDriverRepository",
       useClass: DriverRepository,

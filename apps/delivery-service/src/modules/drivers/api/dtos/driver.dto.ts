@@ -72,7 +72,15 @@ export const setAvailabilitySchema = z.object({
   status: driverStatusSchema,
 });
 
+export const rejectDeliverySchema = z.object({
+  reason: z
+    .string()
+    .min(10, "Rejection reason must be at least 10 characters")
+    .max(500, "Rejection reason must be at most 500 characters"),
+});
+
 export class CreateDriverDto extends createZodDto(createDriverSchema) {}
 export class UpdateDriverDto extends createZodDto(updateDriverSchema) {}
 export class UpdateLocationDto extends createZodDto(updateLocationSchema) {}
 export class SetAvailabilityDto extends createZodDto(setAvailabilitySchema) {}
+export class RejectDeliveryDto extends createZodDto(rejectDeliverySchema) {}
