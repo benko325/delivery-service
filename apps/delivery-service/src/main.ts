@@ -51,8 +51,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup("api/docs", app, document);
 
+  saveOpenApiSpec(document);
+
   const logger = app.get(Logger);
-  saveOpenApiSpec(document, logger);
 
   // Start server
   const port = configService.port;
