@@ -27,7 +27,7 @@ import {
   AcceptOrderDto,
   UpdateOrderStatusDto,
   CancelOrderDto,
-} from "../dto/order.dto";
+} from "../dtos/order.dto";
 import { CreateOrderCommand } from "../../application/commands/create-order/create-order.command";
 import { AcceptOrderCommand } from "../../application/commands/accept-order/accept-order.command";
 import { UpdateOrderStatusCommand } from "../../application/commands/update-order-status/update-order-status.command";

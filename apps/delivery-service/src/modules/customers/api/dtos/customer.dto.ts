@@ -2,6 +2,8 @@ import { z } from "zod";
 import { createZodDto } from "nestjs-zod";
 
 export const addressSchema = z.object({
+  id: z.string().uuid().optional(),
+  label: z.string().optional(),
   street: z.string().min(1, "Street is required"),
   city: z.string().min(1, "City is required"),
   postalCode: z.string().min(1, "Postal code is required"),
@@ -21,10 +23,10 @@ export const updateCustomerSchema = z.object({
   phone: z.string().min(9, "Phone must be at least 9 characters"),
 });
 
-export const updateAddressSchema = z.object({
+export const addAddressSchema = z.object({
   address: addressSchema,
 });
 
 export class CreateCustomerDto extends createZodDto(createCustomerSchema) {}
 export class UpdateCustomerDto extends createZodDto(updateCustomerSchema) {}
-export class UpdateAddressDto extends createZodDto(updateAddressSchema) {}
+export class AddAddressDto extends createZodDto(addAddressSchema) {}

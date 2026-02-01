@@ -30,7 +30,7 @@ import {
   UpdateDriverDto,
   UpdateLocationDto,
   SetAvailabilityDto,
-} from "../dto/driver.dto";
+} from "../dtos/driver.dto";
 import { CreateDriverCommand } from "../../application/commands/create-driver/create-driver.command";
 import { UpdateDriverCommand } from "../../application/commands/update-driver/update-driver.command";
 import { UpdateDriverLocationCommand } from "../../application/commands/update-driver-location/update-driver-location.command";

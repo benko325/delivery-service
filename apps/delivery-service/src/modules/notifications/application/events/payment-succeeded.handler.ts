@@ -23,9 +23,16 @@ export class PaymentSucceededEventHandler implements IEventHandler<PaymentSuccee
         `Restaurant notification sent for order ${event.orderId}`,
       );
     } catch (error) {
-      this.logger.error(
-        `Failed to send restaurant notification for order ${event.orderId}: ${error}`,
-      );
+      if (error instanceof Error) {
+        this.logger.error(
+          `Failed to send restaurant notification for order ${event.orderId}: ${error.message}`,
+          error.stack,
+        );
+      } else {
+        this.logger.error(
+          `Failed to send restaurant notification for order ${event.orderId}: ${JSON.stringify(error)}`,
+        );
+      }
     }
   }
 }

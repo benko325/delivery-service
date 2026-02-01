@@ -67,7 +67,7 @@ Each module follows this structure:
 module/
 ├── api/                            # Presentation layer
 │   ├── controllers/                # REST endpoints
-│   └── dto/                        # Zod validation schemas
+│   └── dtos/                       # Zod validation schemas
 ├── application/                    # Application layer
 │   ├── commands/                   # Command handlers (write operations)
 │   ├── queries/                    # Query handlers (read operations)
@@ -482,7 +482,7 @@ export class CartOrderedEventHandler implements IEventHandler<CartOrderedEvent> 
 DTOs use Zod schemas for runtime validation with TypeScript type inference:
 
 ```typescript
-// orders/api/dto/order.dto.ts
+// orders/api/dtos/order.dto.ts
 import { z } from "zod";
 import { createZodDto } from "nestjs-zod";
 
