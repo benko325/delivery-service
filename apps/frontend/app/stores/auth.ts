@@ -5,10 +5,12 @@ import { defineStore } from "pinia";
  * @description Manages user authentication state and JWT tokens
  */
 
+type UserRole = "customer" | "restaurant_owner" | "driver" | "admin";
+
 interface User {
   id: string;
   email: string;
-  role: "customer" | "restaurant_owner" | "driver" | "admin";
+  roles: UserRole[];
   name?: string;
 }
 
@@ -26,10 +28,30 @@ export const useAuthStore = defineStore("auth", {
     isAuthenticated: (state) => !!state.token,
 
     /**
-     * @brief Get user role
-     * @return User role or null
+     * @brief Get user roles
+     * @return Array of user roles or empty array
      */
-    userRole: (state) => state.user?.role || null,
+    userRoles: (state) => state.user?.roles || [],
+
+    /**
+     * @brief Check if user has a specific role
+     * @param role Role to check
+     * @return True if user has the role
+     */
+    hasRole: (state) => (role: UserRole) => {
+      return state.user?.roles.includes(role) || false;
+    },
+
+    /**
+     * @brief Check if user has any of the specified roles
+     * @param roles Roles to check
+     * @return True if user has at least one of the roles
+     */
+    hasAnyRole: (state) => (roles: UserRole[]) => {
+      return (
+        state.user?.roles.some((userRole) => roles.includes(userRole)) || false
+      );
+    },
   },
 
   actions: {
