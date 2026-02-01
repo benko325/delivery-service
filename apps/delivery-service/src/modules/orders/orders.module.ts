@@ -22,6 +22,7 @@ import { GetOrderByIdQueryHandler } from "./application/queries/get-order-by-id/
 import { GetOrdersByCustomerQueryHandler } from "./application/queries/get-orders-by-customer/get-orders-by-customer.handler";
 import { GetAvailableOrdersQueryHandler } from "./application/queries/get-available-orders/get-available-orders.handler";
 import { GetOrdersByDriverQueryHandler } from "./application/queries/get-orders-by-driver/get-orders-by-driver.handler";
+import { GetOrdersByRestaurantQueryHandler } from "./application/queries/get-orders-by-restaurant/get-orders-by-restaurant.handler";
 
 // Application - Events
 import { CartOrderedEventHandler } from "./application/events/cart-ordered.handler";
@@ -29,6 +30,8 @@ import { PaymentSucceededEventHandler } from "./application/events/payment-succe
 
 // Infrastructure - Anti-Corruption Layer
 import { CartOrderedEventMapper } from "./infrastructure/anti-corruption-layer/cart-ordered.mapper";
+import { OrderConfirmedByRestaurantMapper } from "./infrastructure/anti-corruption-layer/order-confirmed-by-restaurant.mapper";
+import { OrderRejectedByRestaurantMapper } from "./infrastructure/anti-corruption-layer/order-rejected-by-restaurant.mapper";
 
 // Infrastructure - Services
 import { PaymentGatewayService } from "./infrastructure/services/payment-gateway.service";
@@ -42,6 +45,8 @@ import { CartOrderedMappedEvent } from "./infrastructure/anti-corruption-layer/c
 // Events
 import { PaymentSucceededEvent } from "./core/events/payment-succeeded.event";
 import { OrderStatusChangedEvent } from "./core/events/order-status-changed.event";
+import { OrderConfirmedByRestaurantEvent } from "../restaurants/core/events/order-confirmed-by-restaurant.event";
+import { OrderRejectedByRestaurantEvent } from "../restaurants/core/events/order-rejected-by-restaurant.event";
 
 const commandHandlers = [
   CreateOrderCommandHandler,
@@ -56,6 +61,7 @@ const queryHandlers = [
   GetOrdersByCustomerQueryHandler,
   GetAvailableOrdersQueryHandler,
   GetOrdersByDriverQueryHandler,
+  GetOrdersByRestaurantQueryHandler,
 ];
 
 const eventHandlers = [CartOrderedEventHandler, PaymentSucceededEventHandler];
@@ -64,9 +70,15 @@ const events = [
   CartOrderedMappedEvent,
   PaymentSucceededEvent,
   OrderStatusChangedEvent,
+  OrderConfirmedByRestaurantEvent,
+  OrderRejectedByRestaurantEvent,
 ];
 
-const antiCorruptionLayer = [CartOrderedEventMapper];
+const antiCorruptionLayer = [
+  CartOrderedEventMapper,
+  OrderConfirmedByRestaurantMapper,
+  OrderRejectedByRestaurantMapper,
+];
 
 const infrastructureServices = [PaymentGatewayService];
 
