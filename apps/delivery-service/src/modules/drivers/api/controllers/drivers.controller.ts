@@ -31,6 +31,7 @@ import {
   UpdateLocationDto,
   SetAvailabilityDto,
   RejectDeliveryDto,
+  DriverResponseDto,
 } from "../dtos/driver.dto";
 import { CreateDriverCommand } from "../../application/commands/create-driver/create-driver.command";
 import { UpdateDriverCommand } from "../../application/commands/update-driver/update-driver.command";

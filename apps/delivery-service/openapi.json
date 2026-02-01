@@ -1,6 +1,20 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/api/metrics": {
+      "get": {
+        "operationId": "PrometheusController_index",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Prometheus"
+        ]
+      }
+    },
     "/api/health": {
       "get": {
         "operationId": "HealthController_check",
@@ -1294,6 +1308,94 @@
         ]
       }
     },
+    "/api/drivers/deliveries/{orderId}/accept": {
+      "post": {
+        "operationId": "DriversController_acceptDelivery",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delivery accepted"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Accept a delivery",
+        "tags": [
+          "Drivers"
+        ]
+      }
+    },
+    "/api/drivers/deliveries/{orderId}/reject": {
+      "post": {
+        "operationId": "DriversController_rejectDelivery",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectDeliveryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Delivery rejected"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reject a delivery",
+        "tags": [
+          "Drivers"
+        ]
+      }
+    },
+    "/api/drivers/deliveries/complete": {
+      "post": {
+        "operationId": "DriversController_completeDelivery",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Delivery completed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Complete current delivery",
+        "tags": [
+          "Drivers"
+        ]
+      }
+    },
     "/api/drivers/me/deactivate": {
       "patch": {
         "operationId": "DriversController_deactivateMyAccount",
@@ -1696,6 +1798,38 @@
           }
         ],
         "summary": "Accept an order (driver)",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/orders/restaurant/{restaurantId}": {
+      "get": {
+        "operationId": "OrdersController_getRestaurantOrders",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of restaurant orders"
+          },
+          "403": {
+            "description": "Access denied - not your restaurant"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get orders for a specific restaurant",
         "tags": [
           "Orders"
         ]
@@ -2826,6 +2960,19 @@
         },
         "required": [
           "status"
+        ]
+      },
+      "RejectDeliveryDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
         ]
       },
       "CartItemDto": {
