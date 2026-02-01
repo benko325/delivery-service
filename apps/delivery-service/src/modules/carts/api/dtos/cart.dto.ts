@@ -32,8 +32,9 @@ export class CartResponseDto {
   @ApiProperty({
     example: "123e4567-e89b-12d3-a456-426614174002",
     required: false,
+    nullable: true,
   })
-  restaurantId?: string | null;
+  restaurantId?: string;
 
   @ApiProperty({ type: [CartItemDto] })
   items!: CartItemDto[];

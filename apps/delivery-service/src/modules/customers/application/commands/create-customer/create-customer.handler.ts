@@ -3,6 +3,7 @@ import { Inject } from "@nestjs/common";
 import { CreateCustomerCommand } from "./create-customer.command";
 import { ICustomerAggregateRepository } from "../../../core/repositories/customer.repository.interface";
 import { CustomerAggregate } from "../../../core/aggregates/customer.aggregate";
+import { MetricsService } from "../../../../shared-kernel/infrastructure/metrics";
 
 @CommandHandler(CreateCustomerCommand)
 export class CreateCustomerCommandHandler implements ICommandHandler<CreateCustomerCommand> {
@@ -10,6 +11,7 @@ export class CreateCustomerCommandHandler implements ICommandHandler<CreateCusto
     @Inject("ICustomerAggregateRepository")
     private readonly customerAggregateRepository: ICustomerAggregateRepository,
     private readonly publisher: EventPublisher,
+    private readonly metricsService: MetricsService,
   ) {}
 
   async execute(command: CreateCustomerCommand): Promise<{ id: string }> {
@@ -36,6 +38,9 @@ export class CreateCustomerCommandHandler implements ICommandHandler<CreateCusto
     });
 
     customerAggregate.commit();
+
+    // Record metrics
+    this.metricsService.incrementCustomersRegistered();
 
     return { id: customerAggregate.id };
   }

@@ -28,7 +28,7 @@ import {
   UpdateCustomerDto,
   AddAddressDto,
   CustomerResponseDto,
-} from "../dto/customer.dto";
+} from "../dtos/customer.dto";
 import { CreateCustomerCommand } from "../../application/commands/create-customer/create-customer.command";
 import { UpdateCustomerCommand } from "../../application/commands/update-customer/update-customer.command";
 import { AddCustomerAddressCommand } from "../../application/commands/add-customer-address/add-customer-address.command";

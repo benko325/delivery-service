@@ -2521,8 +2521,9 @@
             "example": "main_course"
           },
           "imageUrl": {
-            "type": "object",
-            "example": "https://example.com/images/pizza.jpg"
+            "type": "string",
+            "example": "https://example.com/images/pizza.jpg",
+            "nullable": true
           },
           "preparationTime": {
             "type": "number",
@@ -2711,7 +2712,12 @@
             "example": "available"
           },
           "currentLocation": {
-            "$ref": "#/components/schemas/DriverLocationDto"
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DriverLocationDto"
+              }
+            ]
           },
           "rating": {
             "type": "number",
@@ -2871,8 +2877,9 @@
             "example": "123e4567-e89b-12d3-a456-426614174001"
           },
           "restaurantId": {
-            "type": "object",
-            "example": "123e4567-e89b-12d3-a456-426614174002"
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174002",
+            "nullable": true
           },
           "items": {
             "type": "array",
@@ -3199,8 +3206,9 @@
             "example": "123e4567-e89b-12d3-a456-426614174002"
           },
           "driverId": {
-            "type": "object",
-            "example": "123e4567-e89b-12d3-a456-426614174003"
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174003",
+            "nullable": true
           },
           "items": {
             "type": "array",
@@ -3238,20 +3246,27 @@
             "example": "EUR"
           },
           "estimatedDeliveryTime": {
-            "type": "object",
-            "example": "2024-01-01T01:00:00.000Z"
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T01:00:00.000Z",
+            "nullable": true
           },
           "actualDeliveryTime": {
-            "type": "object",
-            "example": "2024-01-01T01:15:00.000Z"
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T01:15:00.000Z",
+            "nullable": true
           },
           "cancelledAt": {
-            "type": "object",
-            "example": "2024-01-01T00:30:00.000Z"
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:30:00.000Z",
+            "nullable": true
           },
           "cancellationReason": {
-            "type": "object",
-            "example": "Customer requested cancellation"
+            "type": "string",
+            "example": "Customer requested cancellation",
+            "nullable": true
           },
           "createdAt": {
             "format": "date-time",
