@@ -13,7 +13,12 @@ A food delivery service system built with NestJS using modern architecture patte
 
 | Category | Technology | Purpose |
 |----------|------------|---------|
-| **Framework** | NestJS 11 | Modular backend framework with dependency injection |
+| **Backend Framework** | NestJS 11 | Modular backend framework with dependency injection |
+| **Frontend Framework** | Nuxt 4 | Vue 3 SSR framework with file-based routing |
+| **UI Components** | Vue 3 + Bootstrap 5 | Reactive components with responsive styling |
+| **State Management** | Pinia | Vue store for auth and cart state |
+| **API Client** | openapi-fetch | Type-safe API client from OpenAPI schema |
+| **Data Fetching** | TanStack Query | Server state management with caching |
 | **Database** | PostgreSQL 17 | Primary data store with schema-per-module isolation |
 | **ORM** | Kysely | Type-safe SQL query builder (no magic, full control) |
 | **Message Queue** | RabbitMQ | Asynchronous event publishing between modules |
@@ -25,6 +30,8 @@ A food delivery service system built with NestJS using modern architecture patte
 | **Logging** | Pino (nestjs-pino) | Structured JSON logging with correlation IDs |
 | **Metrics** | Prometheus | Time-series metrics collection |
 | **Dashboards** | Grafana | Metrics visualization and alerting |
+| **Reverse Proxy** | Nginx | Unified domain routing and load balancing |
+| **Containerization** | Docker + Compose | Multi-container orchestration |
 | **Build Tool** | Turbo | Monorepo build orchestration |
 | **Package Manager** | pnpm | Fast, disk-efficient package manager |
 | **API Docs** | Swagger/OpenAPI | Auto-generated API documentation |
@@ -32,29 +39,46 @@ A food delivery service system built with NestJS using modern architecture patte
 ## Project Structure
 
 ```
-solution-project/
+delivery-service/
 ├── apps/
-│   └── delivery-service/           # Main NestJS application
-│       ├── src/
-│       │   ├── infrastructure/     # App-level infrastructure
-│       │   ├── modules/
-│       │   │   ├── shared-kernel/  # Cross-cutting concerns (metrics, logging)
-│       │   │   ├── auth/           # Authentication module
-│       │   │   ├── customers/      # Customer management
-│       │   │   ├── restaurants/    # Restaurant & menu management
-│       │   │   ├── drivers/        # Driver management
-│       │   │   ├── carts/          # Shopping cart
-│       │   │   ├── orders/         # Order management
-│       │   │   └── health/         # Health check
-│       │   ├── migrations/         # Database migrations runner
-│       │   ├── app.module.ts
-│       │   └── main.ts
-│       ├── prometheus.yml          # Prometheus scrape config
-│       └── grafana/                # Grafana provisioning
-│           └── provisioning/
-│               ├── datasources/    # Prometheus datasource
-│               └── dashboards/     # Pre-built dashboards
-├── docker-compose.yml              # PostgreSQL + RabbitMQ + Prometheus + Grafana
+│   ├── delivery-service/           # Main NestJS application
+│   │   ├── src/
+│   │   │   ├── infrastructure/     # App-level infrastructure
+│   │   │   ├── modules/
+│   │   │   │   ├── shared-kernel/  # Cross-cutting concerns (metrics, logging)
+│   │   │   │   ├── auth/           # Authentication module
+│   │   │   │   ├── customers/      # Customer management
+│   │   │   │   ├── restaurants/    # Restaurant & menu management
+│   │   │   │   ├── drivers/        # Driver management
+│   │   │   │   ├── carts/          # Shopping cart
+│   │   │   │   ├── orders/         # Order management
+│   │   │   │   └── health/         # Health check
+│   │   │   ├── migrations/         # Database migrations runner
+│   │   │   ├── app.module.ts
+│   │   │   └── main.ts
+│   │   ├── prometheus.yml          # Prometheus scrape config
+│   │   └── grafana/                # Grafana provisioning
+│   │       └── provisioning/
+│   │           ├── datasources/    # Prometheus datasource
+│   │           └── dashboards/     # Pre-built dashboards
+│   ├── frontend/                   # Nuxt 4 frontend application
+│   │   ├── app/
+│   │   │   ├── pages/              # File-based routing
+│   │   │   ├── components/         # Reusable Vue components
+│   │   │   ├── composables/        # API hooks
+│   │   │   ├── stores/             # Pinia stores (auth, cart)
+│   │   │   ├── middleware/         # Route guards
+│   │   │   └── layouts/            # Page layouts
+│   │   ├── types/
+│   │   │   └── api.d.ts           # Auto-generated OpenAPI types
+│   │   └── utils/
+│   │       └── api-client.ts      # Configured API client
+│   └── nginx/                      # Nginx reverse proxy
+│       ├── nginx.conf              # Proxy configuration
+│       └── README.md
+├── docs/
+│   └── adr/                        # Architecture Decision Records
+├── docker-compose.yml              # Full stack orchestration
 ├── init-db.sql                     # Schema initialization
 └── README.md
 ```
@@ -610,9 +634,12 @@ Pre-configured dashboards available at http://localhost:3001 (default credential
 docker-compose up -d
 
 # Access points:
+# - Application: http://ds.localhost (via nginx)
+# - API: http://ds.localhost/api
 # - Prometheus: http://localhost:9095
 # - Grafana: http://localhost:3001
-# - Metrics endpoint: http://localhost:3000/api/metrics
+# - RabbitMQ Management: http://localhost:15672
+# - Metrics endpoint: http://ds.localhost/api/metrics
 ```
 
 ---
@@ -637,20 +664,54 @@ pnpm install
 docker-compose up -d
 ```
 
-3. Run migrations:
+This will start all services:
+- **nginx** - Reverse proxy on port 80
+- **frontend** - Nuxt SSR application
+- **delivery-service** - NestJS backend API  
+- **postgres** - PostgreSQL database on port 5433
+- **rabbitmq** - Message broker (ports 5672, 15672)
+- **prometheus** - Metrics collection on port 9095
+- **grafana** - Monitoring dashboards on port 3001
+
+3. Run migrations (happens automatically on backend startup, but can be run manually):
 ```bash
 cd apps/delivery-service
 pnpm migrate
 ```
 
-4. Start development server:
+4. Access the application:
+- **Frontend**: http://ds.localhost
+- **API Docs**: http://ds.localhost/api/docs
+- **Grafana**: http://localhost:3001
+- **Prometheus**: http://localhost:9095
+- **RabbitMQ**: http://localhost:15672
+
+### Local Development (without Docker)
+
+1. Start infrastructure only:
 ```bash
+docker-compose up -d postgres rabbitmq prometheus grafana
+```
+
+2. Start backend:
+```bash
+cd apps/delivery-service
 pnpm dev
 ```
 
+3. Start frontend:
+```bash
+cd apps/frontend
+pnpm dev
+```
+
+Backend runs on `http://localhost:3000`, frontend on `http://localhost:3000` (port may vary).
+
 ### API Documentation
 
-Swagger UI is available at: http://localhost:3000/api/docs
+Swagger UI is available at:
+- **Docker**: http://ds.localhost/api/docs
+- **Local**: http://localhost:3000/api/docs
 
 ---
 
@@ -736,13 +797,120 @@ Swagger UI is available at: http://localhost:3000/api/docs
 
 ---
 
+## Testing the Application
+
+### Setting Up the Environment
+
+1. **Add domain to hosts file**:
+   ```bash
+   echo "127.0.0.1 ds.localhost" | sudo tee -a /etc/hosts
+   ```
+
+2. **Start all services**:
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Verify services are running**:
+   ```bash
+   docker-compose ps
+   ```
+
+   Expected services:
+   - `nginx` - Reverse proxy (port 80)
+   - `frontend` - Nuxt SSR application (internal)
+   - `delivery-service` - NestJS backend API (internal)
+   - `postgres` - PostgreSQL database (port 5433)
+   - `rabbitmq` - Message broker (ports 5672, 15672)
+   - `prometheus` - Metrics collection (port 9095)
+   - `grafana` - Monitoring dashboards (port 3001)
+
+### Test Credentials
+
+The database migrations automatically seed test accounts for all roles:
+
+| Role | Email | Password | Description |
+|------|-------|----------|-------------|
+| **Admin** | admin@delivery.local | Admin123! | Full system access |
+| **Customer** | customer@delivery.local | Customer123! | Customer account for testing orders |
+| **Driver** | driver@delivery.local | Driver123! | Driver account for testing deliveries |
+| **Restaurant Owner** | owner@delivery.local | Owner123! | Owner account for managing restaurants |
+
+### Access Points
+
+| Service | URL | Credentials (if required) |
+|---------|-----|---------------------------|
+| Frontend | http://ds.localhost | Use test accounts above |
+| API Docs | http://ds.localhost/api/docs | - |
+| RabbitMQ Management | http://localhost:15672 | admin / admin |
+| Prometheus | http://localhost:9095 | - |
+| Grafana | http://localhost:3001 | admin / admin |
+
+### Testing Order Flow (End-to-End)
+
+1. **Customer creates order**:
+   - Login as `customer@delivery.local`
+   - Browse restaurants and add items to cart
+   - Checkout cart → order created with status `pending`
+
+2. **Restaurant confirms order**:
+   - Login as `owner@delivery.local`
+   - Navigate to restaurant orders
+   - Confirm order → status changes to `confirmed`
+
+3. **Customer pays for order**:
+   - Login as `customer@delivery.local`
+   - Navigate to orders and pay → status changes to `paid`
+
+4. **Driver accepts delivery**:
+   - Login as `driver@delivery.local`
+   - View available orders
+   - Accept order → status changes to `picked_up`
+
+5. **Driver delivers order**:
+   - Update status to `on_the_way`
+   - Update status to `delivered`
+   - Order complete
+
+### API Testing with Swagger
+
+1. Navigate to http://ds.localhost/api/docs
+2. Login with any test account to get JWT token
+3. Click "Authorize" button
+4. Insert the Token
+5. Try endpoints based on role permissions
+
+### Monitoring & Observability
+
+**Prometheus Metrics** (http://localhost:9095):
+- `http_requests_total` - Total HTTP requests
+- `http_request_duration_seconds` - Request duration
+- `db_query_duration_seconds` - Database query performance
+- Custom business metrics per module
+
+**Grafana Dashboards** (http://localhost:3001):
+- Pre-configured dashboards for API performance
+- Database query monitoring
+- Order flow metrics
+- Driver availability tracking
+
+**RabbitMQ Management** (http://localhost:15672):
+- View message queues and exchanges
+- Monitor event flow between modules
+- Check message rates and consumers
+
+---
+
 ## Default Test Credentials
 
 After running migrations and seed data:
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@delivery.local | admin123 |
+| Admin | admin@delivery.local | Admin123! |
+| Customer | customer@delivery.local | Customer123! |
+| Driver | driver@delivery.local | Driver123! |
+| Restaurant Owner | owner@delivery.local | Owner123! |
 
 ---
 
