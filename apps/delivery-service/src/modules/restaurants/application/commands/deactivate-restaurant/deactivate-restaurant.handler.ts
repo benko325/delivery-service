@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler, EventPublisher } from "@nestjs/cqrs";
-import { Inject, NotFoundException } from "@nestjs/common";
+import { Inject, NotFoundException, ForbiddenException } from "@nestjs/common";
 import { DeactivateRestaurantCommand } from "./deactivate-restaurant.command";
 import { IRestaurantAggregateRepository } from "../../../core/repositories/restaurant.repository.interface";
 import { RestaurantAggregate } from "../../../core/aggregates/restaurant.aggregate";
@@ -22,6 +22,14 @@ export class DeactivateRestaurantCommandHandler implements ICommandHandler<Deact
       throw new NotFoundException(
         `Restaurant with ID ${command.restaurantId} not found`,
       );
+    }
+
+    // Check ownership: admins can deactivate any restaurant, owners can only deactivate their own
+    const isAdmin = command.userRoles.includes('admin');
+    const isOwner = existingRestaurant.ownerId === command.userId;
+
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException('You do not have permission to deactivate this restaurant');
     }
 
     const restaurantAggregate = this.publisher.mergeObjectContext(
