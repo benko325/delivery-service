@@ -37,6 +37,7 @@ import { GetOrderByIdQuery } from "../../application/queries/get-order-by-id/get
 import { GetOrdersByCustomerQuery } from "../../application/queries/get-orders-by-customer/get-orders-by-customer.query";
 import { GetAvailableOrdersQuery } from "../../application/queries/get-available-orders/get-available-orders.query";
 import { GetOrdersByDriverQuery } from "../../application/queries/get-orders-by-driver/get-orders-by-driver.query";
+import { GetOrdersByRestaurantQuery } from "../../application/queries/get-orders-by-restaurant/get-orders-by-restaurant.query";
 
 @ApiTags("Orders")
 @Controller("orders")
@@ -127,6 +128,19 @@ export class OrdersController {
     return this.commandBus.execute(
       new AcceptOrderCommand(orderId, user.userId, dto.estimatedMinutes),
     );
+  }
+
+  // Restaurant endpoints
+  @Get("restaurant/:restaurantId")
+  @Roles("admin", "restaurant_owner")
+  @ApiOperation({ summary: "Get orders for a specific restaurant" })
+  @ApiResponse({
+    status: 200,
+    description: "List of restaurant orders",
+    // type: [OrderResponseDto],
+  })
+  async getRestaurantOrders(@Param("restaurantId") restaurantId: string) {
+    return this.queryBus.execute(new GetOrdersByRestaurantQuery(restaurantId));
   }
 
   // Restaurant and admin endpoints
