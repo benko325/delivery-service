@@ -30,6 +30,7 @@ import {
   UpdateDriverDto,
   UpdateLocationDto,
   SetAvailabilityDto,
+  RejectDeliveryDto,
 } from "../dtos/driver.dto";
 import { CreateDriverCommand } from "../../application/commands/create-driver/create-driver.command";
 import { UpdateDriverCommand } from "../../application/commands/update-driver/update-driver.command";
@@ -38,6 +39,9 @@ import { SetDriverAvailabilityCommand } from "../../application/commands/set-dri
 import { GetDriverByIdQuery } from "../../application/queries/get-driver-by-id/get-driver-by-id.query";
 import { GetAllDriversQuery } from "../../application/queries/get-all-drivers/get-all-drivers.query";
 import { GetAvailableDriversQuery } from "../../application/queries/get-available-drivers/get-available-drivers.query";
+import { AcceptDeliveryCommand } from "../../application/commands/accept-delivery/accept-delivery.command";
+import { RejectDeliveryCommand } from "../../application/commands/reject-delivery/reject-delivery.command";
+import { CompleteDeliveryCommand } from "../../application/commands/complete-delivery/complete-delivery.command";
 
 @ApiTags("Drivers")
 @Controller("drivers")
@@ -144,6 +148,41 @@ export class DriversController {
     return this.commandBus.execute(
       new SetDriverAvailabilityCommand(user.userId, dto.status, true),
     );
+  }
+
+  @Post("deliveries/:orderId/accept")
+  @Roles("driver")
+  @ApiOperation({ summary: "Accept a delivery" })
+  @ApiResponse({ status: 200, description: "Delivery accepted" })
+  async acceptDelivery(
+    @User() user: RequestUser,
+    @Param("orderId") orderId: string,
+  ) {
+    return this.commandBus.execute(
+      new AcceptDeliveryCommand(user.userId, orderId),
+    );
+  }
+
+  @Post("deliveries/:orderId/reject")
+  @Roles("driver")
+  @ApiOperation({ summary: "Reject a delivery" })
+  @ApiResponse({ status: 200, description: "Delivery rejected" })
+  async rejectDelivery(
+    @User() user: RequestUser,
+    @Param("orderId") orderId: string,
+    @Body(ZodValidationPipe) dto: RejectDeliveryDto,
+  ) {
+    return this.commandBus.execute(
+      new RejectDeliveryCommand(user.userId, orderId, dto.reason),
+    );
+  }
+
+  @Post("deliveries/complete")
+  @Roles("driver")
+  @ApiOperation({ summary: "Complete current delivery" })
+  @ApiResponse({ status: 200, description: "Delivery completed" })
+  async completeDelivery(@User() user: RequestUser) {
+    return this.commandBus.execute(new CompleteDeliveryCommand(user.userId));
   }
 
   @Patch("me/deactivate")

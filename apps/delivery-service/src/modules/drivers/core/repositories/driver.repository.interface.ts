@@ -7,6 +7,7 @@ export interface IDriverRepository {
   findByUserId(userId: string): Promise<Driver | null>;
   findAll(): Promise<Driver[]>;
   findAvailable(): Promise<Driver[]>;
+  findByCurrentOrder(orderId: string): Promise<Driver | null>;
 }
 
 export interface IDriverAggregateRepository {
@@ -20,6 +21,7 @@ export interface IDriverAggregateRepository {
       licensePlate: string;
       status: DriverStatus;
       currentLocation: DriverLocation | null;
+      currentOrderId: string | null;
       rating: number;
       totalDeliveries: number;
       isActive: boolean;
