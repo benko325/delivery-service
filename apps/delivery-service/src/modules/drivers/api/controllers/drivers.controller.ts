@@ -56,7 +56,11 @@ export class DriversController {
   @Get()
   @Roles("admin")
   @ApiOperation({ summary: "Get all drivers (admin only)" })
-  @ApiResponse({ status: 200, description: "List of all drivers" })
+  @ApiResponse({
+    status: 200,
+    description: "List of all drivers",
+    type: [DriverResponseDto],
+  })
   async findAll() {
     return this.queryBus.execute(new GetAllDriversQuery());
   }
@@ -64,7 +68,11 @@ export class DriversController {
   @Get("available")
   @Roles("admin", "restaurant_owner")
   @ApiOperation({ summary: "Get available drivers" })
-  @ApiResponse({ status: 200, description: "List of available drivers" })
+  @ApiResponse({
+    status: 200,
+    description: "List of available drivers",
+    type: [DriverResponseDto],
+  })
   async findAvailable() {
     return this.queryBus.execute(new GetAvailableDriversQuery());
   }
@@ -72,7 +80,11 @@ export class DriversController {
   @Get("me")
   @Roles("driver")
   @ApiOperation({ summary: "Get current driver profile" })
-  @ApiResponse({ status: 200, description: "Driver profile" })
+  @ApiResponse({
+    status: 200,
+    description: "Driver profile",
+    type: DriverResponseDto,
+  })
   async getMyProfile(@User() user: RequestUser) {
     return this.queryBus.execute(new GetDriverByIdQuery(user.userId, true));
   }
@@ -80,7 +92,11 @@ export class DriversController {
   @Get(":id")
   @Roles("admin")
   @ApiOperation({ summary: "Get driver by ID (admin only)" })
-  @ApiResponse({ status: 200, description: "Driver details" })
+  @ApiResponse({
+    status: 200,
+    description: "Driver details",
+    type: DriverResponseDto,
+  })
   async findById(@Param("id") id: string) {
     return this.queryBus.execute(new GetDriverByIdQuery(id, false));
   }

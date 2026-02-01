@@ -21,7 +21,11 @@ import { ZodValidationPipe } from "nestjs-zod";
 import { JwtAuthGuard } from "../../../shared-kernel/api/guards/jwt.guard";
 import { RolesGuard } from "../../../shared-kernel/api/guards/roles.guard";
 import { Roles } from "../../../shared-kernel/api/decorators/roles.decorator";
-import { CreateMenuItemDto, UpdateMenuItemDto } from "../dtos/menu-item.dto";
+import {
+  CreateMenuItemDto,
+  UpdateMenuItemDto,
+  MenuItemResponseDto,
+} from "../dtos/menu-item.dto";
 import { CreateMenuItemCommand } from "../../application/commands/create-menu-item/create-menu-item.command";
 import { UpdateMenuItemCommand } from "../../application/commands/update-menu-item/update-menu-item.command";
 import { DeleteMenuItemCommand } from "../../application/commands/delete-menu-item/delete-menu-item.command";
@@ -37,7 +41,11 @@ export class MenuItemsController {
 
   @Get()
   @ApiOperation({ summary: "Get menu items for a restaurant [Public]" })
-  @ApiResponse({ status: 200, description: "List of menu items" })
+  @ApiResponse({
+    status: 200,
+    description: "List of menu items",
+    type: [MenuItemResponseDto],
+  })
   async findByRestaurant(@Param("restaurantId") restaurantId: string) {
     return this.queryBus.execute(
       new GetMenuItemsByRestaurantQuery(restaurantId, true),
@@ -49,9 +57,14 @@ export class MenuItemsController {
   @Roles("admin", "restaurant_owner")
   @ApiBearerAuth()
   @ApiOperation({
-    summary: "Get all menu items including unavailable [Admin, Restaurant Owner]",
+    summary:
+      "Get all menu items including unavailable [Admin, Restaurant Owner]",
   })
-  @ApiResponse({ status: 200, description: "List of all menu items" })
+  @ApiResponse({
+    status: 200,
+    description: "List of all menu items",
+    type: [MenuItemResponseDto],
+  })
   async findAllByRestaurant(@Param("restaurantId") restaurantId: string) {
     return this.queryBus.execute(
       new GetMenuItemsByRestaurantQuery(restaurantId, false),
@@ -64,7 +77,11 @@ export class MenuItemsController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: "Create a new menu item [Admin, Restaurant Owner]" })
-  @ApiResponse({ status: 201, description: "Menu item created" })
+  @ApiResponse({
+    status: 201,
+    description: "Menu item created",
+    type: MenuItemResponseDto,
+  })
   async create(
     @Param("restaurantId") restaurantId: string,
     @Body(ZodValidationPipe) dto: CreateMenuItemDto,
@@ -88,7 +105,11 @@ export class MenuItemsController {
   @Roles("admin", "restaurant_owner")
   @ApiBearerAuth()
   @ApiOperation({ summary: "Update menu item [Admin, Restaurant Owner]" })
-  @ApiResponse({ status: 200, description: "Menu item updated" })
+  @ApiResponse({
+    status: 200,
+    description: "Menu item updated",
+    type: MenuItemResponseDto,
+  })
   async update(
     @Param("id") id: string,
     @Body(ZodValidationPipe) dto: UpdateMenuItemDto,

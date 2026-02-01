@@ -22,6 +22,7 @@ import { GetOrderByIdQueryHandler } from "./application/queries/get-order-by-id/
 import { GetOrdersByCustomerQueryHandler } from "./application/queries/get-orders-by-customer/get-orders-by-customer.handler";
 import { GetAvailableOrdersQueryHandler } from "./application/queries/get-available-orders/get-available-orders.handler";
 import { GetOrdersByDriverQueryHandler } from "./application/queries/get-orders-by-driver/get-orders-by-driver.handler";
+import { GetOrdersByRestaurantQueryHandler } from "./application/queries/get-orders-by-restaurant/get-orders-by-restaurant.handler";
 
 // Application - Events
 import { CartOrderedEventHandler } from "./application/events/cart-ordered.handler";
@@ -72,6 +73,7 @@ const queryHandlers = [
   GetOrdersByCustomerQueryHandler,
   GetAvailableOrdersQueryHandler,
   GetOrdersByDriverQueryHandler,
+  GetOrdersByRestaurantQueryHandler,
 ];
 
 const eventHandlers = [

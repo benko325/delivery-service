@@ -8,6 +8,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  ForbiddenException,
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import {
@@ -27,6 +28,7 @@ import {
   AcceptOrderDto,
   UpdateOrderStatusDto,
   CancelOrderDto,
+  OrderResponseDto,
 } from "../dtos/order.dto";
 import { CreateOrderCommand } from "../../application/commands/create-order/create-order.command";
 import { AcceptOrderCommand } from "../../application/commands/accept-order/accept-order.command";
@@ -37,6 +39,8 @@ import { GetOrderByIdQuery } from "../../application/queries/get-order-by-id/get
 import { GetOrdersByCustomerQuery } from "../../application/queries/get-orders-by-customer/get-orders-by-customer.query";
 import { GetAvailableOrdersQuery } from "../../application/queries/get-available-orders/get-available-orders.query";
 import { GetOrdersByDriverQuery } from "../../application/queries/get-orders-by-driver/get-orders-by-driver.query";
+import { GetOrdersByRestaurantQuery } from "../../application/queries/get-orders-by-restaurant/get-orders-by-restaurant.query";
+import { GetRestaurantByIdQuery } from "../../../restaurants/application/queries/get-restaurant-by-id/get-restaurant-by-id.query";
 
 @ApiTags("Orders")
 @Controller("orders")
@@ -80,7 +84,11 @@ export class OrdersController {
   @Get("my-orders")
   @Roles("customer")
   @ApiOperation({ summary: "Get customer orders" })
-  @ApiResponse({ status: 200, description: "List of customer orders" })
+  @ApiResponse({
+    status: 200,
+    description: "List of customer orders",
+    type: [OrderResponseDto],
+  })
   async getMyOrders(@User() user: RequestUser) {
     return this.queryBus.execute(new GetOrdersByCustomerQuery(user.userId));
   }
@@ -101,7 +109,11 @@ export class OrdersController {
   @Get("available")
   @Roles("driver")
   @ApiOperation({ summary: "Get available orders for drivers" })
-  @ApiResponse({ status: 200, description: "List of available orders" })
+  @ApiResponse({
+    status: 200,
+    description: "List of available orders",
+    type: [OrderResponseDto],
+  })
   async getAvailableOrders() {
     return this.queryBus.execute(new GetAvailableOrdersQuery());
   }
@@ -109,7 +121,11 @@ export class OrdersController {
   @Get("my-deliveries")
   @Roles("driver")
   @ApiOperation({ summary: "Get driver deliveries" })
-  @ApiResponse({ status: 200, description: "List of driver deliveries" })
+  @ApiResponse({
+    status: 200,
+    description: "List of driver deliveries",
+    type: [OrderResponseDto],
+  })
   async getMyDeliveries(@User() user: RequestUser) {
     return this.queryBus.execute(new GetOrdersByDriverQuery(user.userId));
   }
@@ -127,6 +143,37 @@ export class OrdersController {
     return this.commandBus.execute(
       new AcceptOrderCommand(orderId, user.userId, dto.estimatedMinutes),
     );
+  }
+
+  // Restaurant endpoints
+  @Get("restaurant/:restaurantId")
+  @Roles("admin", "restaurant_owner")
+  @ApiOperation({ summary: "Get orders for a specific restaurant" })
+  @ApiResponse({
+    status: 200,
+    description: "List of restaurant orders",
+    // type: [OrderResponseDto],
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Access denied - not your restaurant",
+  })
+  async getRestaurantOrders(
+    @Param("restaurantId") restaurantId: string,
+    @User() user: RequestUser,
+  ) {
+    // Restaurant owners can only view their own restaurant's orders
+    if (!user.roles.includes("admin")) {
+      const restaurant = await this.queryBus.execute(
+        new GetRestaurantByIdQuery(restaurantId),
+      );
+      if (!restaurant || restaurant.ownerId !== user.userId) {
+        throw new ForbiddenException(
+          "You can only view orders for your own restaurant",
+        );
+      }
+    }
+    return this.queryBus.execute(new GetOrdersByRestaurantQuery(restaurantId));
   }
 
   // Restaurant and admin endpoints
@@ -159,7 +206,11 @@ export class OrdersController {
   @Get(":id")
   @Roles("customer", "driver", "admin", "restaurant_owner")
   @ApiOperation({ summary: "Get order by ID" })
-  @ApiResponse({ status: 200, description: "Order details" })
+  @ApiResponse({
+    status: 200,
+    description: "Order details",
+    type: OrderResponseDto,
+  })
   async getOrderById(@Param("id") orderId: string) {
     return this.queryBus.execute(new GetOrderByIdQuery(orderId));
   }
