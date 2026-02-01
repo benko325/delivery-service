@@ -7,6 +7,7 @@ import {
   OrderItem,
   DeliveryAddress,
 } from "../../core/types/order-database.types";
+import { CartOrderedEvent } from "@/modules/carts/core/events/cart-ordered.event";
 
 export class CartOrderedMappedEvent implements IEvent {
   constructor(
@@ -20,41 +21,13 @@ export class CartOrderedMappedEvent implements IEvent {
   ) {}
 }
 
-/**
- * @todo This class is only a placeholder. Replace with actual import from Carts BC when available.
- */
-class CartOrderedEventMock implements IEvent {
-  constructor(
-    public readonly cartId: string,
-    public readonly customerId: string,
-    public readonly restaurantId: string,
-    public readonly items: {
-      menuItemId: string;
-      name: string;
-      quantity: number;
-      price: number;
-      currency: string;
-    }[],
-    public readonly deliveryAddress: {
-      street: string;
-      city: string;
-      postalCode: string;
-      country: string;
-    },
-    public readonly totalAmount: number,
-    public readonly deliveryFee: number,
-    public readonly currency: string,
-    public readonly orderedAt: Date,
-  ) {}
-}
-
-@EventsHandler(CartOrderedEventMock)
-export class CartOrderedEventMapper implements IEventHandler<CartOrderedEventMock> {
+@EventsHandler(CartOrderedEvent)
+export class CartOrderedEventMapper implements IEventHandler<CartOrderedEvent> {
   private readonly logger = new Logger(CartOrderedEventMapper.name);
 
   constructor(private readonly eventBus: EventBus) {}
 
-  handle(event: CartOrderedEventMock): void {
+  handle(event: CartOrderedEvent): void {
     this.logger.log(`Mapping CartOrderedEvent for cart ${event.cartId}`);
 
     const orderItems: OrderItem[] = event.items.map((item) => ({
