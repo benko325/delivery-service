@@ -46,36 +46,6 @@ export function useOrder(id: Ref<string> | string) {
 }
 
 /**
- * @brief Create order mutation
- * @return Mutation for creating an order
- */
-export function useCreateOrder() {
-  const apiClient = useApiClient();
-  const queryClient = useQueryClient();
-  const router = useRouter();
-
-  return useMutation({
-    mutationFn: async (orderData: {
-      restaurantId: string;
-      deliveryAddressId: string;
-      items: Array<{ menuItemId: string; quantity: number }>;
-    }) => {
-      const { data, error } = await apiClient.POST("/api/orders", {
-        body: orderData,
-      });
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      if (data?.id) {
-        router.push(`/orders/${data.id}`);
-      }
-    },
-  });
-}
-
-/**
  * @brief Pay for order mutation
  * @return Mutation for paying for an order
  */
@@ -84,10 +54,9 @@ export function usePayForOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (params: { orderId: string; paymentMethod: string }) => {
+    mutationFn: async (params: { orderId: string }) => {
       const { data, error } = await apiClient.POST("/api/orders/{id}/pay", {
         params: { path: { id: params.orderId } },
-        body: { paymentMethod: params.paymentMethod },
       });
       if (error) throw error;
       return data;
@@ -108,9 +77,10 @@ export function useCancelOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (orderId: string) => {
+    mutationFn: async (params: { orderId: string; reason: string }) => {
       const { data, error } = await apiClient.POST("/api/orders/{id}/cancel", {
-        params: { path: { id: orderId } },
+        params: { path: { id: params.orderId } },
+        body: { reason: params.reason },
       });
       if (error) throw error;
       return data;
