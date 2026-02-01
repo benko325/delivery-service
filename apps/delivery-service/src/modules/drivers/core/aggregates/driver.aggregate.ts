@@ -4,6 +4,9 @@ import { DriverStatus, DriverLocation } from "../types/driver-database.types";
 import { DriverCreatedEvent } from "../events/driver-created.event";
 import { DriverAvailabilityChangedEvent } from "../events/driver-availability-changed.event";
 import { DriverLocationUpdatedEvent } from "../events/driver-location-updated.event";
+import { DeliveryAssignedEvent } from "../events/delivery-assigned.event";
+import { DeliveryCompletedEvent } from "../events/delivery-completed.event";
+import { DeliveryRejectedEvent } from "../events/delivery-rejected.event";
 
 export class DriverAggregate extends AggregateRoot {
   private _id: string = "";
@@ -12,6 +15,7 @@ export class DriverAggregate extends AggregateRoot {
   private _licensePlate: string = "";
   private _status: DriverStatus = "offline";
   private _currentLocation: DriverLocation | null = null;
+  private _currentOrderId: string | null = null;
   private _rating: number = 5.0;
   private _totalDeliveries: number = 0;
   private _isActive: boolean = true;
@@ -40,6 +44,10 @@ export class DriverAggregate extends AggregateRoot {
 
   get currentLocation(): DriverLocation | null {
     return this._currentLocation;
+  }
+
+  get currentOrderId(): string | null {
+    return this._currentOrderId;
   }
 
   get rating(): number {
@@ -122,12 +130,61 @@ export class DriverAggregate extends AggregateRoot {
   }
 
   completeDelivery(newRating: number): void {
+    if (!this._currentOrderId) {
+      throw new Error("No active delivery to complete");
+    }
+
+    const orderId = this._currentOrderId;
     this._totalDeliveries += 1;
     // Calculate new average rating
     this._rating =
       (this._rating * (this._totalDeliveries - 1) + newRating) /
       this._totalDeliveries;
+    this._currentOrderId = null;
+    this._status = "available";
     this._updatedAt = new Date();
+
+    this.apply(
+      new DeliveryCompletedEvent({
+        driverId: this._id,
+        orderId: orderId,
+        completedAt: this._updatedAt,
+      }),
+    );
+  }
+
+  assignDelivery(orderId: string): void {
+    if (this._status !== "available") {
+      throw new Error("Driver must be available to accept deliveries");
+    }
+    if (this._currentOrderId) {
+      throw new Error("Driver already has an active delivery");
+    }
+
+    this._currentOrderId = orderId;
+    this._status = "busy";
+    this._updatedAt = new Date();
+
+    this.apply(
+      new DeliveryAssignedEvent({
+        driverId: this._id,
+        orderId: orderId,
+        assignedAt: this._updatedAt,
+      }),
+    );
+  }
+
+  rejectDelivery(orderId: string, reason: string): void {
+    this._updatedAt = new Date();
+
+    this.apply(
+      new DeliveryRejectedEvent({
+        driverId: this._id,
+        orderId: orderId,
+        reason: reason,
+        rejectedAt: this._updatedAt,
+      }),
+    );
   }
 
   deactivate(): void {
@@ -142,6 +199,7 @@ export class DriverAggregate extends AggregateRoot {
     licensePlate: string;
     status: DriverStatus;
     currentLocation: DriverLocation | null;
+    currentOrderId?: string | null;
     rating: number;
     totalDeliveries: number;
     createdAt: Date;
@@ -154,6 +212,7 @@ export class DriverAggregate extends AggregateRoot {
     this._licensePlate = data.licensePlate;
     this._status = data.status;
     this._currentLocation = data.currentLocation;
+    this._currentOrderId = data.currentOrderId ?? null;
     this._rating = data.rating;
     this._totalDeliveries = data.totalDeliveries;
     this._isActive = data.isActive ?? true;

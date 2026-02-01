@@ -15,6 +15,7 @@ export interface DriversTable {
   licensePlate: string;
   status: DriverStatus;
   currentLocation: DriverLocation | null;
+  currentOrderId: string | null;
   rating: number;
   totalDeliveries: number;
   isActive: boolean;
