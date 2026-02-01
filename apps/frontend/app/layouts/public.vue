@@ -68,4 +68,18 @@
  * @file Public layout
  * @description Layout for logged out users (login, register pages)
  */
+
+// Load auth and cart on mount
+onMounted(() => {
+  const authStore = useAuthStore();
+  authStore.loadAuth();
+
+  if (authStore.isAuthenticated) {
+    const router = useRoute();
+
+    router.query.redirect
+      ? navigateTo(router.query.redirect as string)
+      : navigateTo("/");
+  }
+});
 </script>
