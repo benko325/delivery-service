@@ -3,6 +3,7 @@ import { Inject } from "@nestjs/common";
 import { AddItemToCartCommand } from "./add-item-to-cart.command";
 import { ICartAggregateRepository } from "../../../core/repositories/cart.repository.interface";
 import { CartAggregate } from "../../../core/aggregates/cart.aggregate";
+import { MetricsService } from "../../../../shared-kernel/infrastructure/metrics";
 
 @CommandHandler(AddItemToCartCommand)
 export class AddItemToCartCommandHandler implements ICommandHandler<AddItemToCartCommand> {
@@ -10,6 +11,7 @@ export class AddItemToCartCommandHandler implements ICommandHandler<AddItemToCar
     @Inject("ICartAggregateRepository")
     private readonly cartAggregateRepository: ICartAggregateRepository,
     private readonly publisher: EventPublisher,
+    private readonly metricsService: MetricsService,
   ) {}
 
   async execute(
@@ -57,7 +59,13 @@ export class AddItemToCartCommandHandler implements ICommandHandler<AddItemToCar
         createdAt: cartAggregate.createdAt,
         updatedAt: cartAggregate.updatedAt,
       });
+
+      // Record cart created metric for new carts
+      this.metricsService.incrementCartsCreated();
     }
+
+    // Record item added metric
+    this.metricsService.incrementCartItemsAdded(command.quantity);
 
     cartAggregate.commit();
 

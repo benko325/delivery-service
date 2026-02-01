@@ -1,14 +1,15 @@
 import { NestFactory } from "@nestjs/core";
-import { Logger } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { AppConfigService } from "./infrastructure/config/app-config.service";
 import { patchNestJsSwagger } from "nestjs-zod";
+import { Logger } from "nestjs-pino";
+import { MetricsService } from "./modules/shared-kernel/infrastructure/metrics";
+import { MetricsExceptionFilter } from "./modules/shared-kernel/api/filters/metrics-exception.filter";
 
 async function bootstrap() {
-  const logger = new Logger("Bootstrap");
-
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.useLogger(app.get(Logger));
 
   // Get config service
   const configService = app.get(AppConfigService);
@@ -23,6 +24,10 @@ async function bootstrap() {
 
   // Global prefix
   app.setGlobalPrefix("api");
+
+  // Global exception filter for metrics
+  const metricsService = app.get(MetricsService);
+  app.useGlobalFilters(new MetricsExceptionFilter(metricsService));
 
   // Swagger documentation
   const swaggerConfig = new DocumentBuilder()
@@ -51,6 +56,7 @@ async function bootstrap() {
 
   await app.listen(port, host);
 
+  const logger = app.get(Logger);
   logger.log(`Application is running on: http://${host}:${port}`);
   logger.log(`Swagger documentation: http://${host}:${port}/api/docs`);
 }
