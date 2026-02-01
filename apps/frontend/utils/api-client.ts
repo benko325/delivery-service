@@ -14,8 +14,15 @@ import type { paths } from "../types/api";
 export function createApiClient() {
   const config = useRuntimeConfig();
 
+  // Determine base URL
+  // In browser: use window.location.origin/api (for nginx reverse proxy)
+  // In SSR: use config value (for direct backend communication)
+  const baseUrl = import.meta.client
+    ? window.location.origin
+    : (config.public.apiBase as string);
+
   const client = createClient<paths>({
-    baseUrl: config.public.apiBase as string,
+    baseUrl,
   });
 
   // Auth middleware - adds JWT token to requests
