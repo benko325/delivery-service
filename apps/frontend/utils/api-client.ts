@@ -8,7 +8,8 @@ import type { paths } from "../types/api";
 
 /**
  * Creates an API client instance with auth middleware
- * @returns Type-safe API client
+ * @brief Creates a new API client with authentication middleware
+ * @return Type-safe API client
  */
 export function createApiClient() {
   const config = useRuntimeConfig();
@@ -36,16 +37,13 @@ export function createApiClient() {
   return client;
 }
 
-// Singleton instance
-let apiClientInstance: ReturnType<typeof createClient<paths>> | null = null;
-
 /**
- * Returns a singleton API client instance
- * @brief Ensures only one API client exists across the app
+ * Returns an API client instance
+ * @brief Returns a cached API client instance (request-scoped in SSR, app-scoped in CSR)
+ * @description In Nuxt SSR, composables are automatically cached per request.
+ * On the client side, the instance is reused across the app lifecycle.
+ * This ensures no auth token leakage between different users' server requests.
  */
 export function useApiClient() {
-  if (!apiClientInstance) {
-    apiClientInstance = createApiClient();
-  }
-  return apiClientInstance;
+  return createApiClient();
 }
