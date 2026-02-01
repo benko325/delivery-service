@@ -28,6 +28,7 @@ export class DriverAggregateRepository implements IDriverAggregateRepository {
         currentLocation: driver.currentLocation
           ? sql`${JSON.stringify(driver.currentLocation)}::jsonb`
           : null,
+        currentOrderId: driver.currentOrderId,
         rating: driver.rating,
         totalDeliveries: driver.totalDeliveries,
         isActive: driver.isActive,
@@ -42,6 +43,7 @@ export class DriverAggregateRepository implements IDriverAggregateRepository {
           currentLocation: driver.currentLocation
             ? sql`${JSON.stringify(driver.currentLocation)}::jsonb`
             : null,
+          currentOrderId: driver.currentOrderId,
           rating: driver.rating,
           totalDeliveries: driver.totalDeliveries,
           isActive: driver.isActive,
@@ -58,6 +60,7 @@ export class DriverAggregateRepository implements IDriverAggregateRepository {
       licensePlate: string;
       status: DriverStatus;
       currentLocation: DriverLocation | null;
+      currentOrderId: string | null;
       rating: number;
       totalDeliveries: number;
       isActive: boolean;
@@ -76,6 +79,8 @@ export class DriverAggregateRepository implements IDriverAggregateRepository {
         ? sql`${JSON.stringify(data.currentLocation)}::jsonb`
         : null;
     }
+    if (data.currentOrderId !== undefined)
+      updateData.currentOrderId = data.currentOrderId;
     if (data.rating !== undefined) updateData.rating = data.rating;
     if (data.totalDeliveries !== undefined)
       updateData.totalDeliveries = data.totalDeliveries;
@@ -113,6 +118,7 @@ export class DriverAggregateRepository implements IDriverAggregateRepository {
           ? JSON.parse(data.currentLocation)
           : data.currentLocation
         : null,
+      currentOrderId: (data.currentOrderId as string) || null,
       rating: data.rating as number,
       totalDeliveries: data.totalDeliveries as number,
       isActive: (data.isActive as boolean) ?? true,
