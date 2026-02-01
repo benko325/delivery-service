@@ -27,11 +27,24 @@ import { GetOrdersByRestaurantQueryHandler } from "./application/queries/get-ord
 // Application - Events
 import { CartOrderedEventHandler } from "./application/events/cart-ordered.handler";
 import { PaymentSucceededEventHandler } from "./application/events/payment-succeeded.handler";
+import { DeliveryAssignedEventHandler } from "./application/events/delivery-assigned.handler";
+import { DeliveryRejectedEventHandler } from "./application/events/delivery-rejected.handler";
+import { DeliveryCompletedEventHandler } from "./application/events/delivery-completed.handler";
 
 // Infrastructure - Anti-Corruption Layer
 import { CartOrderedEventMapper } from "./infrastructure/anti-corruption-layer/cart-ordered.mapper";
-import { OrderConfirmedByRestaurantMapper } from "./infrastructure/anti-corruption-layer/order-confirmed-by-restaurant.mapper";
-import { OrderRejectedByRestaurantMapper } from "./infrastructure/anti-corruption-layer/order-rejected-by-restaurant.mapper";
+import {
+  DeliveryAssignedEventMapper,
+  DeliveryAssignedMappedEvent,
+} from "./infrastructure/anti-corruption-layer/delivery-assigned.mapper";
+import {
+  DeliveryRejectedEventMapper,
+  DeliveryRejectedMappedEvent,
+} from "./infrastructure/anti-corruption-layer/delivery-rejected.mapper";
+import {
+  DeliveryCompletedEventMapper,
+  DeliveryCompletedMappedEvent,
+} from "./infrastructure/anti-corruption-layer/delivery-completed.mapper";
 
 // Infrastructure - Services
 import { PaymentGatewayService } from "./infrastructure/services/payment-gateway.service";
@@ -45,8 +58,7 @@ import { CartOrderedMappedEvent } from "./infrastructure/anti-corruption-layer/c
 // Events
 import { PaymentSucceededEvent } from "./core/events/payment-succeeded.event";
 import { OrderStatusChangedEvent } from "./core/events/order-status-changed.event";
-import { OrderConfirmedByRestaurantEvent } from "../restaurants/core/events/order-confirmed-by-restaurant.event";
-import { OrderRejectedByRestaurantEvent } from "../restaurants/core/events/order-rejected-by-restaurant.event";
+import { OrderReadyForPickupEvent } from "./core/events/order-ready-for-pickup.event";
 
 const commandHandlers = [
   CreateOrderCommandHandler,
@@ -64,20 +76,29 @@ const queryHandlers = [
   GetOrdersByRestaurantQueryHandler,
 ];
 
-const eventHandlers = [CartOrderedEventHandler, PaymentSucceededEventHandler];
+const eventHandlers = [
+  CartOrderedEventHandler,
+  PaymentSucceededEventHandler,
+  DeliveryAssignedEventHandler,
+  DeliveryRejectedEventHandler,
+  DeliveryCompletedEventHandler,
+];
 
 const events = [
   CartOrderedMappedEvent,
   PaymentSucceededEvent,
   OrderStatusChangedEvent,
-  OrderConfirmedByRestaurantEvent,
-  OrderRejectedByRestaurantEvent,
+  OrderReadyForPickupEvent,
+  DeliveryAssignedMappedEvent,
+  DeliveryRejectedMappedEvent,
+  DeliveryCompletedMappedEvent,
 ];
 
 const antiCorruptionLayer = [
   CartOrderedEventMapper,
-  OrderConfirmedByRestaurantMapper,
-  OrderRejectedByRestaurantMapper,
+  DeliveryAssignedEventMapper,
+  DeliveryRejectedEventMapper,
+  DeliveryCompletedEventMapper,
 ];
 
 const infrastructureServices = [PaymentGatewayService];
