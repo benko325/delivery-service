@@ -75,10 +75,10 @@ onMounted(() => {
   authStore.loadAuth();
 
   if (authStore.isAuthenticated) {
-    const router = useRoute();
+    const route = useRoute();
 
-    router.query.redirect
-      ? navigateTo(router.query.redirect as string)
+    route.query.redirect
+      ? navigateTo(route.query.redirect as string)
       : navigateTo("/");
   }
 });
