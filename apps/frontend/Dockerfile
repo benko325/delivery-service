@@ -32,32 +32,20 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Copy package files for production dependencies
-COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
-COPY --from=builder /app/apps/frontend/package.json ./apps/frontend/
-
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@10.7.1 --activate
-
-# Install only production dependencies
-RUN pnpm install --frozen-lockfile --prod
-
-# Copy built application
-COPY --from=builder /app/apps/frontend/.output ./apps/frontend/.output
+# Copy built application (Nuxt .output is standalone and includes all dependencies)
+COPY --from=builder /app/apps/frontend/.output ./.output
 
 # Set environment
 ENV NODE_ENV=production
 ENV NUXT_HOST=0.0.0.0
-ENV NUXT_PORT=2999
-
-WORKDIR /app/apps/frontend
+ENV NUXT_PORT=3000
 
 # Expose port
-EXPOSE 2999
+EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:2999/ || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
 
 # Start the application
 CMD ["node", ".output/server/index.mjs"]
