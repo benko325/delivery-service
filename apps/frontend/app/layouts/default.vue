@@ -31,6 +31,18 @@
                 My Orders
               </NuxtLink>
             </li>
+            <li v-if="hasRestaurants" class="nav-item">
+              <NuxtLink to="/restaurant/orders" class="nav-link">
+                <i class="bi bi-shop me-1"></i>
+                Restaurant Orders
+              </NuxtLink>
+            </li>
+            <li v-if="isDriver" class="nav-item">
+              <NuxtLink to="/driver/deliveries" class="nav-link">
+                <i class="bi bi-truck me-1"></i>
+                My Deliveries
+              </NuxtLink>
+            </li>
           </ul>
 
           <ul class="navbar-nav">
@@ -87,17 +99,26 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
 import { useAuthStore } from "~/stores/auth";
 import { useCartStore } from "~/stores/cart";
+import { useMyRestaurants } from "~/composables/useRestaurants";
 
 const authStore = useAuthStore();
 const cartStore = useCartStore();
 const router = useRouter();
 
-// Load auth and cart on mount
-onMounted(() => {
-  authStore.loadAuth();
+// Check if user owns any restaurants
+const { data: myRestaurants } = useMyRestaurants();
+const hasRestaurants = computed(() => {
+  const isOwnerOrAdmin = authStore.hasAnyRole(["restaurant_owner", "admin"]);
+  return (
+    isOwnerOrAdmin && myRestaurants.value && myRestaurants.value.length > 0
+  );
+});
+
+// Check if user is a driver
+const isDriver = computed(() => {
+  return authStore.hasAnyRole(["driver", "admin"]);
 });
 
 /**
