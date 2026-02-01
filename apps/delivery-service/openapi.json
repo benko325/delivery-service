@@ -1,6 +1,20 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/api/metrics": {
+      "get": {
+        "operationId": "PrometheusController_index",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Prometheus"
+        ]
+      }
+    },
     "/api/health": {
       "get": {
         "operationId": "HealthController_check",
@@ -1696,6 +1710,38 @@
           }
         ],
         "summary": "Accept an order (driver)",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/orders/restaurant/{restaurantId}": {
+      "get": {
+        "operationId": "OrdersController_getRestaurantOrders",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of restaurant orders"
+          },
+          "403": {
+            "description": "Access denied - not your restaurant"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get orders for a specific restaurant",
         "tags": [
           "Orders"
         ]
