@@ -1,4 +1,4 @@
-import { Logger } from "@nestjs/common";
+import { Logger } from "nestjs-pino";
 import { OpenAPIObject } from "@nestjs/swagger";
 import * as fs from "fs";
 import * as path from "path";
@@ -11,9 +11,8 @@ export function saveOpenApiSpec(
 
   try {
     fs.writeFileSync(outputPath, JSON.stringify(openApiDocument, null, 2));
+    logger?.log(`OpenAPI spec written to: ${outputPath}`);
   } catch (error) {
-    logger?.error("Failed to write OpenAPI spec: ", error);
+    logger?.error(`Failed to write OpenAPI spec: ${error}`);
   }
-
-  logger?.log(`OpenAPI spec written to: ${outputPath}`);
 }
