@@ -1,9 +1,13 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { IPaymentGatewayService } from "../../application/common/payment.gateway.service.interface";
 
 @Injectable()
 export class PaymentGatewayService implements IPaymentGatewayService {
-  private readonly logger = new Logger(PaymentGatewayService.name);
+  constructor(
+    @InjectPinoLogger(PaymentGatewayService.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   async requestPayment(
     orderId: string,
@@ -11,7 +15,7 @@ export class PaymentGatewayService implements IPaymentGatewayService {
     amount: number,
     currency: string,
   ): Promise<{ success: boolean; paymentRequestId: string; error?: string }> {
-    this.logger.log(
+    this.logger.info(
       `Requesting payment for order ${orderId}: ${amount} ${currency}`,
     );
 
@@ -21,7 +25,7 @@ export class PaymentGatewayService implements IPaymentGatewayService {
       // MOCK: Simulate external API call
       await this.simulateExternalApiCall();
 
-      this.logger.log(
+      this.logger.info(
         `Payment request successful for order ${orderId}, request ID: ${paymentRequestId}`,
       );
 

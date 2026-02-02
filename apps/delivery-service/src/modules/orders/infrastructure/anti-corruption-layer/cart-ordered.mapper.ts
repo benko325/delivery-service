@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler, EventBus } from "@nestjs/cqrs";
-import { Logger } from "@nestjs/common";
 import { IEvent } from "@nestjs/cqrs";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import {
   OrderItem,
   DeliveryAddress,
@@ -21,12 +21,14 @@ export class CartOrderedMappedEvent implements IEvent {
 
 @EventsHandler(CartOrderedEvent)
 export class CartOrderedEventMapper implements IEventHandler<CartOrderedEvent> {
-  private readonly logger = new Logger(CartOrderedEventMapper.name);
-
-  constructor(private readonly eventBus: EventBus) {}
+  constructor(
+    private readonly eventBus: EventBus,
+    @InjectPinoLogger(CartOrderedEventMapper.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   handle(event: CartOrderedEvent): void {
-    this.logger.log(`Mapping CartOrderedEvent for cart ${event.cartId}`);
+    this.logger.info(`Mapping CartOrderedEvent for cart ${event.cartId}`);
 
     const orderItems: OrderItem[] = event.items.map((item) => ({
       menuItemId: item.menuItemId,
@@ -55,6 +57,6 @@ export class CartOrderedEventMapper implements IEventHandler<CartOrderedEvent> {
 
     this.eventBus.subject$.next(mappedEvent);
 
-    this.logger.log(`Mapped event published for customer ${event.customerId}`);
+    this.logger.info(`Mapped event published for customer ${event.customerId}`);
   }
 }

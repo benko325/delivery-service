@@ -1,16 +1,18 @@
 import { EventsHandler, IEventHandler, CommandBus } from "@nestjs/cqrs";
-import { Logger } from "@nestjs/common";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { OrderRejectedByRestaurantEvent } from "../../../restaurants/core/events/order-rejected-by-restaurant.event";
 import { CancelOrderCommand } from "../../application/commands/cancel-order/cancel-order.command";
 
 @EventsHandler(OrderRejectedByRestaurantEvent)
 export class OrderRejectedByRestaurantMapper implements IEventHandler<OrderRejectedByRestaurantEvent> {
-  private readonly logger = new Logger(OrderRejectedByRestaurantMapper.name);
-
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    @InjectPinoLogger(OrderRejectedByRestaurantMapper.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   async handle(event: OrderRejectedByRestaurantEvent): Promise<void> {
-    this.logger.log(
+    this.logger.info(
       `Handling OrderRejectedByRestaurantEvent for order: ${event.orderId}, ` +
         `restaurant: ${event.restaurantId}, ` +
         `reason: ${event.reason}`,
@@ -23,7 +25,7 @@ export class OrderRejectedByRestaurantMapper implements IEventHandler<OrderRejec
       ),
     );
 
-    this.logger.log(
+    this.logger.info(
       `Order ${event.orderId} cancelled due to restaurant rejection`,
     );
   }

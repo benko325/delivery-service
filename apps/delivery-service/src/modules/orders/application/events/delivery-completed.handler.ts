@@ -1,18 +1,18 @@
 import { EventsHandler, IEventHandler, CommandBus } from "@nestjs/cqrs";
-import { Logger } from "@nestjs/common";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { DeliveryCompletedMappedEvent } from "../../infrastructure/anti-corruption-layer/delivery-completed.mapper";
 import { UpdateOrderStatusCommand } from "../commands/update-order-status/update-order-status.command";
 
 @EventsHandler(DeliveryCompletedMappedEvent)
-export class DeliveryCompletedEventHandler
-  implements IEventHandler<DeliveryCompletedMappedEvent>
-{
-  private readonly logger = new Logger(DeliveryCompletedEventHandler.name);
-
-  constructor(private readonly commandBus: CommandBus) {}
+export class DeliveryCompletedEventHandler implements IEventHandler<DeliveryCompletedMappedEvent> {
+  constructor(
+    private readonly commandBus: CommandBus,
+    @InjectPinoLogger(DeliveryCompletedEventHandler.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   async handle(event: DeliveryCompletedMappedEvent): Promise<void> {
-    this.logger.log(
+    this.logger.info(
       `Delivery Completed Policy triggered for order ${event.orderId}`,
     );
 
@@ -22,7 +22,7 @@ export class DeliveryCompletedEventHandler
         new UpdateOrderStatusCommand(event.orderId, "delivered"),
       );
 
-      this.logger.log(
+      this.logger.info(
         `Order ${event.orderId} marked as delivered after completion by driver ${event.driverId}`,
       );
     } catch (error) {

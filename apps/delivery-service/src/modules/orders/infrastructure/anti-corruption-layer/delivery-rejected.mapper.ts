@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler, EventBus } from "@nestjs/cqrs";
-import { Logger } from "@nestjs/common";
 import { IEvent } from "@nestjs/cqrs";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { DeliveryRejectedEvent } from "@/modules/drivers/core/events/delivery-rejected.event";
 
 export class DeliveryRejectedMappedEvent implements IEvent {
@@ -13,15 +13,17 @@ export class DeliveryRejectedMappedEvent implements IEvent {
 }
 
 @EventsHandler(DeliveryRejectedEvent)
-export class DeliveryRejectedEventMapper
-  implements IEventHandler<DeliveryRejectedEvent>
-{
-  private readonly logger = new Logger(DeliveryRejectedEventMapper.name);
-
-  constructor(private readonly eventBus: EventBus) {}
+export class DeliveryRejectedEventMapper implements IEventHandler<DeliveryRejectedEvent> {
+  constructor(
+    private readonly eventBus: EventBus,
+    @InjectPinoLogger(DeliveryRejectedEventMapper.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   handle(event: DeliveryRejectedEvent): void {
-    this.logger.log(`Mapping DeliveryRejectedEvent for order ${event.orderId}`);
+    this.logger.info(
+      `Mapping DeliveryRejectedEvent for order ${event.orderId}`,
+    );
 
     const mappedEvent = new DeliveryRejectedMappedEvent(
       event.driverId,
@@ -32,7 +34,7 @@ export class DeliveryRejectedEventMapper
 
     this.eventBus.subject$.next(mappedEvent);
 
-    this.logger.log(
+    this.logger.info(
       `Mapped event published for rejected order ${event.orderId}`,
     );
   }
