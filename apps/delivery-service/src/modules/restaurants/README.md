@@ -41,10 +41,11 @@ The Restaurants module manages restaurant entities, menu items, and order confir
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| GET | `/restaurants/:restaurantId/menu-items` | Get restaurant menu | Public |
-| POST | `/restaurants/:restaurantId/menu-items` | Create menu item | Admin, Owner |
-| PUT | `/restaurants/:restaurantId/menu-items/:id` | Update menu item | Admin, Owner |
-| DELETE | `/restaurants/:restaurantId/menu-items/:id` | Delete menu item | Admin, Owner |
+| GET | `/restaurants/:restaurantId/menu` | Get restaurant menu | Public |
+| GET | `/restaurants/:restaurantId/menu/all` | Get all menu items (incl. unavailable) | Admin, Owner |
+| POST | `/restaurants/:restaurantId/menu` | Create menu item | Admin, Owner |
+| PUT | `/restaurants/:restaurantId/menu/:id` | Update menu item | Admin, Owner |
+| DELETE | `/restaurants/:restaurantId/menu/:id` | Delete menu item | Admin, Owner |
 
 ## Commands
 

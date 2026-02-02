@@ -95,7 +95,7 @@ docker-compose up -d
 This starts the entire stack (app, database, RabbitMQ, Prometheus, Grafana, frontend, nginx). Migrations run automatically.
 
 - **API**: http://localhost:3000 or http://ds.localhost/api
-- **Frontend**: http://localhost:3002 (port may vary) or http://ds.localhost
+- **Frontend**: http://localhost:2999 or http://ds.localhost
 - **Swagger Docs**: http://localhost:3000/api/docs or http://ds.localhost/api/docs
 - **Grafana**: http://localhost:3001
 
