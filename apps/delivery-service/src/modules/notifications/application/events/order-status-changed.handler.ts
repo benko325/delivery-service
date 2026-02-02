@@ -1,16 +1,18 @@
 import { EventsHandler, IEventHandler, CommandBus } from "@nestjs/cqrs";
-import { Logger } from "@nestjs/common";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { OrderStatusChangedMappedEvent } from "../../infrastructure/anti-corruption-layer/order-status-changed.mapper";
 import { SendCustomerNotificationCommand } from "../commands/send-customer-notification/send-customer-notification.command";
 
 @EventsHandler(OrderStatusChangedMappedEvent)
 export class OrderStatusChangedEventHandler implements IEventHandler<OrderStatusChangedMappedEvent> {
-  private readonly logger = new Logger(OrderStatusChangedEventHandler.name);
-
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    @InjectPinoLogger(OrderStatusChangedEventHandler.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   async handle(event: OrderStatusChangedMappedEvent): Promise<void> {
-    this.logger.log(
+    this.logger.info(
       `Notify User of Change State Policy triggered for order ${event.orderId}: ${event.previousStatus} → ${event.newStatus}`,
     );
 
@@ -24,7 +26,7 @@ export class OrderStatusChangedEventHandler implements IEventHandler<OrderStatus
         ),
       );
 
-      this.logger.log(
+      this.logger.info(
         `Customer notification sent for order ${event.orderId} status change`,
       );
     } catch (error) {

@@ -162,8 +162,8 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     // Create enum type
     await sql`
         CREATE TYPE orders.order_status AS ENUM (
-            'pending', 'confirmed', 'preparing', 'ready_for_pickup',
-            'driver_assigned', 'picked_up', 'in_transit', 'delivered', 'cancelled'
+            'pending', 'payment_succeeded', 'confirmed', 'preparing',
+            'ready_for_pickup', 'in_transit', 'delivered', 'cancelled'
         )
     `.execute(db);
 

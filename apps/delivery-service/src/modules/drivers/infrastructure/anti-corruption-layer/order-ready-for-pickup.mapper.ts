@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler, EventBus } from "@nestjs/cqrs";
-import { Logger } from "@nestjs/common";
 import { IEvent } from "@nestjs/cqrs";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { OrderReadyForPickupEvent } from "@/modules/orders/core/events/order-ready-for-pickup.event";
 import { DeliveryAddress } from "@/modules/orders/core/types/order-database.types";
 
@@ -14,15 +14,15 @@ export class OrderReadyForPickupMappedEvent implements IEvent {
 }
 
 @EventsHandler(OrderReadyForPickupEvent)
-export class OrderReadyForPickupEventMapper
-  implements IEventHandler<OrderReadyForPickupEvent>
-{
-  private readonly logger = new Logger(OrderReadyForPickupEventMapper.name);
-
-  constructor(private readonly eventBus: EventBus) {}
+export class OrderReadyForPickupEventMapper implements IEventHandler<OrderReadyForPickupEvent> {
+  constructor(
+    private readonly eventBus: EventBus,
+    @InjectPinoLogger(OrderReadyForPickupEventMapper.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   handle(event: OrderReadyForPickupEvent): void {
-    this.logger.log(
+    this.logger.info(
       `Mapping OrderReadyForPickupEvent for order ${event.orderId}`,
     );
 
@@ -35,6 +35,6 @@ export class OrderReadyForPickupEventMapper
 
     this.eventBus.subject$.next(mappedEvent);
 
-    this.logger.log(`Mapped event published for order ${event.orderId}`);
+    this.logger.info(`Mapped event published for order ${event.orderId}`);
   }
 }

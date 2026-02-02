@@ -1,16 +1,18 @@
 import { EventsHandler, IEventHandler, CommandBus } from "@nestjs/cqrs";
-import { Logger } from "@nestjs/common";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { PaymentSucceededMappedEvent } from "../../infrastructure/anti-corruption-layer/payment-succeeded.mapper";
 import { SendRestaurantNotificationCommand } from "../commands/send-restaurant-notification/send-restaurant-notification.command";
 
 @EventsHandler(PaymentSucceededMappedEvent)
 export class PaymentSucceededEventHandler implements IEventHandler<PaymentSucceededMappedEvent> {
-  private readonly logger = new Logger(PaymentSucceededEventHandler.name);
-
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    @InjectPinoLogger(PaymentSucceededEventHandler.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   async handle(event: PaymentSucceededMappedEvent): Promise<void> {
-    this.logger.log(
+    this.logger.info(
       `Notify Restaurant Policy triggered for order ${event.orderId}`,
     );
 
@@ -19,7 +21,7 @@ export class PaymentSucceededEventHandler implements IEventHandler<PaymentSuccee
         new SendRestaurantNotificationCommand(event.orderId),
       );
 
-      this.logger.log(
+      this.logger.info(
         `Restaurant notification sent for order ${event.orderId}`,
       );
     } catch (error) {

@@ -1,6 +1,6 @@
 import { EventsHandler, IEventHandler, EventBus } from "@nestjs/cqrs";
-import { Logger } from "@nestjs/common";
 import { IEvent } from "@nestjs/cqrs";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { DeliveryAssignedEvent } from "@/modules/drivers/core/events/delivery-assigned.event";
 
 export class DeliveryAssignedMappedEvent implements IEvent {
@@ -12,15 +12,17 @@ export class DeliveryAssignedMappedEvent implements IEvent {
 }
 
 @EventsHandler(DeliveryAssignedEvent)
-export class DeliveryAssignedEventMapper
-  implements IEventHandler<DeliveryAssignedEvent>
-{
-  private readonly logger = new Logger(DeliveryAssignedEventMapper.name);
-
-  constructor(private readonly eventBus: EventBus) {}
+export class DeliveryAssignedEventMapper implements IEventHandler<DeliveryAssignedEvent> {
+  constructor(
+    private readonly eventBus: EventBus,
+    @InjectPinoLogger(DeliveryAssignedEventMapper.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   handle(event: DeliveryAssignedEvent): void {
-    this.logger.log(`Mapping DeliveryAssignedEvent for order ${event.orderId}`);
+    this.logger.info(
+      `Mapping DeliveryAssignedEvent for order ${event.orderId}`,
+    );
 
     const mappedEvent = new DeliveryAssignedMappedEvent(
       event.driverId,
@@ -30,7 +32,7 @@ export class DeliveryAssignedEventMapper
 
     this.eventBus.subject$.next(mappedEvent);
 
-    this.logger.log(
+    this.logger.info(
       `Mapped event published for order ${event.orderId} assigned to driver ${event.driverId}`,
     );
   }

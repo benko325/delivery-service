@@ -195,11 +195,11 @@ export class MetricsService {
   }
 
   // Revenue metrics
-  recordOrderAmount(amount: number, currency: string = "USD"): void {
+  recordOrderAmount(amount: number, currency: string = "EUR"): void {
     this.orderAmountHistogram.observe({ currency }, amount);
   }
 
-  incrementRevenue(amount: number, currency: string = "USD"): void {
+  incrementRevenue(amount: number, currency: string = "EUR"): void {
     this.revenueCounter.inc({ currency }, amount);
   }
 }

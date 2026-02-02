@@ -1,16 +1,18 @@
 import { EventsHandler, IEventHandler, CommandBus } from "@nestjs/cqrs";
-import { Logger } from "@nestjs/common";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { UserRegisteredEvent } from "../../../auth/core/events/user-registered.event";
 import { CreateCustomerCommand } from "../../application/commands/create-customer/create-customer.command";
 
 @EventsHandler(UserRegisteredEvent)
 export class UserRegisteredAcl implements IEventHandler<UserRegisteredEvent> {
-  private readonly logger = new Logger(UserRegisteredAcl.name);
-
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    @InjectPinoLogger(UserRegisteredAcl.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   async handle(event: UserRegisteredEvent): Promise<void> {
-    this.logger.log(
+    this.logger.info(
       `[ACL] Handling UserRegisteredEvent for user: ${event.email}`,
     );
 
@@ -25,7 +27,7 @@ export class UserRegisteredAcl implements IEventHandler<UserRegisteredEvent> {
           event.phone,
         ),
       );
-      this.logger.log(`[ACL] Customer created for user: ${event.email}`);
+      this.logger.info(`[ACL] Customer created for user: ${event.email}`);
     }
   }
 }

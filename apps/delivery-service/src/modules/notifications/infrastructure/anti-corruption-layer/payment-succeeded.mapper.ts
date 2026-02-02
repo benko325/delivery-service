@@ -1,5 +1,5 @@
-import { Logger } from "@nestjs/common";
 import { EventBus, EventsHandler, IEvent, IEventHandler } from "@nestjs/cqrs";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { PaymentSucceededEvent } from "../../../orders/core/events/payment-succeeded.event";
 
 export class PaymentSucceededMappedEvent implements IEvent {
@@ -8,18 +8,22 @@ export class PaymentSucceededMappedEvent implements IEvent {
 
 @EventsHandler(PaymentSucceededEvent)
 export class PaymentSucceededEventMapper implements IEventHandler<PaymentSucceededEvent> {
-  private readonly logger = new Logger(PaymentSucceededEventMapper.name);
-
-  constructor(private readonly eventBus: EventBus) {}
+  constructor(
+    private readonly eventBus: EventBus,
+    @InjectPinoLogger(PaymentSucceededEventMapper.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   async handle(event: PaymentSucceededEvent): Promise<void> {
-    this.logger.log(`Mapping PaymentSucceededEvent for order ${event.orderId}`);
+    this.logger.info(
+      `Mapping PaymentSucceededEvent for order ${event.orderId}`,
+    );
 
     const mappedEvent = new PaymentSucceededMappedEvent(event.orderId);
 
     this.eventBus.publish(mappedEvent);
 
-    this.logger.log(
+    this.logger.info(
       `Published PaymentSucceededMappedEvent for order ${event.orderId}`,
     );
   }

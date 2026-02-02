@@ -1,20 +1,20 @@
 import { EventsHandler, IEventHandler, CommandBus } from "@nestjs/cqrs";
-import { Logger } from "@nestjs/common";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { CartOrderedMappedEvent } from "../../infrastructure/anti-corruption-layer/cart-ordered.mapper";
 import { CreateOrderCommand } from "../commands/create-order/create-order.command";
 import { MetricsService } from "../../../shared-kernel/infrastructure/metrics";
 
 @EventsHandler(CartOrderedMappedEvent)
 export class CartOrderedEventHandler implements IEventHandler<CartOrderedMappedEvent> {
-  private readonly logger = new Logger(CartOrderedEventHandler.name);
-
   constructor(
     private readonly commandBus: CommandBus,
     private readonly metricsService: MetricsService,
+    @InjectPinoLogger(CartOrderedEventHandler.name)
+    private readonly logger: PinoLogger,
   ) {}
 
   async handle(event: CartOrderedMappedEvent): Promise<void> {
-    this.logger.log(
+    this.logger.info(
       `Place Order Policy triggered for customer ${event.customerId}`,
     );
 
@@ -31,7 +31,7 @@ export class CartOrderedEventHandler implements IEventHandler<CartOrderedMappedE
         ),
       );
 
-      this.logger.log(
+      this.logger.info(
         `Order created successfully for customer ${event.customerId}`,
       );
 

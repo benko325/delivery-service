@@ -1,28 +1,36 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
-import { z } from 'zod';
+import { Injectable, OnModuleInit } from "@nestjs/common";
+import { z } from "zod";
+import { PinoLogger } from "nestjs-pino";
 
 @Injectable()
 export abstract class ValidatedConfigService implements OnModuleInit {
-    protected readonly logger = new Logger(this.constructor.name);
+  protected readonly logger: PinoLogger;
 
-    abstract getSchema(): z.ZodTypeAny;
-    abstract getRawConfig(): Record<string, unknown>;
+  constructor(logger: PinoLogger) {
+    this.logger = logger;
+    this.logger.setContext(this.constructor.name);
+  }
 
-    onModuleInit() {
-        const schema = this.getSchema();
-        const rawConfig = this.getRawConfig();
+  abstract getSchema(): z.ZodTypeAny;
+  abstract getRawConfig(): Record<string, unknown>;
 
-        const result = schema.safeParse(rawConfig);
+  onModuleInit() {
+    const schema = this.getSchema();
+    const rawConfig = this.getRawConfig();
 
-        if (!result.success) {
-            const errors = result.error.errors
-                .map((e) => `  - ${e.path.join('.')}: ${e.message}`)
-                .join('\n');
+    const result = schema.safeParse(rawConfig);
 
-            this.logger.error(`Configuration validation failed:\n${errors}`);
-            throw new Error(`Configuration validation failed for ${this.constructor.name}`);
-        }
+    if (!result.success) {
+      const errors = result.error.errors
+        .map((e) => `  - ${e.path.join(".")}: ${e.message}`)
+        .join("\n");
 
-        this.logger.log('Configuration validated successfully');
+      this.logger.error(`Configuration validation failed:\n${errors}`);
+      throw new Error(
+        `Configuration validation failed for ${this.constructor.name}`,
+      );
     }
+
+    this.logger.info("Configuration validated successfully");
+  }
 }

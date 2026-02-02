@@ -1,19 +1,21 @@
-import { Injectable, Inject, Logger } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { IEvent, IMessageSource } from "@nestjs/cqrs";
 import { AmqpConnection } from "@golevelup/nestjs-rabbitmq";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { Subject } from "rxjs";
 
 export type EventConstructor<T extends IEvent> = new (payload: unknown) => T;
 
 @Injectable()
 export class RabbitMQSubscriber implements IMessageSource {
-  private readonly logger = new Logger(RabbitMQSubscriber.name);
   private bridge: Subject<unknown> = new Subject();
 
   constructor(
     private readonly amqpConnection: AmqpConnection,
     @Inject("EVENTS")
     private readonly events: Array<EventConstructor<IEvent>>,
+    @InjectPinoLogger(RabbitMQSubscriber.name)
+    private readonly logger: PinoLogger,
   ) {}
 
   async connect(): Promise<void> {
@@ -41,7 +43,7 @@ export class RabbitMQSubscriber implements IMessageSource {
           { queue: Event.name },
           `handler_${Event.name}`,
         );
-        this.logger.log(`Subscribed to queue: ${Event.name}`);
+        this.logger.info(`Subscribed to queue: ${Event.name}`);
       } catch (error) {
         this.logger.error(`Failed to subscribe to ${Event.name}:`, error);
       }

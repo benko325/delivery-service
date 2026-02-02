@@ -1,17 +1,12 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { Inject, Logger } from "@nestjs/common";
+import { Inject } from "@nestjs/common";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { SendCustomerNotificationCommand } from "./send-customer-notification.command";
 import { IOrderDataService } from "../../common/order-data.service.interface";
 import { OrderStatusMapped } from "../../../infrastructure/anti-corruption-layer/order-status-changed.mapper";
 
 @CommandHandler(SendCustomerNotificationCommand)
-export class SendCustomerNotificationCommandHandler
-  implements ICommandHandler<SendCustomerNotificationCommand>
-{
-  private readonly logger = new Logger(
-    SendCustomerNotificationCommandHandler.name,
-  );
-
+export class SendCustomerNotificationCommandHandler implements ICommandHandler<SendCustomerNotificationCommand> {
   private readonly messages: Record<OrderStatusMapped, string> = {
     pending: "Your order has been received and is pending confirmation.",
     payment_succeeded: "Payment successful! Your order is being processed.",
@@ -26,6 +21,8 @@ export class SendCustomerNotificationCommandHandler
   constructor(
     @Inject("IOrderDataService")
     private readonly orderDataService: IOrderDataService,
+    @InjectPinoLogger(SendCustomerNotificationCommandHandler.name)
+    private readonly logger: PinoLogger,
   ) {}
 
   async execute(command: SendCustomerNotificationCommand): Promise<void> {
@@ -42,18 +39,20 @@ export class SendCustomerNotificationCommandHandler
 
     const statusMessage = this.getStatusMessage(command.newStatus);
 
-    this.logger.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-    this.logger.log(
+    this.logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+    this.logger.info(
       `📱 [NOTIFICATION] Sending to Customer ${orderData.customerId}`,
     );
-    this.logger.log(`   Subject: Order Status Update`);
-    this.logger.log(`   Order ID: ${orderData.orderId}`);
-    this.logger.log(
+    this.logger.info(`   Subject: Order Status Update`);
+    this.logger.info(`   Order ID: ${orderData.orderId}`);
+    this.logger.info(
       `   Status: ${command.previousStatus} → ${command.newStatus}`,
     );
-    this.logger.log(`   Message: ${statusMessage}`);
-    this.logger.log(`   Total: ${orderData.totalAmount} ${orderData.currency}`);
-    this.logger.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+    this.logger.info(`   Message: ${statusMessage}`);
+    this.logger.info(
+      `   Total: ${orderData.totalAmount} ${orderData.currency}`,
+    );
+    this.logger.info(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
   }
 
   private getStatusMessage(status: OrderStatusMapped): string {

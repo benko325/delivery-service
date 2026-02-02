@@ -1,5 +1,6 @@
-import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { QueryBus } from "@nestjs/cqrs";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { GetOrderByIdQuery } from "../../../orders/application/queries/get-order-by-id/get-order-by-id.query";
 import { Order } from "../../../orders/core/entities/order.entity";
 import { IOrderDataService } from "../../application/common/order-data.service.interface";
@@ -7,9 +8,11 @@ import { OrderData } from "../../core/types/order.data.type";
 
 @Injectable()
 export class OrderDataService implements IOrderDataService {
-  private readonly logger = new Logger(OrderDataService.name);
-
-  constructor(private readonly queryBus: QueryBus) {}
+  constructor(
+    private readonly queryBus: QueryBus,
+    @InjectPinoLogger(OrderDataService.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   async getOrderData(orderId: string): Promise<OrderData | null> {
     try {

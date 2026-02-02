@@ -1,5 +1,5 @@
 import { EventsHandler, IEventHandler, EventBus, IEvent } from "@nestjs/cqrs";
-import { Logger } from "@nestjs/common";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 // import the real external event published by Drivers BC
 import { DriverCreatedEvent as ExternalDriverCreatedEvent } from "../../../drivers/core/events/driver-created.event";
 
@@ -22,12 +22,12 @@ export class DriverCreatedMappedEvent implements IEvent {
 }
 
 @EventsHandler(ExternalDriverCreatedEvent)
-export class DriverCreatedEventMapper
-  implements IEventHandler<ExternalDriverCreatedEvent>
-{
-  private readonly logger = new Logger(DriverCreatedEventMapper.name);
-
-  constructor(private readonly eventBus: EventBus) {}
+export class DriverCreatedEventMapper implements IEventHandler<ExternalDriverCreatedEvent> {
+  constructor(
+    private readonly eventBus: EventBus,
+    @InjectPinoLogger(DriverCreatedEventMapper.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   handle(event: ExternalDriverCreatedEvent): void {
     const driverId = event.id;
@@ -40,7 +40,7 @@ export class DriverCreatedEventMapper
     const location = undefined;
     const registeredAt = event.createdAt;
 
-    this.logger.log(
+    this.logger.info(
       `Mapping external DriverCreated event -> driverId=${driverId} userId=${userId ?? "<missing>"}`,
     );
 
@@ -65,7 +65,7 @@ export class DriverCreatedEventMapper
     // deliver locally to Auth BC handlers (do not re-publish to Rabbit)
     this.eventBus.subject$.next(mapped);
 
-    this.logger.log(
+    this.logger.info(
       `Published mapped DriverCreatedMappedEvent -> driverId=${driverId} userId=${userId ?? "<missing>"}`,
     );
   }

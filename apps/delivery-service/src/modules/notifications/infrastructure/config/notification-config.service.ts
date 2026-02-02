@@ -1,6 +1,7 @@
 import { ValidatedConfigService } from "@/modules/shared-kernel";
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { PinoLogger } from "nestjs-pino";
 import z from "zod";
 
 const notificationConfigSchema = z.object({
@@ -9,8 +10,11 @@ const notificationConfigSchema = z.object({
 
 @Injectable()
 export class NotificationConfigService extends ValidatedConfigService {
-  constructor(private readonly configService: ConfigService) {
-    super();
+  constructor(
+    private readonly configService: ConfigService,
+    logger: PinoLogger,
+  ) {
+    super(logger);
   }
 
   getSchema() {

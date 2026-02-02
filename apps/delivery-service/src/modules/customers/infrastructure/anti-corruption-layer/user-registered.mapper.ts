@@ -1,16 +1,18 @@
 import { EventsHandler, IEventHandler, CommandBus } from "@nestjs/cqrs";
-import { Logger } from "@nestjs/common";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { UserRegisteredEvent } from "../../../auth/core/events/user-registered.event";
 import { CreateCustomerCommand } from "../../application/commands/create-customer/create-customer.command";
 
 @EventsHandler(UserRegisteredEvent)
 export class UserRegisteredEventHandler implements IEventHandler<UserRegisteredEvent> {
-  private readonly logger = new Logger(UserRegisteredEventHandler.name);
-
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    @InjectPinoLogger(UserRegisteredEventHandler.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   async handle(event: UserRegisteredEvent): Promise<void> {
-    this.logger.log(`Handling UserRegisteredEvent for user: ${event.email}`);
+    this.logger.info(`Handling UserRegisteredEvent for user: ${event.email}`);
 
     // Anti-corruption layer: Map Auth domain event to Customers domain command
     // Only create customer if user has customer role
@@ -23,7 +25,7 @@ export class UserRegisteredEventHandler implements IEventHandler<UserRegisteredE
           event.phone,
         ),
       );
-      this.logger.log(`Customer created for user: ${event.email}`);
+      this.logger.info(`Customer created for user: ${event.email}`);
     }
   }
 }

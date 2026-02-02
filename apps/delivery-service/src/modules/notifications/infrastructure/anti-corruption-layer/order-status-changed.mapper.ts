@@ -1,5 +1,5 @@
-import { Logger } from "@nestjs/common";
 import { EventBus, EventsHandler, IEvent, IEventHandler } from "@nestjs/cqrs";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { OrderStatusChangedEvent } from "../../../orders/core/events/order-status-changed.event";
 import { OrderStatus } from "../../../orders/core/types/order-database.types";
 
@@ -16,12 +16,14 @@ export class OrderStatusChangedMappedEvent implements IEvent {
 
 @EventsHandler(OrderStatusChangedEvent)
 export class OrderStatusChangedEventMapper implements IEventHandler<OrderStatusChangedEvent> {
-  private readonly logger = new Logger(OrderStatusChangedEventMapper.name);
-
-  constructor(private readonly eventBus: EventBus) {}
+  constructor(
+    private readonly eventBus: EventBus,
+    @InjectPinoLogger(OrderStatusChangedEventMapper.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   async handle(event: OrderStatusChangedEvent): Promise<void> {
-    this.logger.log(
+    this.logger.info(
       `Mapping OrderStatusChangedEvent for order ${event.orderId}: ${event.previousStatus} → ${event.newStatus}`,
     );
 
@@ -34,7 +36,7 @@ export class OrderStatusChangedEventMapper implements IEventHandler<OrderStatusC
 
     this.eventBus.publish(mappedEvent);
 
-    this.logger.log(
+    this.logger.info(
       `Published OrderStatusChangedMappedEvent for order ${event.orderId}`,
     );
   }

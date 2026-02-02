@@ -1,18 +1,17 @@
 import { EventsHandler, IEventHandler, EventBus } from "@nestjs/cqrs";
-import { Logger, Inject } from "@nestjs/common";
+import { Inject } from "@nestjs/common";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 
 // listen for the internal mapped event produced by the ACL
 import { DriverCreatedMappedEvent } from "../../../infrastructure/anti-corruption-layer/driver-created.mapper";
 
 @EventsHandler(DriverCreatedMappedEvent)
-export class DriverCreatedHandler
-  implements IEventHandler<DriverCreatedMappedEvent>
-{
-  private readonly logger = new Logger(DriverCreatedHandler.name);
-
+export class DriverCreatedHandler implements IEventHandler<DriverCreatedMappedEvent> {
   constructor(
     private readonly eventBus: EventBus,
     @Inject("IAuthRepository") private readonly authRepository: unknown,
+    @InjectPinoLogger(DriverCreatedHandler.name)
+    private readonly logger: PinoLogger,
   ) {}
 
   // helper to safely extract error message
@@ -27,7 +26,7 @@ export class DriverCreatedHandler
   }
 
   async handle(event: DriverCreatedMappedEvent): Promise<void> {
-    this.logger.log(
+    this.logger.info(
       `DriverCreatedMappedEvent received (id=${event.id} userId=${event.userId} email=${event.email})`,
     );
 
@@ -127,7 +126,7 @@ export class DriverCreatedHandler
     }
 
     if (currentRoles.includes("driver")) {
-      this.logger.log(
+      this.logger.info(
         `User ${existingUser.id ?? event.userId} already has role 'driver'.`,
       );
       return;
@@ -144,7 +143,7 @@ export class DriverCreatedHandler
           role: unknown,
         ) => Promise<unknown> | unknown;
         await fn.call(repo, existingUser!.id ?? event.userId, "driver");
-        this.logger.log(
+        this.logger.info(
           `Added 'driver' role via addRole to user ${existingUser!.id ?? event.userId}`,
         );
         return;
@@ -156,7 +155,7 @@ export class DriverCreatedHandler
           roles: unknown,
         ) => Promise<unknown> | unknown;
         await fn.call(repo, existingUser!.id ?? event.userId, mergedRoles);
-        this.logger.log(
+        this.logger.info(
           `Updated roles via updateRoles for user ${existingUser!.id ?? event.userId}`,
         );
         return;
@@ -170,7 +169,7 @@ export class DriverCreatedHandler
         await fn.call(repo, existingUser!.id ?? event.userId, {
           roles: mergedRoles,
         });
-        this.logger.log(
+        this.logger.info(
           `Updated roles via update for user ${existingUser!.id ?? event.userId}`,
         );
         return;
@@ -185,7 +184,7 @@ export class DriverCreatedHandler
           roles: mergedRoles,
         };
         await fn.call(repo, userToSave);
-        this.logger.log(
+        this.logger.info(
           `Updated roles via save for user ${existingUser!.id ?? event.userId}`,
         );
         return;
