@@ -2,10 +2,10 @@ import { CommandHandler, EventBus, ICommandHandler } from "@nestjs/cqrs";
 import {
   BadRequestException,
   Inject,
-  Logger,
   NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
+import { PinoLogger, InjectPinoLogger } from "nestjs-pino";
 import { PayForOrderCommand } from "./pay-for-order.command";
 import { IOrderRepository } from "../../../core/repositories/order.repository.interface";
 import { IPaymentGatewayService } from "../../common/payment.gateway.service.interface";
@@ -13,14 +13,14 @@ import { PaymentSucceededEvent } from "../../../core/events/payment-succeeded.ev
 
 @CommandHandler(PayForOrderCommand)
 export class PayForOrderCommandHandler implements ICommandHandler<PayForOrderCommand> {
-  private readonly logger = new Logger(PayForOrderCommandHandler.name);
-
   constructor(
     @Inject("IOrderRepository")
     private readonly orderRepository: IOrderRepository,
     @Inject("IPaymentGatewayService")
     private readonly paymentGatewayService: IPaymentGatewayService,
     private readonly eventBus: EventBus,
+    @InjectPinoLogger(PayForOrderCommandHandler.name)
+    private readonly logger: PinoLogger,
   ) {}
 
   async execute(command: PayForOrderCommand): Promise<{
@@ -28,7 +28,7 @@ export class PayForOrderCommandHandler implements ICommandHandler<PayForOrderCom
     paymentRequestId?: string;
     error?: string;
   }> {
-    this.logger.log(`Processing payment request for order ${command.orderId}`);
+    this.logger.info(`Processing payment request for order ${command.orderId}`);
 
     const order = await this.orderRepository.findById(command.orderId);
 
@@ -56,7 +56,7 @@ export class PayForOrderCommandHandler implements ICommandHandler<PayForOrderCom
     );
 
     if (result.success) {
-      this.logger.log(
+      this.logger.info(
         `Payment request successful for order ${command.orderId}`,
       );
 
@@ -70,7 +70,7 @@ export class PayForOrderCommandHandler implements ICommandHandler<PayForOrderCom
 
       this.eventBus.publish(orderPaidForEvent);
 
-      this.logger.log(
+      this.logger.info(
         `Published PaymentSucceededEvent for order ${command.orderId}`,
       );
     } else {
